@@ -62,9 +62,8 @@ namespace MatchFactoryCore.Scripts.Item
             Debug.Log("ChangeTo2D");
             Prefab.gameObject.SetActive(false);
             sprite = Instantiate(Sprite, Prefab.transform.position, Sprite.transform.rotation);
-            var comp = sprite.AddComponent<ItemSprite>();
-            comp.Owner = this.gameObject;
-            Sprite.gameObject.SetActive(true);
+            sprite.AddComponent<ItemSprite>();
+            sprite.SetActive(true);
         }
 
         #endregion

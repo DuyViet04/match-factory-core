@@ -30,20 +30,15 @@ namespace MatchFactoryCore.Scripts.Game
         //Test
         public Vector3 spawnPoint;
 
-        public static int MaxSlot = 7;
+        public static readonly int MaxSlot = 7;
         private StateMachine<MatchFactoryState> _stateMachine;
         private readonly List<Rigidbody> _itemRigids = new List<Rigidbody>();
 
         private readonly Dictionary<ItemType, ItemFactoryDataSo> _itemDataDictionary =
             new Dictionary<ItemType, ItemFactoryDataSo>();
 
-        private List<IItemFactory2D> _item2Ds = new List<IItemFactory2D>();
-        private List<IItemFactory3D> _item3Ds = new List<IItemFactory3D>();
-
         public MatchFactoryInput Input => input;
         public List<GameObject> ItemSlots => itemSlots;
-        public List<IItemFactory2D> Item2Ds => _item2Ds;
-        public List<IItemFactory3D> Item3Ds => _item3Ds;
 
         // Cache
         private List<ObjectInLevel> _levelTargets;

@@ -9,20 +9,16 @@ namespace MatchFactoryCore.Scripts.Game.State
     public class PlayingState : BaseState
     {
         private Camera _mainCamera;
-        private List<GameObject> _itemSlots;
-        private List<IItemFactory2D> _item2Ds;
-        private List<IItemFactory3D> _item3Ds;
-        private List<int> _data2Ds;
-        private List<GameObject> _go2Ds;
+        private readonly List<GameObject> _itemSlots;
+        private readonly List<int> _data2Ds;
+        private readonly List<GameObject> _allBarSprites;
 
         public PlayingState(MatchFactoryController controller, StateMachine<MatchFactoryState> stateMachine) : base(
             controller, stateMachine)
         {
             _itemSlots = Controller.ItemSlots;
-            _item2Ds = Controller.Item2Ds;
-            _item3Ds = Controller.Item3Ds;
             _data2Ds = new List<int>();
-            _go2Ds = new List<GameObject>();
+            _allBarSprites = new List<GameObject>();
         }
 
         public override void OnEnter()
@@ -49,17 +45,67 @@ namespace MatchFactoryCore.Scripts.Game.State
                 // Move
                 if (sprite == null) return;
                 IItemFactory2D itemFactory2D = sprite.GetComponent<IItemFactory2D>();
-                itemFactory2D.MoveToBar(sprite, _itemSlots, _mainCamera, _data2Ds, (int)itemFactory.Type, out _go2Ds);
+                itemFactory2D.MoveToBar(sprite, _itemSlots, _mainCamera, _data2Ds, (int)itemFactory.Type,
+                    _allBarSprites);
+                _allBarSprites.Insert(itemFactory2D.CurrentIndex, sprite);
 
-                // Jump
-                if (_go2Ds.Count == 0) return;
-                for (int i = _go2Ds.Count - 1; i >= 0; i--)
+                // Match
+                CheckMatch((int)itemFactory.Type, _data2Ds, _allBarSprites, out var matchs, out var isMatch);
+                if (isMatch)
                 {
-                    var itemSprite = _go2Ds[i].GetComponent<ItemSprite>();
-                    if (itemSprite == null) return;
-                    if (itemSprite.LastIndex == itemSprite.CurrentIndex) continue;
-                    var numJump = itemSprite.CurrentIndex - itemSprite.LastIndex;
-                    itemFactory2D.JumpOnBar(_go2Ds[i], _itemSlots, _mainCamera, numJump);
+                    itemFactory2D.Match(matchs);
+
+                    for (int i = 0; i < _allBarSprites.Count; i++)
+                    {
+                        var comp = _allBarSprites[i].GetComponent<IItemFactory2D>();
+                        if (comp != null)
+                        {
+                            comp.CurrentIndex = i;
+                        }
+                    }
+                }
+
+                // TODO: Jump
+                // Jump: tất cả sprites bị dịch chuyển
+                for (int i = _allBarSprites.Count - 1; i >= 0; i--)
+                {
+                    var item2D = _allBarSprites[i].GetComponent<IItemFactory2D>();
+                    if (item2D == null) return;
+                    if (item2D.LastIndex == item2D.CurrentIndex) continue;
+                    var numJump = Mathf.Abs(item2D.CurrentIndex - item2D.LastIndex);
+                    item2D.JumpOnBar(_allBarSprites[i], _itemSlots, _mainCamera, numJump);
+                }
+            }
+        }
+
+        void CheckMatch(int type, List<int> data2Ds, List<GameObject> allBarSprites, out List<GameObject> matchs,
+            out bool isMatch)
+        {
+            matchs = new List<GameObject>();
+            var matchIndices = new List<int>();
+            isMatch = false;
+
+            for (int i = 0; i < data2Ds.Count; i++)
+            {
+                if (data2Ds[i] == type)
+                {
+                    matchs.Add(allBarSprites[i]);
+                    matchIndices.Add(i);
+                }
+
+                if (matchs.Count == 3)
+                {
+                    isMatch = true;
+                    break;
+                }
+            }
+
+            if (isMatch)
+            {
+                for (int i = matchIndices.Count - 1; i >= 0; i--)
+                {
+                    data2Ds.RemoveAt(matchIndices[i]);
+                    allBarSprites.RemoveAt(matchIndices[i]);
                 }
             }
         }
