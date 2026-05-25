@@ -23,6 +23,11 @@ namespace MatchFactoryCore.UI
             controller.OnTimeLevelChanged -= UpdateTimeLevel;
         }
 
+        private void Start()
+        {
+            UpdateTimeLevel(controller.TimeLevel);
+        }
+
         void UpdateTimeLevel(float time)
         {
             _minValue = (int)time / 60;

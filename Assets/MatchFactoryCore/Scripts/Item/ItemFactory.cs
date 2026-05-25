@@ -60,8 +60,8 @@ namespace MatchFactoryCore.Scripts.Item
         {
             Debug.Log("JumpFromBoard");
             _jumpSequence = DOTween.Sequence();
-            _jumpSequence.Join(transform.DOJump(toTarget, 1, 1, 0.25f));
-            _jumpSequence.Join(transform.DORotate(Prefab.transform.rotation.eulerAngles, 0.25f));
+            _jumpSequence.Join(Prefab.transform.DOJump(toTarget, 1, 1, 0.25f));
+            _jumpSequence.Join(Prefab.transform.DORotate(Prefab.transform.rotation.eulerAngles, 0.25f));
         }
 
         public void OnExplode()
@@ -73,6 +73,7 @@ namespace MatchFactoryCore.Scripts.Item
             Debug.Log("ChangeTo2D");
             Prefab.SetActive(false);
             Sprite.SetActive(true);
+            Sprite.transform.position = Prefab.transform.position;
         }
 
         #endregion
@@ -81,23 +82,21 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _matchSequence;
 
-        public void MoveToBar(GameObject sprite, List<GameObject> slots, Camera mainCam, List<int> data2Ds, int type,
-            List<IItemFactory2D> allBarSprites, out List<IItemFactory2D> movedSprites)
+        public void MoveToBar(List<GameObject> slots, Camera mainCam, List<int> data2Ds)
         {
-            movedSprites = new List<IItemFactory2D>();
             int maxSlot = MatchFactoryController.MaxSlot;
             if (data2Ds.Count >= maxSlot) return;
-            InsertData(data2Ds, type, maxSlot, allBarSprites, out var index, out movedSprites);
+            InsertData(data2Ds, (int)FactoryType, maxSlot, out var index);
             var pos = slots[index].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            sprite.transform.DOMove(worldPos, 0.5f);
+            Sprite.transform.DOMove(worldPos, 0.5f);
         }
 
-        public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump)
+        public void JumpOnBar(List<GameObject> slots, Camera mainCam, int numJump)
         {
             var pos = slots[CurrentIndex].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
+            Sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
         }
 
         public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs)
@@ -133,16 +132,15 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
-        void InsertData(List<int> data2Ds, int type, int maxSlot, List<IItemFactory2D> allBarSprites, out int index,
-            out List<IItemFactory2D> movedSprites)
+        void InsertData(List<int> data2Ds, int type, int maxSlot, out int index)
         {
             index = -1;
-            movedSprites = new List<IItemFactory2D>();
 
             if (data2Ds.Count == 0)
             {
                 data2Ds.Add(type);
                 index = 0;
+                CurrentIndex = index;
                 return;
             }
 
@@ -165,15 +163,6 @@ namespace MatchFactoryCore.Scripts.Item
                 index = data2Ds.Count - 1;
             }
 
-            foreach (var itemFactory2D in allBarSprites)
-            {
-                if (CurrentIndex >= index)
-                {
-                    CurrentIndex += 1;
-                    movedSprites.Add(itemFactory2D);
-                }
-            }
-            
             CurrentIndex = index;
         }
 

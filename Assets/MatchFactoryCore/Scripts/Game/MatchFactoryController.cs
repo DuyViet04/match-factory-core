@@ -34,21 +34,19 @@ namespace MatchFactoryCore.Scripts.Game
         public float maxX, maxZ;
 
         public static readonly int MaxSlot = 7;
+        public MatchFactoryInput Input => input;
+        public List<GameObject> ItemSlots => itemSlots;
         public event Action<int> OnClickTarget;
         public event Action<float> OnTimeLevelChanged;
+        public float TimeLevel { get; private set; }
 
         private StateMachine<MatchFactoryState> _stateMachine;
         private readonly List<Rigidbody> _itemsRigidbody = new List<Rigidbody>();
-        private readonly Dictionary<ItemFactoryType, int> _targetDictionary = new();
-
-        public MatchFactoryInput Input => input;
-        public List<GameObject> ItemSlots => itemSlots;
         public Dictionary<ItemFactoryType, int> TargetDictionary => _targetDictionary;
-        public float TimeLevel;
+        private readonly Dictionary<ItemFactoryType, int> _targetDictionary = new();
 
         // Cache
         private Vector3 _randomSpawnPoint;
-        private float _timeLevel;
 
         private void Awake()
         {
@@ -82,7 +80,7 @@ namespace MatchFactoryCore.Scripts.Game
         public void InitializeLevel(int level, Action onReady)
         {
             var dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
-            _timeLevel = dataLevel.TimeLevel;
+            TimeLevel = dataLevel.TimeLevel;
             var levelTarget = dataLevel.DictLevelTarget;
             var otherObjInLevel = dataLevel.DictOtherObjectInLevel;
 
@@ -146,19 +144,22 @@ namespace MatchFactoryCore.Scripts.Game
                 return;
             }
 
-            var newItemFactory = Instantiate(new GameObject(), GetRandomSpawnPoint(), so.prefab.transform.rotation);
-            ItemFactory itemFactoryComp = newItemFactory.AddComponent<ItemFactory>();
-            IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
+            var newItemFactory = new GameObject("ItemFactory");
             newItemFactory.transform.parent = holder.transform;
-            var newObject3D = Instantiate(so.prefab, Vector3.zero, Quaternion.identity);
-            var newObject2D = Instantiate(so.sprite, Vector3.zero, Quaternion.identity);
+            newItemFactory.transform.SetPositionAndRotation(GetRandomSpawnPoint(), Quaternion.identity);
+            ItemFactory itemFactoryComp = newItemFactory.AddComponent<ItemFactory>();
+            var newObject3D = Instantiate(so.prefab, so.prefab.transform.position, so.prefab.transform.rotation);
+            var newObject2D = Instantiate(so.sprite, so.sprite.transform.position, so.sprite.transform.rotation);
             newObject3D.transform.parent = newItemFactory.transform;
             newObject2D.transform.parent = newItemFactory.transform;
+            newObject3D.transform.localPosition = Vector3.zero;
+            newObject2D.transform.localPosition = Vector3.zero;
             newObject2D.SetActive(false);
 
             itemFactoryComp.Initialize((int)itemFactoryType + index, itemFactoryType, newObject3D, newObject2D,
                 so.size);
 
+            IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
             _itemsRigidbody.Add(itemFactory3D.RigidbodyObject);
         }
 
@@ -186,8 +187,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void UpdateTimeLevel()
         {
-            OnTimeLevelChanged?.Invoke(_timeLevel);
-            _timeLevel -= Time.deltaTime;
+            TimeLevel -= Time.deltaTime;
+            if (TimeLevel <= 0) TimeLevel = 0;
+            OnTimeLevelChanged?.Invoke(TimeLevel);
         }
     }
 }

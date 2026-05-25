@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
@@ -33,6 +32,12 @@ namespace MatchFactoryCore.Scripts.Game.State
         {
             Controller.UpdateTimeLevel();
 
+            if (Controller.TimeLevel <= 0)
+            {
+                StateMachine.ChangeState(MatchFactoryState.Lose);
+                return;
+            }
+
             if (Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
             {
                 var pos = Touchscreen.current.primaryTouch.position.ReadValue();
@@ -43,72 +48,60 @@ namespace MatchFactoryCore.Scripts.Game.State
                 ItemFactory itemFactory = go.GetComponent<ItemFactory>();
                 IItemFactory3D itemFactory3D = itemFactory as IItemFactory3D;
                 IItemFactory2D itemFactory2D = itemFactory as IItemFactory2D;
-                itemFactory3D.JumpFromBoard(go.transform.position + new Vector3(0, 5, -1));
+                itemFactory3D.JumpFromBoard(itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1));
                 itemFactory3D.ChangeTo2D();
 
-                CheckLevelTarget(go, Controller.TargetDictionary);
+                CheckLevelTarget(go);
 
                 // Move
-                itemFactory2D.MoveToBar(itemFactory2D.Sprite, _itemSlots, _mainCamera, _data2Ds,
-                    (int)itemFactory.FactoryType, _allBarSprites, out var movedSprites);
+                itemFactory2D.MoveToBar(_itemSlots, _mainCamera, _data2Ds);
                 _allBarSprites.Insert(itemFactory.CurrentIndex, itemFactory2D);
-                // foreach (var sprite in movedSprites)
-                // {
-                //     sprite.JumpOnBar(sprite.Sprite, _itemSlots, _mainCamera, 1);
-                // }
 
                 // Match
-                CheckMatch((int)itemFactory.FactoryType, _data2Ds, _allBarSprites, out var matchs, out var isMatch);
+                CheckMatch((int)itemFactory.FactoryType, out var matchs, out var isMatch);
                 if (isMatch)
                 {
                     itemFactory2D.Match(_itemSlots, _mainCamera, matchs);
-
-                    for (int i = 0; i < _allBarSprites.Count; i++)
-                    {
-                        var comp = _allBarSprites[i];
-                        if (comp != null)
-                        {
-                            ((ItemFactory)comp).CurrentIndex = i;
-                        }
-                    }
                 }
 
                 // Jump: tất cả sprites bị dịch chuyển
-                for (int i = _allBarSprites.Count - 1; i >= 0; i--)
+                for (int i = 0; i < _allBarSprites.Count; i++)
                 {
                     var item2D = _allBarSprites[i];
-                    if (item2D == null) return;
-                    if (((ItemFactory)item2D).CurrentIndex == i) continue;
-                    var numJump = Mathf.Abs(((ItemFactory)item2D).CurrentIndex - i);
-                    item2D.JumpOnBar(_allBarSprites[i].Sprite, _itemSlots, _mainCamera, numJump);
+                    if (item2D == null) continue;
+                    var itemComp = (ItemFactory)item2D;
+                    if (itemComp.CurrentIndex != i)
+                    {
+                        var numJump = Mathf.Abs(itemComp.CurrentIndex - i);
+                        itemComp.CurrentIndex = i;
+                        item2D.JumpOnBar(_itemSlots, _mainCamera, numJump);
+                    }
                 }
 
                 // Win/Lose
-                if (IsWin(Controller.TargetDictionary))
+                if (IsWin())
                 {
                     StateMachine.ChangeState(MatchFactoryState.Win);
                 }
 
-                if (IsLose(1, _allBarSprites, isMatch))
+                if (IsLose(isMatch))
                 {
                     StateMachine.ChangeState(MatchFactoryState.Lose);
                 }
             }
         }
 
-        private void CheckMatch(int type, List<int> data2Ds, List<IItemFactory2D> allBarSprites,
-            out List<IItemFactory2D> matchs,
-            out bool isMatch)
+        private void CheckMatch(int type, out List<IItemFactory2D> matchs, out bool isMatch)
         {
             matchs = new List<IItemFactory2D>();
             var matchIndices = new List<int>();
             isMatch = false;
 
-            for (int i = 0; i < data2Ds.Count; i++)
+            for (int i = 0; i < _data2Ds.Count; i++)
             {
-                if (data2Ds[i] == type)
+                if (_data2Ds[i] == type)
                 {
-                    matchs.Add(allBarSprites[i]);
+                    matchs.Add(_allBarSprites[i]);
                     matchIndices.Add(i);
                 }
 
@@ -123,31 +116,31 @@ namespace MatchFactoryCore.Scripts.Game.State
             {
                 for (int i = matchIndices.Count - 1; i >= 0; i--)
                 {
-                    data2Ds.RemoveAt(matchIndices[i]);
-                    allBarSprites.RemoveAt(matchIndices[i]);
+                    _data2Ds.RemoveAt(matchIndices[i]);
+                    _allBarSprites.RemoveAt(matchIndices[i]);
                 }
             }
         }
 
-        void CheckLevelTarget(GameObject go, Dictionary<ItemFactoryType, int> targetDict)
+        void CheckLevelTarget(GameObject go)
         {
             var itemFactory = go.GetComponent<ItemFactory>();
             if (itemFactory == null) return;
 
             var type = itemFactory.FactoryType;
-            if (targetDict.TryGetValue(type, out var currentTarget))
+            if (Controller.TargetDictionary.TryGetValue(type, out var currentTarget))
             {
                 if (currentTarget > 0)
                 {
-                    Controller.ClickTarget(targetDict[type]--);
+                    Controller.ClickTarget(Controller.TargetDictionary[type]--);
                 }
             }
         }
 
-        bool IsWin(Dictionary<ItemFactoryType, int> targetDict)
+        bool IsWin()
         {
             bool isWin = true;
-            foreach (var item in targetDict)
+            foreach (var item in Controller.TargetDictionary)
             {
                 if (item.Value != 0)
                 {
@@ -159,14 +152,14 @@ namespace MatchFactoryCore.Scripts.Game.State
             return isWin;
         }
 
-        bool IsLose(float time, List<IItemFactory2D> allBarSprites, bool isMatch)
+        bool IsLose(bool isMatch)
         {
             bool isLose = false;
-            if (time <= 0)
+            if (Controller.TimeLevel <= 0)
             {
                 isLose = true;
             }
-            else if (allBarSprites.Count == MatchFactoryController.MaxSlot && !isMatch)
+            else if (_allBarSprites.Count == MatchFactoryController.MaxSlot && !isMatch)
             {
                 isLose = true;
             }

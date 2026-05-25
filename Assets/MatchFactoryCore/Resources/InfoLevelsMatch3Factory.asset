@@ -15,7 +15,7 @@ MonoBehaviour:
   DictInfoLevelsMatch3Factory:
     m_keys: 01000000
     m_values:
-    - TimeLevel: 30
+    - TimeLevel: 60
       DictLevelTarget:
         m_keys: e8030000d0070000
         m_values: 0f0000000f000000

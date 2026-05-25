@@ -969,7 +969,7 @@ MonoBehaviour:
   - {fileID: 1956394827}
   - {fileID: 621641927}
   - {fileID: 1503072261}
-  spawnInHighValue: 11
+  spawnInHighValue: 13
   maxX: 4
   maxZ: 4
 --- !u!4 &1019175765
