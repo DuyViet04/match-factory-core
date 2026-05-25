@@ -1,71 +1,182 @@
-﻿using DG.Tweening;
+﻿using System.Collections.Generic;
+using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
+using MatchFactoryCore.Scripts.Game;
 using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
 {
-    public class ItemFactory : MonoBehaviour, IItemFactory3D
+    public class ItemFactory : ItemEntity, IItemFactory3D, IItemFactory2D
     {
-        private Rigidbody _rigidbody;
-        private Collider _collider;
+        #region Entity
 
-        private Vector3 _rotation;
-        private Sequence _jumpSequence;
+        public int Id { get; private set; }
+        public ItemFactoryType FactoryType { get; private set; }
 
-        public int Id { get; set; }
-        public ItemType Type { get; set; }
-        public GameObject Sprite { get; set; }
+        #endregion
 
-        public void Initialize(int id, ItemType type, GameObject prefab, GameObject sprite, float size)
-        {
-            Id = id;
-            Type = type;
-            Prefab = prefab;
-            Sprite = sprite;
-            Size = size;
+        #region Data 3D Object
 
-            _rigidbody = GetComponent<Rigidbody>();
-            _collider = GetComponent<Collider>();
-            if (_rigidbody != null && _collider != null)
-            {
-                var b = _collider.bounds;
-                var volume = b.size.x * b.size.y * b.size.z;
-                _rigidbody.mass = volume * size;
-                Weight = _rigidbody.mass;
-            }
-
-            _rotation = Prefab.transform.rotation.eulerAngles;
-            // Debug.Log($"{id}: {Prefab.name} {Sprite.name} {Size} {Weight}");
-        }
-
-        #region 3D Object
-
+        public Rigidbody RigidbodyObject { get; set; }
+        public Collider ColliderObject { get; set; }
         public GameObject Prefab { get; set; }
         public float Size { get; set; }
         public float Weight { get; set; }
+
+        #endregion
+
+        #region Data 2D Object
+
+        public GameObject Sprite { get; set; }
+        public int CurrentIndex { get; set; }
+
+        #endregion
+        Sequence _jumpSequence;
+
+        public void Initialize(int id, ItemFactoryType factoryType, GameObject prefab, GameObject sprite, float size)
+        {
+            Id = id;
+            FactoryType = factoryType;
+            Prefab = prefab;
+            Sprite = sprite;
+            Size = size;
+            RigidbodyObject = Prefab.GetComponent<Rigidbody>();
+            ColliderObject = Prefab.GetComponent<Collider>();
+            if (RigidbodyObject != null && ColliderObject != null)
+            {
+                var b = ColliderObject.bounds;
+                var volume = b.size.x * b.size.y * b.size.z;
+                RigidbodyObject.mass = volume * size;
+                Weight = RigidbodyObject.mass;
+            }
+            // Debug.Log($"{id}: {Prefab.name} {Sprite.name} {Size} {Weight}");
+        }
+
+
+        #region Behaviour 3D Object
 
         public void JumpFromBoard(Vector3 toTarget)
         {
             Debug.Log("JumpFromBoard");
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Join(transform.DOJump(toTarget, 1, 1, 0.25f));
-            _jumpSequence.Join(transform.DORotate(_rotation, 0.25f));
+            _jumpSequence.Join(transform.DORotate(Prefab.transform.rotation.eulerAngles, 0.25f));
         }
 
         public void OnExplode()
         {
         }
 
-        public void ChangeTo2D(out GameObject sprite)
+        public void ChangeTo2D()
         {
-            sprite = null;
             Debug.Log("ChangeTo2D");
-            Prefab.gameObject.SetActive(false);
-            sprite = Instantiate(Sprite, Prefab.transform.position, Sprite.transform.rotation);
-            sprite.AddComponent<ItemSprite>();
-            sprite.SetActive(true);
+            Prefab.SetActive(false);
+            Sprite.SetActive(true);
         }
 
         #endregion
+
+        #region Behaviour 2D Object
+
+        Sequence _matchSequence;
+        private IItemFactory2D _itemFactory2DImplementation;
+
+        public void MoveToBar(GameObject sprite, List<GameObject> slots, Camera mainCam, List<int> data2Ds, int type,
+            List<IItemFactory2D> allBarSprites)
+        {
+            int maxSlot = MatchFactoryController.MaxSlot;
+            if (data2Ds.Count >= maxSlot) return;
+            InsertData(data2Ds, type, maxSlot, allBarSprites, out var index, out _);
+            var pos = slots[index].transform.position;
+            var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
+            sprite.transform.DOMove(worldPos, 0.5f);
+        }
+
+        void InsertData(List<int> data2Ds, int type, int maxSlot, List<IItemFactory2D> allBarSprites, out int index,
+            out List<IItemFactory2D> movedSprites)
+        {
+            index = -1;
+            movedSprites = new List<IItemFactory2D>();
+
+            if (data2Ds.Count == 0)
+            {
+                data2Ds.Add(type);
+                index = 0;
+                return;
+            }
+
+            bool isInsert = false;
+            for (int i = data2Ds.Count - 1; i >= 0; i--)
+            {
+                if (data2Ds.Count >= maxSlot) break;
+                if (data2Ds[i] == type)
+                {
+                    data2Ds.Insert(i + 1, type);
+                    index = i + 1;
+                    isInsert = true;
+                    break;
+                }
+            }
+
+            if (!isInsert)
+            {
+                data2Ds.Add(type);
+                index = data2Ds.Count - 1;
+            }
+
+            foreach (var itemFactory2D in allBarSprites)
+            {
+                if (CurrentIndex >= index)
+                {
+                    CurrentIndex += 1;
+                    movedSprites.Add(itemFactory2D);
+                }
+            }
+        }
+
+        public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump)
+        {
+            var pos = slots[CurrentIndex].transform.position;
+            var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
+            sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
+        }
+
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs)
+        {
+            _matchSequence = DOTween.Sequence();
+
+            if (matchs.Count != 3) return;
+            var idx0 = matchs[0].GetComponent<ItemFactory>().CurrentIndex;
+            var idx1 = matchs[1].GetComponent<ItemFactory>().CurrentIndex;
+            var idx2 = matchs[2].GetComponent<ItemFactory>().CurrentIndex;
+            var pos0 = GetWorldPosition(itemSlots[idx0].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos1 = GetWorldPosition(itemSlots[idx1].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos2 = GetWorldPosition(itemSlots[idx2].transform.position, mainCam) + Vector3.forward - Vector3.up;
+
+            _matchSequence.Append(matchs[0].transform.DOMove(pos0, 0.25f))
+                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].transform.DOMove(pos2, 0.25f))
+                .Append(matchs[0].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].transform.DOMove(pos1, 0.25f))
+                .OnComplete(() =>
+                {
+                    foreach (var item in matchs)
+                    {
+                        Destroy(item);
+                    }
+                });
+        }
+
+        public void ChangeTo3D()
+        {
+        }
+
+        #endregion
+
+        Vector3 GetWorldPosition(Vector3 screenPos, Camera mainCam)
+        {
+            return mainCam.ScreenToWorldPoint(screenPos);
+        }
     }
 }

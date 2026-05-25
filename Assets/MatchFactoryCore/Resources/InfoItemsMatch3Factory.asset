@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca708ae6063c433bbcb4d4732d9ec11c, type: 3}
+  m_Name: InfoItemsMatch3Factory
+  m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Data.InfoItemsMatch3Factory
+  DictInfoItemsMatch3Factory:
+    m_keys: e8030000d0070000b80b0000a00f0000
+    m_values:
+    - itemFactoryType: 1000
+      itemFactoryCollectionType: 0
+      prefab: {fileID: 3318171947369936171, guid: a9685c084d308844b9796de88e372e9b, type: 3}
+      size: 0.5
+      sprite: {fileID: 569967418994709282, guid: 5aa554046ab366d4b93267210447dda7, type: 3}
+    - itemFactoryType: 2000
+      itemFactoryCollectionType: 0
+      prefab: {fileID: 4353221925112164047, guid: 82c6a8bb236bb404bb990d3206a5982c, type: 3}
+      size: 0.75
+      sprite: {fileID: 2248168182980922577, guid: 28dc8af0fbf5f9540befbcd43fa7738f, type: 3}
+    - itemFactoryType: 3000
+      itemFactoryCollectionType: 0
+      prefab: {fileID: 8759355540298818192, guid: 4a1284624b1a5d84cb48632d1d1e1d9a, type: 3}
+      size: 1
+      sprite: {fileID: 5933057975169064700, guid: cbbffc5249eb1bd4f9404b7b83bd2148, type: 3}
+    - itemFactoryType: 4000
+      itemFactoryCollectionType: 0
+      prefab: {fileID: 3983479197524667178, guid: 0caeb6b6219d4e74aae2a5e200a9b9bb, type: 3}
+      size: 2
+      sprite: {fileID: 8201875445279409267, guid: fd1a62fb43121b24b86d0b47a83ec3c3, type: 3}

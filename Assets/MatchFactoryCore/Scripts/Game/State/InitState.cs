@@ -14,7 +14,7 @@ namespace MatchFactoryCore.Scripts.Game.State
         {
             Debug.Log("Enter Init State");
             Controller.ActiveInput(false);
-            Controller.InitializeLevel(() => StateMachine.ChangeState(MatchFactoryState.Playing));
+            Controller.InitializeLevel(1, () => StateMachine.ChangeState(MatchFactoryState.Playing));
         }
     }
 }

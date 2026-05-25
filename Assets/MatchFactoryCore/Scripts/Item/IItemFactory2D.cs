@@ -6,14 +6,12 @@ namespace MatchFactoryCore.Scripts.Item
     public interface IItemFactory2D
     {
         public GameObject Sprite { get; set; }
-        public int LastIndex { get; set; }
-        public int CurrentIndex { get; set; }
 
         public void MoveToBar(GameObject sprite, List<GameObject> slots, Camera mainCam, List<int> data2Ds, int type,
-            List<GameObject> allBarSprites);
+            List<IItemFactory2D> allBarSprites);
 
         public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump);
-        public void Match(List<GameObject> itemSlots, Camera mainCam, List<GameObject> matchs);
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs);
         public void ChangeTo3D();
     }
 }
