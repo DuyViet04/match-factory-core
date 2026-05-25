@@ -9,9 +9,15 @@ namespace MatchFactoryCore.Scripts.Game.State
     public class PlayingState : BaseState
     {
         private Camera _mainCamera;
+        private const float DragThreshold = 15f;
         readonly List<GameObject> _itemSlots; // List UI là slot của Sprite
         readonly List<int> _data2Ds;
         readonly List<IItemFactory2D> _allBarSprites;
+        bool _isMatch;
+        Vector2 _startMousePos;
+        bool _isPressing;
+        bool _hasMovedEnoughForDrag;
+        int _lastDragId = -1;
 
         public PlayingState(MatchFactoryController controller, StateMachine<MatchFactoryState> stateMachine) : base(
             controller, stateMachine)
@@ -38,55 +44,118 @@ namespace MatchFactoryCore.Scripts.Game.State
                 return;
             }
 
-            if (Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+            if (Pointer.current.press.wasPressedThisFrame)
             {
-                var pos = Touchscreen.current.primaryTouch.position.ReadValue();
+                var pos = Pointer.current.position.ReadValue();
+                _startMousePos = pos;
+                _isPressing = true;
+                _hasMovedEnoughForDrag = false;
+                _lastDragId = -1;
+
                 var ray = _mainCamera.ScreenPointToRay(pos);
                 Controller.Input.HandleClick(ray, out var go);
-
                 if (go == null) return;
-                ItemFactory itemFactory = go.GetComponent<ItemFactory>();
-                IItemFactory3D itemFactory3D = itemFactory as IItemFactory3D;
-                IItemFactory2D itemFactory2D = itemFactory as IItemFactory2D;
-                itemFactory3D.JumpFromBoard(itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1));
-                itemFactory3D.ChangeTo2D();
 
-                CheckLevelTarget(go);
+                IItemFactory3D itemFactory3D = go.GetComponent<IItemFactory3D>();
+                itemFactory3D.RigidbodyObject.AddForce(Vector3.up, ForceMode.Impulse);
+                _lastDragId = go.GetComponent<ItemFactory>().Id;
+            }
 
-                // Move
-                itemFactory2D.MoveToBar(_itemSlots, _mainCamera, _data2Ds);
-                _allBarSprites.Insert(itemFactory.CurrentIndex, itemFactory2D);
-
-                // Match
-                CheckMatch((int)itemFactory.FactoryType, out var matchs, out var isMatch);
-                if (isMatch)
+            if (_isPressing)
+            {
+                var pos = Pointer.current.position.ReadValue();
+                if (!_hasMovedEnoughForDrag)
                 {
-                    itemFactory2D.Match(_itemSlots, _mainCamera, matchs);
-                }
-
-                // Jump: tất cả sprites bị dịch chuyển
-                for (int i = 0; i < _allBarSprites.Count; i++)
-                {
-                    var item2D = _allBarSprites[i];
-                    if (item2D == null) continue;
-                    var itemComp = (ItemFactory)item2D;
-                    if (itemComp.CurrentIndex != i)
+                    if (Vector2.Distance(_startMousePos, pos) > DragThreshold)
                     {
-                        var numJump = Mathf.Abs(itemComp.CurrentIndex - i);
-                        itemComp.CurrentIndex = i;
-                        item2D.JumpOnBar(_itemSlots, _mainCamera, numJump);
+                        _hasMovedEnoughForDrag = true;
                     }
                 }
 
-                // Win/Lose
-                if (IsWin())
+                if (_hasMovedEnoughForDrag)
                 {
-                    StateMachine.ChangeState(MatchFactoryState.Win);
+                    var ray = _mainCamera.ScreenPointToRay(pos);
+                    Controller.Input.HandleClick(ray, out var go);
+                    if (go != null)
+                    {
+                        ItemFactory itemFactory = go.GetComponent<ItemFactory>();
+                        IItemFactory3D itemFactory3D = itemFactory as IItemFactory3D;
+                        if (itemFactory.Id != _lastDragId)
+                        {
+                            itemFactory3D.RigidbodyObject.AddForce(Vector3.up, ForceMode.Impulse);
+                            _lastDragId = itemFactory.Id;
+                        }
+                    }
                 }
+            }
 
-                if (IsLose(isMatch))
+            if (Pointer.current.press.wasReleasedThisFrame)
+            {
+                _isPressing = false;
+
+                if (!_hasMovedEnoughForDrag)
                 {
-                    StateMachine.ChangeState(MatchFactoryState.Lose);
+                    var pos = Pointer.current.position.ReadValue();
+                    var ray = _mainCamera.ScreenPointToRay(pos);
+                    Controller.Input.HandleClick(ray, out var go);
+                    if (go != null)
+                    {
+                        ItemFactory itemFactory = go.GetComponent<ItemFactory>();
+                        IItemFactory3D itemFactory3D = itemFactory as IItemFactory3D;
+                        IItemFactory2D itemFactory2D = itemFactory as IItemFactory2D;
+
+                        if (itemFactory != null && itemFactory3D != null && itemFactory2D != null)
+                        {
+                            HandleObject3D(itemFactory3D);
+                            CheckLevelTarget(go);
+                            HandleObject2D(itemFactory2D);
+
+                            // Win/Lose
+                            if (IsWin())
+                            {
+                                StateMachine.ChangeState(MatchFactoryState.Win);
+                            }
+
+                            if (IsLose(_isMatch))
+                            {
+                                StateMachine.ChangeState(MatchFactoryState.Lose);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HandleObject3D(IItemFactory3D itemFactory3D)
+        {
+            itemFactory3D.JumpFromBoard(itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1));
+            itemFactory3D.ChangeTo2D();
+        }
+
+        private void HandleObject2D(IItemFactory2D itemFactory2D)
+        {
+            // Move
+            itemFactory2D.MoveToBar(_itemSlots, _mainCamera, _data2Ds);
+            _allBarSprites.Insert(((ItemFactory)itemFactory2D).CurrentIndex, itemFactory2D);
+
+            // Match
+            CheckMatch((int)((ItemFactory)itemFactory2D).FactoryType, out var matchs, out _isMatch);
+            if (_isMatch)
+            {
+                itemFactory2D.Match(_itemSlots, _mainCamera, matchs);
+            }
+
+            // Jump: tất cả sprites bị dịch chuyển
+            for (int i = 0; i < _allBarSprites.Count; i++)
+            {
+                var item2D = _allBarSprites[i];
+                if (item2D == null) continue;
+                var itemComp = (ItemFactory)item2D;
+                if (itemComp.CurrentIndex != i)
+                {
+                    var numJump = Mathf.Abs(itemComp.CurrentIndex - i);
+                    itemComp.CurrentIndex = i;
+                    item2D.JumpOnBar(_itemSlots, _mainCamera, numJump);
                 }
             }
         }
