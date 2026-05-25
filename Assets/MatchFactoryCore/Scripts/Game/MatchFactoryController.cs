@@ -150,9 +150,9 @@ namespace MatchFactoryCore.Scripts.Game
             ItemFactory itemFactoryComp = newItemFactory.AddComponent<ItemFactory>();
             IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
             newItemFactory.transform.parent = holder.transform;
-            var newObject3D = Instantiate(itemFactoryComp.Prefab, Vector3.zero, Quaternion.identity);
-            var newObject2D = Instantiate(itemFactoryComp.Sprite, Vector3.zero, Quaternion.identity);
-            newObject3D.transform.parent = newObject3D.transform;
+            var newObject3D = Instantiate(so.prefab, Vector3.zero, Quaternion.identity);
+            var newObject2D = Instantiate(so.sprite, Vector3.zero, Quaternion.identity);
+            newObject3D.transform.parent = newItemFactory.transform;
             newObject2D.transform.parent = newItemFactory.transform;
             newObject2D.SetActive(false);
 

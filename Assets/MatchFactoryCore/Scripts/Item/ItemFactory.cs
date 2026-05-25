@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game;
@@ -31,6 +31,7 @@ namespace MatchFactoryCore.Scripts.Item
         public int CurrentIndex { get; set; }
 
         #endregion
+
         Sequence _jumpSequence;
 
         public void Initialize(int id, ItemFactoryType factoryType, GameObject prefab, GameObject sprite, float size)
@@ -79,18 +80,58 @@ namespace MatchFactoryCore.Scripts.Item
         #region Behaviour 2D Object
 
         Sequence _matchSequence;
-        private IItemFactory2D _itemFactory2DImplementation;
 
         public void MoveToBar(GameObject sprite, List<GameObject> slots, Camera mainCam, List<int> data2Ds, int type,
-            List<IItemFactory2D> allBarSprites)
+            List<IItemFactory2D> allBarSprites, out List<IItemFactory2D> movedSprites)
         {
+            movedSprites = new List<IItemFactory2D>();
             int maxSlot = MatchFactoryController.MaxSlot;
             if (data2Ds.Count >= maxSlot) return;
-            InsertData(data2Ds, type, maxSlot, allBarSprites, out var index, out _);
+            InsertData(data2Ds, type, maxSlot, allBarSprites, out var index, out movedSprites);
             var pos = slots[index].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
             sprite.transform.DOMove(worldPos, 0.5f);
         }
+
+        public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump)
+        {
+            var pos = slots[CurrentIndex].transform.position;
+            var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
+            sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
+        }
+
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs)
+        {
+            _matchSequence = DOTween.Sequence();
+
+            if (matchs.Count != 3) return;
+            var idx0 = ((ItemFactory)matchs[0]).CurrentIndex;
+            var idx1 = ((ItemFactory)matchs[1]).CurrentIndex;
+            var idx2 = ((ItemFactory)matchs[2]).CurrentIndex;
+            var pos0 = GetWorldPosition(itemSlots[idx0].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos1 = GetWorldPosition(itemSlots[idx1].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos2 = GetWorldPosition(itemSlots[idx2].transform.position, mainCam) + Vector3.forward - Vector3.up;
+
+            _matchSequence.Append(matchs[0].Sprite.transform.DOMove(pos0, 0.25f))
+                .Join(matchs[1].Sprite.transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].Sprite.transform.DOMove(pos2, 0.25f))
+                .Append(matchs[0].Sprite.transform.DOMove(pos1, 0.25f))
+                .Join(matchs[1].Sprite.transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].Sprite.transform.DOMove(pos1, 0.25f))
+                .OnComplete(() =>
+                {
+                    foreach (var item in matchs)
+                    {
+                        Destroy(((MonoBehaviour)item).gameObject);
+                    }
+                });
+        }
+
+        public void ChangeTo3D()
+        {
+        }
+
+        #endregion
 
         void InsertData(List<int> data2Ds, int type, int maxSlot, List<IItemFactory2D> allBarSprites, out int index,
             out List<IItemFactory2D> movedSprites)
@@ -132,47 +173,9 @@ namespace MatchFactoryCore.Scripts.Item
                     movedSprites.Add(itemFactory2D);
                 }
             }
+            
+            CurrentIndex = index;
         }
-
-        public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump)
-        {
-            var pos = slots[CurrentIndex].transform.position;
-            var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
-        }
-
-        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs)
-        {
-            _matchSequence = DOTween.Sequence();
-
-            if (matchs.Count != 3) return;
-            var idx0 = matchs[0].GetComponent<ItemFactory>().CurrentIndex;
-            var idx1 = matchs[1].GetComponent<ItemFactory>().CurrentIndex;
-            var idx2 = matchs[2].GetComponent<ItemFactory>().CurrentIndex;
-            var pos0 = GetWorldPosition(itemSlots[idx0].transform.position, mainCam) + Vector3.forward - Vector3.up;
-            var pos1 = GetWorldPosition(itemSlots[idx1].transform.position, mainCam) + Vector3.forward - Vector3.up;
-            var pos2 = GetWorldPosition(itemSlots[idx2].transform.position, mainCam) + Vector3.forward - Vector3.up;
-
-            _matchSequence.Append(matchs[0].transform.DOMove(pos0, 0.25f))
-                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
-                .Join(matchs[2].transform.DOMove(pos2, 0.25f))
-                .Append(matchs[0].transform.DOMove(pos1, 0.25f))
-                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
-                .Join(matchs[2].transform.DOMove(pos1, 0.25f))
-                .OnComplete(() =>
-                {
-                    foreach (var item in matchs)
-                    {
-                        Destroy(item);
-                    }
-                });
-        }
-
-        public void ChangeTo3D()
-        {
-        }
-
-        #endregion
 
         Vector3 GetWorldPosition(Vector3 screenPos, Camera mainCam)
         {

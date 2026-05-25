@@ -12,8 +12,8 @@ namespace MatchFactoryCore.Scripts.Input
             if (!raycast) return;
             if (hit.collider != null)
             {
-                Debug.Log(hit.collider.GetComponent<ItemFactory>().Id);
-                go = hit.collider.gameObject;
+                Debug.Log(hit.collider.transform.parent.GetComponent<ItemFactory>().Id);
+                go = hit.collider.transform.parent.gameObject;
             }
         }
     }

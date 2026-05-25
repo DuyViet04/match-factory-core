@@ -50,8 +50,12 @@ namespace MatchFactoryCore.Scripts.Game.State
 
                 // Move
                 itemFactory2D.MoveToBar(itemFactory2D.Sprite, _itemSlots, _mainCamera, _data2Ds,
-                    (int)itemFactory.FactoryType, _allBarSprites);
+                    (int)itemFactory.FactoryType, _allBarSprites, out var movedSprites);
                 _allBarSprites.Insert(itemFactory.CurrentIndex, itemFactory2D);
+                // foreach (var sprite in movedSprites)
+                // {
+                //     sprite.JumpOnBar(sprite.Sprite, _itemSlots, _mainCamera, 1);
+                // }
 
                 // Match
                 CheckMatch((int)itemFactory.FactoryType, _data2Ds, _allBarSprites, out var matchs, out var isMatch);
@@ -64,7 +68,7 @@ namespace MatchFactoryCore.Scripts.Game.State
                         var comp = _allBarSprites[i];
                         if (comp != null)
                         {
-                            comp.CurrentIndex = i;
+                            ((ItemFactory)comp).CurrentIndex = i;
                         }
                     }
                 }
@@ -74,9 +78,9 @@ namespace MatchFactoryCore.Scripts.Game.State
                 {
                     var item2D = _allBarSprites[i];
                     if (item2D == null) return;
-                    // if (item2D.LastIndex == item2D.CurrentIndex) continue;
-                    // var numJump = Mathf.Abs(item2D.CurrentIndex - item2D.LastIndex);
-                    // item2D.JumpOnBar(_allBarSprites[i], _itemSlots, _mainCamera, numJump);
+                    if (((ItemFactory)item2D).CurrentIndex == i) continue;
+                    var numJump = Mathf.Abs(((ItemFactory)item2D).CurrentIndex - i);
+                    item2D.JumpOnBar(_allBarSprites[i].Sprite, _itemSlots, _mainCamera, numJump);
                 }
 
                 // Win/Lose
@@ -155,7 +159,7 @@ namespace MatchFactoryCore.Scripts.Game.State
             return isWin;
         }
 
-        bool IsLose(float time, List<GameObject> allBarSprites, bool isMatch)
+        bool IsLose(float time, List<IItemFactory2D> allBarSprites, bool isMatch)
         {
             bool isLose = false;
             if (time <= 0)

@@ -8,7 +8,7 @@ namespace MatchFactoryCore.Scripts.Item
         public GameObject Sprite { get; set; }
 
         public void MoveToBar(GameObject sprite, List<GameObject> slots, Camera mainCam, List<int> data2Ds, int type,
-            List<IItemFactory2D> allBarSprites);
+            List<IItemFactory2D> allBarSprites, out List<IItemFactory2D> movedSprites);
 
         public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump);
         public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs);
