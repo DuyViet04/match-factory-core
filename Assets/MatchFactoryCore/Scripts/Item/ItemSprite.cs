@@ -7,8 +7,7 @@ namespace MatchFactoryCore.Scripts.Item
 {
     public class ItemSprite : MonoBehaviour, IItemFactory2D
     {
-        private Sequence _moveUpSequence;
-        private Sequence _mergedSequence;
+        private Sequence _matchSequence;
 
         #region 2D Object
 
@@ -84,25 +83,30 @@ namespace MatchFactoryCore.Scripts.Item
             sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
         }
 
-        public void Match(List<GameObject> matchs)
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<GameObject> matchs)
         {
-            _moveUpSequence = DOTween.Sequence();
-            _mergedSequence = DOTween.Sequence();
+            _matchSequence = DOTween.Sequence();
+
             if (matchs.Count != 3) return;
-            _moveUpSequence.Join(matchs[0].transform.DOMove(matchs[0].transform.position + Vector3.forward, 0.25f))
-                .Join(matchs[1].transform.DOMove(matchs[1].transform.position + Vector3.forward, 0.25f))
-                .Join(matchs[2].transform.DOMove(matchs[2].transform.position + Vector3.forward, 0.25f))
+            var idx0 = matchs[0].GetComponent<IItemFactory2D>().CurrentIndex;
+            var idx1 = matchs[1].GetComponent<IItemFactory2D>().CurrentIndex;
+            var idx2 = matchs[2].GetComponent<IItemFactory2D>().CurrentIndex;
+            var pos0 = GetWorldPosition(itemSlots[idx0].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos1 = GetWorldPosition(itemSlots[idx1].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            var pos2 = GetWorldPosition(itemSlots[idx2].transform.position, mainCam) + Vector3.forward - Vector3.up;
+
+            _matchSequence.Append(matchs[0].transform.DOMove(pos0, 0.25f))
+                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].transform.DOMove(pos2, 0.25f))
+                .Append(matchs[0].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[1].transform.DOMove(pos1, 0.25f))
+                .Join(matchs[2].transform.DOMove(pos1, 0.25f))
                 .OnComplete(() =>
                 {
-                    _mergedSequence.Join(matchs[0].transform.DOMove(matchs[1].transform.position, 0.25f))
-                        .Join(matchs[2].transform.DOMove(matchs[1].transform.position, 0.25f))
-                        .OnComplete(() =>
-                        {
-                            foreach (var item in matchs)
-                            {
-                                item.SetActive(false);
-                            }
-                        });
+                    foreach (var item in matchs)
+                    {
+                        Destroy(item);
+                    }
                 });
         }
 
@@ -111,5 +115,10 @@ namespace MatchFactoryCore.Scripts.Item
         }
 
         #endregion
+
+        Vector3 GetWorldPosition(Vector3 screenPos, Camera mainCam)
+        {
+            return mainCam.ScreenToWorldPoint(screenPos);
+        }
     }
 }

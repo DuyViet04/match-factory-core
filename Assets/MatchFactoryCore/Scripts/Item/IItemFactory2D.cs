@@ -13,7 +13,7 @@ namespace MatchFactoryCore.Scripts.Item
             List<GameObject> allBarSprites);
 
         public void JumpOnBar(GameObject sprite, List<GameObject> slots, Camera mainCam, int numJump);
-        public void Match(List<GameObject> matchs);
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<GameObject> matchs);
         public void ChangeTo3D();
     }
 }

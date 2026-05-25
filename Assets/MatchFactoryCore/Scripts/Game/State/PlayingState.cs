@@ -53,7 +53,7 @@ namespace MatchFactoryCore.Scripts.Game.State
                 CheckMatch((int)itemFactory.Type, _data2Ds, _allBarSprites, out var matchs, out var isMatch);
                 if (isMatch)
                 {
-                    itemFactory2D.Match(matchs);
+                    itemFactory2D.Match(_itemSlots, _mainCamera, matchs);
 
                     for (int i = 0; i < _allBarSprites.Count; i++)
                     {
@@ -65,7 +65,6 @@ namespace MatchFactoryCore.Scripts.Game.State
                     }
                 }
 
-                // TODO: Jump
                 // Jump: tất cả sprites bị dịch chuyển
                 for (int i = _allBarSprites.Count - 1; i >= 0; i--)
                 {
