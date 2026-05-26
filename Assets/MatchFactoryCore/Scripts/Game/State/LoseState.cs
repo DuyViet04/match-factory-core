@@ -5,7 +5,7 @@ namespace MatchFactoryCore.Scripts.Game.State
 {
     public class LoseState : BaseState
     {
-        public LoseState(MatchFactoryController controller, StateMachine<MatchFactoryState> stateMachine) : base(
+        public LoseState(ControllerMatchFactory controller, StateMachine<MatchFactoryState> stateMachine) : base(
             controller, stateMachine)
         {
         }

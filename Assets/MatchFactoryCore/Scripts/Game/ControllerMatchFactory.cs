@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game.State;
-using MatchFactoryCore.Scripts.Input;
 using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
@@ -21,10 +20,15 @@ namespace MatchFactoryCore.Scripts.Game
     }
 
     [DefaultExecutionOrder(-100)]
-    public class MatchFactoryController : MonoBehaviour
+    public class ControllerMatchFactory : MonoBehaviour
     {
-        [SerializeField] private MatchFactoryInput input;
-        [Header("Data")] [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
+        [Header("References")] [SerializeField]
+        private ControllerItemFactory3D controllerItemFactory3D;
+
+        public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
+
+        [SerializeField] private ControllerCollectionBar controllerCollectionBar;
+        [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
         [SerializeField] private GameObject holder;
         [SerializeField] private List<GameObject> itemSlots = new List<GameObject>();
@@ -34,19 +38,31 @@ namespace MatchFactoryCore.Scripts.Game
         public float maxX, maxZ;
 
         public static readonly int MaxSlot = 7;
-        public MatchFactoryInput Input => input;
         public List<GameObject> ItemSlots => itemSlots;
-        public event Action<int> OnClickTarget;
+        public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
         public float TimeLevel { get; private set; }
 
         private StateMachine<MatchFactoryState> _stateMachine;
-        private readonly List<Rigidbody> _itemsRigidbody = new List<Rigidbody>();
-        public Dictionary<ItemFactoryType, int> TargetDictionary => _targetDictionary;
         private readonly Dictionary<ItemFactoryType, int> _targetDictionary = new();
+        private readonly List<Rigidbody> _itemsRigidbody = new List<Rigidbody>();
+        private readonly Dictionary<int, ItemFactory> _dictItemFactory = new Dictionary<int, ItemFactory>();
 
         // Cache
-        private Vector3 _randomSpawnPoint;
+        Vector3 _randomSpawnPoint;
+        int _id;
+
+        private void OnEnable()
+        {
+            controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
+            controllerItemFactory3D.OnJumpOnBoardComplete += SpawnItemFactory2D;
+        }
+
+        private void OnDisable()
+        {
+            controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
+            controllerItemFactory3D.OnJumpOnBoardComplete -= SpawnItemFactory2D;
+        }
 
         private void Awake()
         {
@@ -59,7 +75,7 @@ namespace MatchFactoryCore.Scripts.Game
             _stateMachine.UpdateState();
         }
 
-        #region Initialize
+        #region InitializeItemFactory3D
 
         void InitializeState()
         {
@@ -79,6 +95,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void InitializeLevel(int level, Action onReady)
         {
+            OnLevelTargetChanged?.Invoke(_targetDictionary);
             var dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
             TimeLevel = dataLevel.TimeLevel;
             var levelTarget = dataLevel.DictLevelTarget;
@@ -148,42 +165,38 @@ namespace MatchFactoryCore.Scripts.Game
                 return;
             }
 
-            var newItemFactory = new GameObject("ItemFactory");
-            newItemFactory.transform.parent = holder.transform;
-            newItemFactory.transform.SetPositionAndRotation(GetRandomSpawnPoint(), Quaternion.identity);
-            ItemFactory itemFactoryComp = newItemFactory.AddComponent<ItemFactory>();
-            var newObject3D = Instantiate(so.prefab, so.prefab.transform.position, so.prefab.transform.rotation);
-            var newObject2D = Instantiate(so.sprite, so.sprite.transform.position, so.sprite.transform.rotation);
-            newObject3D.transform.parent = newItemFactory.transform;
-            newObject2D.transform.parent = newItemFactory.transform;
-            newObject3D.transform.localPosition = Vector3.zero;
-            newObject2D.transform.localPosition = Vector3.zero;
-            newObject2D.SetActive(false);
+            var newItemFactory3D = Instantiate(so.prefab, GetRandomSpawnPoint(), Quaternion.identity);
+            newItemFactory3D.transform.parent = holder.transform;
+            ItemFactory itemFactoryComp = newItemFactory3D.AddComponent<ItemFactory>();
 
-            var outline = newObject3D.AddComponent<Outline>();
+            var outline = newItemFactory3D.AddComponent<Outline>();
             outline.OutlineMode = Outline.Mode.OutlineAll;
             outline.OutlineColor = Color.yellow;
             outline.OutlineWidth = 5;
             outline.enabled = false;
 
-            InitContext initContext = new InitContext()
+            InitItemFactory3DContext initItemFactory3DContext = new InitItemFactory3DContext()
             {
                 Id = (int)itemFactoryType + index,
                 FactoryType = itemFactoryType,
-                Prefab = newObject3D,
-                Sprite = newObject2D,
+                Prefab = newItemFactory3D,
+                Sprite = so.sprite,
                 Size = so.prefabSize,
                 PrefabScale = so.prefabScale,
                 PrefabBaseRotation = so.prefab.transform.rotation.eulerAngles,
                 SpriteScaleOnBar = so.spriteScaleOnBar,
                 SpriteScaleWhenChange = so.spriteScaleWhenChange
             };
-            // Debug.Log(
-            //     $"{initContext.Id} {initContext.PrefabScale} {initContext.SpriteScaleOnBar} {initContext.SpriteScaleWhenChange}");
-            itemFactoryComp.Initialize(initContext);
-
+            itemFactoryComp.Initialize(initItemFactory3DContext);
+            _dictItemFactory.TryAdd(initItemFactory3DContext.Id, itemFactoryComp);
             IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
             _itemsRigidbody.Add(itemFactory3D.RigidbodyObject);
+        }
+
+        private void SpawnItemFactory2D(Vector3 spawnPoint)
+        {
+            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(_id), spawnPoint,
+                rectTransform => { _dictItemFactory[_id].SpriteTransform = rectTransform; });
         }
 
         Vector3 GetRandomSpawnPoint()
@@ -196,16 +209,37 @@ namespace MatchFactoryCore.Scripts.Game
             return _randomSpawnPoint;
         }
 
-        public void ClickTarget(int currentTarget)
-        {
-            OnClickTarget?.Invoke(currentTarget);
-        }
-
         #endregion
 
-        public void ActiveInput(bool enable)
+        private void CheckLevelTarget(int id)
         {
-            input.gameObject.SetActive(enable);
+            _id = id;
+            _dictItemFactory.TryGetValue(id, out var itemFactory);
+            if (itemFactory == null) return;
+            _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out var remainTarget);
+            if (remainTarget > 0)
+            {
+                _targetDictionary[itemFactory.ItemFactoryType]--;
+                if (IsWin())
+                {
+                    _stateMachine.ChangeState(MatchFactoryState.Win);
+                }
+            }
+        }
+
+        bool IsWin()
+        {
+            bool isWin = true;
+            foreach (var item in _targetDictionary)
+            {
+                if (item.Value != 0)
+                {
+                    isWin = false;
+                    break;
+                }
+            }
+
+            return isWin;
         }
 
         public void UpdateTimeLevel()
@@ -213,6 +247,13 @@ namespace MatchFactoryCore.Scripts.Game
             TimeLevel -= Time.deltaTime;
             if (TimeLevel <= 0) TimeLevel = 0;
             OnTimeLevelChanged?.Invoke(TimeLevel);
+        }
+
+        private IItemFactory2D GetItemFactory2DById(int id)
+        {
+            _dictItemFactory.TryGetValue(id, out var itemFactory);
+            if (itemFactory == null) return null;
+            return (IItemFactory2D)itemFactory;
         }
     }
 }

@@ -4,10 +4,10 @@ namespace MatchFactoryCore.Scripts.Game.State
 {
     public abstract class BaseState : IState
     {
-        protected readonly MatchFactoryController Controller;
+        protected readonly ControllerMatchFactory Controller;
         protected readonly StateMachine<MatchFactoryState> StateMachine;
 
-        protected BaseState(MatchFactoryController controller, StateMachine<MatchFactoryState> stateMachine)
+        protected BaseState(ControllerMatchFactory controller, StateMachine<MatchFactoryState> stateMachine)
         {
             Controller = controller;
             StateMachine = stateMachine;

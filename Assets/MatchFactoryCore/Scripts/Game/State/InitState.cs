@@ -5,7 +5,7 @@ namespace MatchFactoryCore.Scripts.Game.State
 {
     public class InitState : BaseState
     {
-        public InitState(MatchFactoryController controller, StateMachine<MatchFactoryState> stateMachine) : base(
+        public InitState(ControllerMatchFactory controller, StateMachine<MatchFactoryState> stateMachine) : base(
             controller, stateMachine)
         {
         }
@@ -13,7 +13,6 @@ namespace MatchFactoryCore.Scripts.Game.State
         public override void OnEnter()
         {
             Debug.Log("Enter Init State");
-            Controller.ActiveInput(false);
             Controller.InitializeLevel(1, () => StateMachine.ChangeState(MatchFactoryState.Playing));
         }
     }

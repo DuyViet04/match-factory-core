@@ -12,8 +12,8 @@ namespace MatchFactoryCore.Scripts.Item
         public float Weight { get; set; }
         public float PrefabScale { get; set; }
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete);
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null);
         public void OnExplode();
-        public void ChangeTo2D(Action onComplete);
+        public void ChangeTo2D(Action onComplete = null);
     }
 }

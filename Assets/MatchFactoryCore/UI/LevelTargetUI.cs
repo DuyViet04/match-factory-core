@@ -8,35 +8,23 @@ namespace MatchFactoryCore.UI
 {
     public class LevelTargetUI : MonoBehaviour
     {
-        [SerializeField] private MatchFactoryController controller;
+        [SerializeField] private ControllerMatchFactory controller;
         [SerializeField] private Text levelTargetText;
-        
-        private Dictionary<ItemFactoryType, int> _targetDict;
 
         private void OnEnable()
         {
-            controller.OnClickTarget += UpdateTargetText;
+            controller.OnLevelTargetChanged += UpdateTargetText;
         }
 
         private void OnDisable()
         {
-            controller.OnClickTarget -= UpdateTargetText;
+            controller.OnLevelTargetChanged -= UpdateTargetText;
         }
 
-        private void Awake()
-        {
-            _targetDict = controller.TargetDictionary;
-            levelTargetText.text = "";
-            foreach (var item in _targetDict)
-            {
-                levelTargetText.text += $"{item.Key}: {item.Value}\n";
-            }
-        }
-
-        void UpdateTargetText(int currentTarget)
+        void UpdateTargetText(Dictionary<ItemFactoryType, int> targetDict)
         {
             levelTargetText.text = "";
-            foreach (var item in _targetDict)
+            foreach (var item in targetDict)
             {
                 levelTargetText.text += $"{item.Key}: {item.Value}\n";
             }

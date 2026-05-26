@@ -13,7 +13,7 @@ namespace MatchFactoryCore.Scripts.Data
         public float prefabSize;
         public float prefabScale;
 
-        [Header("2D")] public GameObject sprite;
+        [Header("2D")] public Sprite sprite;
         public float spriteScaleOnBar;
         public float spriteScaleWhenChange;
 

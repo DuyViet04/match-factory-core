@@ -20,7 +20,7 @@ MonoBehaviour:
       prefab: {fileID: 3318171947369936171, guid: a9685c084d308844b9796de88e372e9b, type: 3}
       prefabSize: 0.5
       prefabScale: 1.25
-      sprite: {fileID: 569967418994709282, guid: 5aa554046ab366d4b93267210447dda7, type: 3}
+      sprite: {fileID: 7482667652216324306, guid: 68732b7946540954cbdc597138f9bebf, type: 3}
       spriteScaleOnBar: 0.75
       spriteScaleWhenChange: 1.25
     - itemFactoryType: 2000
@@ -28,7 +28,7 @@ MonoBehaviour:
       prefab: {fileID: 4353221925112164047, guid: 82c6a8bb236bb404bb990d3206a5982c, type: 3}
       prefabSize: 0.75
       prefabScale: 1.25
-      sprite: {fileID: 2248168182980922577, guid: 28dc8af0fbf5f9540befbcd43fa7738f, type: 3}
+      sprite: {fileID: -2413806693520163455, guid: 9a16fdbacc5cab1439d5e89d5aacf69d, type: 3}
       spriteScaleOnBar: 0.75
       spriteScaleWhenChange: 1.25
     - itemFactoryType: 3000
@@ -36,7 +36,7 @@ MonoBehaviour:
       prefab: {fileID: 8759355540298818192, guid: 4a1284624b1a5d84cb48632d1d1e1d9a, type: 3}
       prefabSize: 1
       prefabScale: 1.25
-      sprite: {fileID: 5933057975169064700, guid: cbbffc5249eb1bd4f9404b7b83bd2148, type: 3}
+      sprite: {fileID: -9095717837082945937, guid: 1c8e5ad8e876c10498f7d418a3359e95, type: 3}
       spriteScaleOnBar: 0.5
       spriteScaleWhenChange: 1.25
     - itemFactoryType: 4000
@@ -44,6 +44,6 @@ MonoBehaviour:
       prefab: {fileID: 3983479197524667178, guid: 0caeb6b6219d4e74aae2a5e200a9b9bb, type: 3}
       prefabSize: 1.25
       prefabScale: 1.25
-      sprite: {fileID: 8201875445279409267, guid: fd1a62fb43121b24b86d0b47a83ec3c3, type: 3}
+      sprite: {fileID: 7482667652216324306, guid: 78f116189c00be04685c8b619c018f5a, type: 3}
       spriteScaleOnBar: 0.5
       spriteScaleWhenChange: 1.25

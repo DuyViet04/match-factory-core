@@ -6,7 +6,7 @@ namespace MatchFactoryCore.UI
 {
     public class TimeLevelUI : MonoBehaviour
     {
-        [SerializeField] private MatchFactoryController controller;
+        [SerializeField] private ControllerMatchFactory controller;
         [SerializeField] private Text timeLevelText;
 
         // Cache
