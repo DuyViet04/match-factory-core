@@ -84,6 +84,8 @@ namespace MatchFactoryCore.Scripts.Game
             var levelTarget = dataLevel.DictLevelTarget;
             var otherObjInLevel = dataLevel.DictOtherObjectInLevel;
 
+            _itemsRigidbody.Clear();
+
             // Spawn item cần thu thập
             foreach (var item in levelTarget)
             {
@@ -115,8 +117,11 @@ namespace MatchFactoryCore.Scripts.Game
                 var isReady = true;
                 foreach (var rigid in _itemsRigidbody)
                 {
-                    if (!rigid.IsSleeping()) isReady = false;
-                    break;
+                    if (!rigid.IsSleeping())
+                    {
+                        isReady = false;
+                        break;
+                    }
                 }
 
                 if (isReady)
@@ -136,7 +141,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         void Spawn(ItemFactoryType itemFactoryType, int index)
         {
-            _itemsRigidbody.Clear();
             infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory.TryGetValue(itemFactoryType, out var so);
             if (so == null)
             {
@@ -155,6 +159,12 @@ namespace MatchFactoryCore.Scripts.Game
             newObject3D.transform.localPosition = Vector3.zero;
             newObject2D.transform.localPosition = Vector3.zero;
             newObject2D.SetActive(false);
+
+            var outline = newObject3D.AddComponent<Outline>();
+            outline.OutlineMode = Outline.Mode.OutlineAll;
+            outline.OutlineColor = Color.yellow;
+            outline.OutlineWidth = 5;
+            outline.enabled = false;
 
             InitContext initContext = new InitContext()
             {

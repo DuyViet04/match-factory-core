@@ -124,7 +124,7 @@ namespace MatchFactoryCore.Scripts.Item
             Sprite.SetActive(true);
             Sprite.transform.position = Prefab.transform.position;
             Sprite.transform.localScale = _baseSpriteScale * SpriteScaleWhenChange;
-            Debug.Log(_baseSpriteScale);
+            // Debug.Log(_baseSpriteScale);
             onComplete?.Invoke();
         }
 
@@ -134,28 +134,33 @@ namespace MatchFactoryCore.Scripts.Item
 
         Vector3 _baseSpriteScale;
         Sequence _moveToBarSequence;
+        Sequence _jumpOnBarSequence;
         Sequence _matchSequence;
 
-        public void MoveToBar(List<GameObject> slots, Camera mainCam, List<int> data2Ds)
+        public void MoveToBar(List<GameObject> slots, Camera mainCam, int targetIndex, Action onComplete = null)
         {
+            _moveToBarSequence?.Kill();
             _moveToBarSequence = DOTween.Sequence();
-            int maxSlot = MatchFactoryController.MaxSlot;
-            if (data2Ds.Count >= maxSlot) return;
-            InsertData(data2Ds, (int)FactoryType, maxSlot, out var index);
-            var pos = slots[index].transform.position;
+            var pos = slots[targetIndex].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            _moveToBarSequence.Join(Sprite.transform.DOMove(worldPos, 0.75f));
-            _moveToBarSequence.Join(Sprite.transform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.75f));
+            _moveToBarSequence
+                .Join(Sprite.transform.DOMove(worldPos, 0.25f))
+                .Join(Sprite.transform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.25f))
+                .OnComplete(() => onComplete?.Invoke());
         }
 
-        public void JumpOnBar(List<GameObject> slots, Camera mainCam, int numJump)
+        public void JumpOnBar(List<GameObject> slotsPosition, Camera mainCam, int numJump, Action onComplete = null)
         {
-            var pos = slots[CurrentIndex].transform.position;
+            _jumpOnBarSequence?.Kill();
+            _jumpOnBarSequence = DOTween.Sequence();
+            var pos = slotsPosition[CurrentIndex].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            Sprite.transform.DOJump(worldPos, 1, numJump, 0.5f);
+            _jumpOnBarSequence
+                .Join(Sprite.transform.DOJump(worldPos, 1, numJump, 0.5f))
+                .OnComplete(() => onComplete?.Invoke());
         }
 
-        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs)
+        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs, Action onMatched)
         {
             _matchSequence = DOTween.Sequence();
 
@@ -178,6 +183,8 @@ namespace MatchFactoryCore.Scripts.Item
                     foreach (var item in matchs)
                     {
                         Destroy(((MonoBehaviour)item).gameObject);
+                        Debug.Log(((MonoBehaviour)item).gameObject.name);
+                        onMatched?.Invoke();
                     }
                 });
         }
@@ -188,39 +195,6 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
-        void InsertData(List<int> data2Ds, int type, int maxSlot, out int index)
-        {
-            index = -1;
-
-            if (data2Ds.Count == 0)
-            {
-                data2Ds.Add(type);
-                index = 0;
-                CurrentIndex = index;
-                return;
-            }
-
-            bool isInsert = false;
-            for (int i = data2Ds.Count - 1; i >= 0; i--)
-            {
-                if (data2Ds.Count >= maxSlot) break;
-                if (data2Ds[i] == type)
-                {
-                    data2Ds.Insert(i + 1, type);
-                    index = i + 1;
-                    isInsert = true;
-                    break;
-                }
-            }
-
-            if (!isInsert)
-            {
-                data2Ds.Add(type);
-                index = data2Ds.Count - 1;
-            }
-
-            CurrentIndex = index;
-        }
 
         Vector3 GetWorldPosition(Vector3 screenPos, Camera mainCam)
         {
