@@ -156,8 +156,21 @@ namespace MatchFactoryCore.Scripts.Game
             newObject2D.transform.localPosition = Vector3.zero;
             newObject2D.SetActive(false);
 
-            itemFactoryComp.Initialize((int)itemFactoryType + index, itemFactoryType, newObject3D, newObject2D,
-                so.size);
+            InitContext initContext = new InitContext()
+            {
+                Id = (int)itemFactoryType + index,
+                FactoryType = itemFactoryType,
+                Prefab = newObject3D,
+                Sprite = newObject2D,
+                Size = so.prefabSize,
+                PrefabScale = so.prefabScale,
+                PrefabBaseRotation = so.prefab.transform.rotation.eulerAngles,
+                SpriteScaleOnBar = so.spriteScaleOnBar,
+                SpriteScaleWhenChange = so.spriteScaleWhenChange
+            };
+            // Debug.Log(
+            //     $"{initContext.Id} {initContext.PrefabScale} {initContext.SpriteScaleOnBar} {initContext.SpriteScaleWhenChange}");
+            itemFactoryComp.Initialize(initContext);
 
             IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
             _itemsRigidbody.Add(itemFactory3D.RigidbodyObject);

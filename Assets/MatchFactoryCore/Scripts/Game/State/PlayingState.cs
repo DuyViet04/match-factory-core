@@ -128,14 +128,20 @@ namespace MatchFactoryCore.Scripts.Game.State
 
         private void HandleObject3D(IItemFactory3D itemFactory3D)
         {
-            itemFactory3D.JumpFromBoard(itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1));
-            itemFactory3D.ChangeTo2D();
+            itemFactory3D.JumpFromBoard(itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1),
+                () =>
+                {
+                    itemFactory3D.ChangeTo2D(() =>
+                    {
+                        ((IItemFactory2D)itemFactory3D).MoveToBar(_itemSlots, _mainCamera, _data2Ds);
+                    });
+                });
         }
 
         private void HandleObject2D(IItemFactory2D itemFactory2D)
         {
             // Move
-            itemFactory2D.MoveToBar(_itemSlots, _mainCamera, _data2Ds);
+            // itemFactory2D.MoveToBar(_itemSlots, _mainCamera, _data2Ds);
             _allBarSprites.Insert(((ItemFactory)itemFactory2D).CurrentIndex, itemFactory2D);
 
             // Match

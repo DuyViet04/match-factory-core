@@ -6,6 +6,8 @@ namespace MatchFactoryCore.Scripts.Item
     public interface IItemFactory2D
     {
         public GameObject Sprite { get; set; }
+        public float SpriteScaleOnBar { get; set; }
+        public float SpriteScaleWhenChange { get; set; }
 
         public void MoveToBar(List<GameObject> slots, Camera mainCam, List<int> data2Ds);
 

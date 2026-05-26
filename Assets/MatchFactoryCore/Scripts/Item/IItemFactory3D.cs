@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
@@ -9,9 +10,10 @@ namespace MatchFactoryCore.Scripts.Item
         public GameObject Prefab { get; set; }
         public float Size { get; set; }
         public float Weight { get; set; }
+        public float PrefabScale { get; set; }
 
-        public void JumpFromBoard(Vector3 toTarget);
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete);
         public void OnExplode();
-        public void ChangeTo2D();
+        public void ChangeTo2D(Action onComplete);
     }
 }

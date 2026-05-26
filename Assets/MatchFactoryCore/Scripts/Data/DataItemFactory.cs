@@ -10,9 +10,12 @@ namespace MatchFactoryCore.Scripts.Data
         public ItemFactoryCollectionType itemFactoryCollectionType;
 
         [Header("3D")] public GameObject prefab;
-        public float size;
+        public float prefabSize;
+        public float prefabScale;
 
         [Header("2D")] public GameObject sprite;
+        public float spriteScaleOnBar;
+        public float spriteScaleWhenChange;
 
         public DataItemFactory()
         {
@@ -23,8 +26,11 @@ namespace MatchFactoryCore.Scripts.Data
             itemFactoryType = source.itemFactoryType;
             itemFactoryCollectionType = source.itemFactoryCollectionType;
             prefab = source.prefab;
-            size = source.size;
+            prefabSize = source.prefabSize;
             sprite = source.sprite;
+            prefabScale = source.prefabScale;
+            spriteScaleOnBar = source.spriteScaleOnBar;
+            spriteScaleWhenChange = source.spriteScaleWhenChange;
         }
     }
 }

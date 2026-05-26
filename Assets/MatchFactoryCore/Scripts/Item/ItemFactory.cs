@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
@@ -6,6 +7,19 @@ using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
 {
+    public struct InitContext
+    {
+        public int Id;
+        public ItemFactoryType FactoryType;
+        public GameObject Prefab;
+        public GameObject Sprite;
+        public float Size;
+        public float PrefabScale;
+        public Vector3 PrefabBaseRotation;
+        public float SpriteScaleOnBar;
+        public float SpriteScaleWhenChange;
+    }
+
     public class ItemFactory : ItemEntity, IItemFactory3D, IItemFactory2D
     {
         #region Entity
@@ -22,19 +36,49 @@ namespace MatchFactoryCore.Scripts.Item
         public GameObject Prefab { get; set; }
         public float Size { get; set; }
         public float Weight { get; set; }
+        public float PrefabScale { get; set; }
+        public Vector3 PrefabBaseRotation { get; set; }
 
         #endregion
 
         #region Data 2D Object
 
         public GameObject Sprite { get; set; }
+        public float SpriteScaleOnBar { get; set; }
+        public float SpriteScaleWhenChange { get; set; }
         public int CurrentIndex { get; set; }
 
         #endregion
 
         Sequence _jumpSequence;
 
-        public void Initialize(int id, ItemFactoryType factoryType, GameObject prefab, GameObject sprite, float size)
+        public void Initialize(InitContext context)
+        {
+            Id = context.Id;
+            FactoryType = context.FactoryType;
+            Prefab = context.Prefab;
+            Sprite = context.Sprite;
+            Size = context.Size;
+            PrefabScale = context.PrefabScale;
+            PrefabBaseRotation = context.PrefabBaseRotation;
+            SpriteScaleOnBar = context.SpriteScaleOnBar;
+            SpriteScaleWhenChange = context.SpriteScaleWhenChange;
+            RigidbodyObject = Prefab.GetComponent<Rigidbody>();
+            ColliderObject = Prefab.GetComponent<Collider>();
+            if (RigidbodyObject != null && ColliderObject != null)
+            {
+                var b = ColliderObject.bounds;
+                var volume = b.size.x * b.size.y * b.size.z;
+                RigidbodyObject.mass = volume * Size;
+                Weight = RigidbodyObject.mass;
+            }
+
+            _basePrefabScale = Prefab.transform.localScale;
+            _baseSpriteScale = Sprite.transform.localScale;
+            // Debug.Log($"{Id} {FactoryType} {PrefabScale}");
+        }
+
+        /* public void Initialize(int id, ItemFactoryType factoryType, GameObject prefab, GameObject sprite, float size)
         {
             Id = id;
             FactoryType = factoryType;
@@ -51,45 +95,57 @@ namespace MatchFactoryCore.Scripts.Item
                 Weight = RigidbodyObject.mass;
             }
             // Debug.Log($"{id}: {Prefab.name} {Sprite.name} {Size} {Weight}");
-        }
+        } */
 
 
         #region Behaviour 3D Object
 
-        public void JumpFromBoard(Vector3 toTarget)
+        Vector3 _basePrefabScale;
+
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete)
         {
             Debug.Log("JumpFromBoard");
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Join(Prefab.transform.DOJump(toTarget, 1, 1, 0.25f));
-            _jumpSequence.Join(Prefab.transform.DORotate(Prefab.transform.rotation.eulerAngles, 0.25f));
+            _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * PrefabScale, 0.25f));
+            _jumpSequence.Join(Prefab.transform.DORotate(PrefabBaseRotation, 0.25f));
+            // Debug.Log(PrefabBaseRotation);
+            _jumpSequence.OnComplete(() => onComplete?.Invoke());
         }
 
         public void OnExplode()
         {
         }
 
-        public void ChangeTo2D()
+        public void ChangeTo2D(Action onComplete)
         {
             Debug.Log("ChangeTo2D");
             Prefab.SetActive(false);
             Sprite.SetActive(true);
             Sprite.transform.position = Prefab.transform.position;
+            Sprite.transform.localScale = _baseSpriteScale * SpriteScaleWhenChange;
+            Debug.Log(_baseSpriteScale);
+            onComplete?.Invoke();
         }
 
         #endregion
 
         #region Behaviour 2D Object
 
+        Vector3 _baseSpriteScale;
+        Sequence _moveToBarSequence;
         Sequence _matchSequence;
 
         public void MoveToBar(List<GameObject> slots, Camera mainCam, List<int> data2Ds)
         {
+            _moveToBarSequence = DOTween.Sequence();
             int maxSlot = MatchFactoryController.MaxSlot;
             if (data2Ds.Count >= maxSlot) return;
             InsertData(data2Ds, (int)FactoryType, maxSlot, out var index);
             var pos = slots[index].transform.position;
             var worldPos = mainCam.ScreenToWorldPoint(pos) - new Vector3(0, 1, 0);
-            Sprite.transform.DOMove(worldPos, 0.5f);
+            _moveToBarSequence.Join(Sprite.transform.DOMove(worldPos, 0.75f));
+            _moveToBarSequence.Join(Sprite.transform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.75f));
         }
 
         public void JumpOnBar(List<GameObject> slots, Camera mainCam, int numJump)
