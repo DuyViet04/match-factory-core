@@ -46,7 +46,6 @@ namespace MatchFactoryCore.Scripts.Item
         public ItemFactoryType ItemFactoryType { get; set; }
         public float SpriteScaleOnBar { get; set; }
         public float SpriteScaleWhenChange { get; set; }
-        public int CurrentIndex { get; set; }
 
         #endregion
 
@@ -121,43 +120,60 @@ namespace MatchFactoryCore.Scripts.Item
                 .OnComplete(() => onComplete?.Invoke());
         }
 
-        public void JumpOnBar(List<RectTransform> collectionBarSlots, int numJump, Action onComplete = null)
+        public void JumpOnBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null)
         {
             _jumpOnBarSequence?.Kill();
             _jumpOnBarSequence = DOTween.Sequence();
-            var targetPos = collectionBarSlots[CurrentIndex].position;
+            var targetPos = collectionBarSlots[targetIndex].position;
             _jumpOnBarSequence
-                .Join(SpriteTransform.DOJump(targetPos, 1, numJump, 0.5f))
+                .Join(SpriteTransform.DOJump(targetPos, 100, 1, 0.5f))
                 .OnComplete(() => onComplete?.Invoke());
         }
 
-        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs, Action onMatched)
+        public void Match(List<RectTransform> collectionBarSlots, List<(int, IItemFactory2D)> dictMatchs,
+            Action onMatched)
         {
             _matchSequence = DOTween.Sequence();
 
-            if (matchs.Count != 3) return;
-            var idx0 = ((ItemFactory)matchs[0]).CurrentIndex;
-            var idx1 = ((ItemFactory)matchs[1]).CurrentIndex;
-            var idx2 = ((ItemFactory)matchs[2]).CurrentIndex;
-            var pos0 = GetWorldPosition(itemSlots[idx0].transform.position, mainCam) + Vector3.forward - Vector3.up;
-            var pos1 = GetWorldPosition(itemSlots[idx1].transform.position, mainCam) + Vector3.forward - Vector3.up;
-            var pos2 = GetWorldPosition(itemSlots[idx2].transform.position, mainCam) + Vector3.forward - Vector3.up;
+            if (dictMatchs.Count != 3) return;
 
-            // _matchSequence.Append(matchs[0].Sprite.transform.DOMove(pos0, 0.25f))
-            //     .Join(matchs[1].Sprite.transform.DOMove(pos1, 0.25f))
-            //     .Join(matchs[2].Sprite.transform.DOMove(pos2, 0.25f))
-            //     .Append(matchs[0].Sprite.transform.DOMove(pos1, 0.25f))
-            //     .Join(matchs[1].Sprite.transform.DOMove(pos1, 0.25f))
-            //     .Join(matchs[2].Sprite.transform.DOMove(pos1, 0.25f))
-            //     .OnComplete(() =>
-            //     {
-            //         foreach (var item in matchs)
-            //         {
-            //             Destroy(((MonoBehaviour)item).gameObject);
-            //             Debug.Log(((MonoBehaviour)item).gameObject.name);
-            //             onMatched?.Invoke();
-            //         }
-            //     });
+            var collectionBarIndex1 = dictMatchs[0].Item1;
+            var collectionBarIndex2 = dictMatchs[1].Item1;
+            var collectionBarIndex3 = dictMatchs[2].Item1;
+            var sprite1 = (ItemFactory)dictMatchs[0].Item2;
+            var sprite2 = (ItemFactory)dictMatchs[1].Item2;
+            var sprite3 = (ItemFactory)dictMatchs[2].Item2;
+
+            var matchHigh = 100;
+            var matchPos1 = collectionBarSlots[collectionBarIndex1].position + new Vector3(0, matchHigh, 0);
+            var matchPos2 = collectionBarSlots[collectionBarIndex2].position + new Vector3(0, matchHigh, 0);
+            var matchPos3 = collectionBarSlots[collectionBarIndex3].position + new Vector3(0, matchHigh, 0);
+
+            _matchSequence.Append(sprite1.SpriteTransform.DOMove(matchPos1, 0.25f).SetEase(Ease.InBack))
+                .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
+                .Join(sprite3.SpriteTransform.DOMove(matchPos3, 0.25f).SetEase(Ease.InBack))
+                .Append(sprite1.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
+                .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
+                .Join(sprite3.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
+                .OnComplete(() => onMatched?.Invoke());
+        }
+
+        public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int targetFinalIndex,
+            Action onComplete = null)
+        {
+            _jumpOnBarSequence?.Kill();
+            _jumpOnBarSequence = DOTween.Sequence();
+
+            var timePerStep = 0.5f / 3;
+            var startIndex = targetFinalIndex + 3 - 1;
+            for (int step = startIndex; step >= targetFinalIndex; step--)
+            {
+                var capturedIndex = step;
+                var targetPos = collectionBarSlots[capturedIndex].position;
+                _jumpOnBarSequence.Append(SpriteTransform.DOJump(targetPos, 100, 1, timePerStep));
+            }
+
+            _jumpOnBarSequence.OnComplete(() => onComplete?.Invoke());
         }
 
         public void ChangeTo3D()

@@ -17,8 +17,10 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void JumpOnBar(List<RectTransform> collectionBarSlots, int numJump, Action onComplete = null);
 
-        public void Match(List<GameObject> itemSlots, Camera mainCam, List<IItemFactory2D> matchs,
+        public void Match(List<RectTransform> collectionBarSlots, List<(int, IItemFactory2D)> dictMatchs,
             Action onMatched = null);
+
+        public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int numJump, Action onComplete = null);
 
         public void ChangeTo3D();
     }

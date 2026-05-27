@@ -7,6 +7,7 @@ namespace MatchFactoryCore.Scripts.Data
     public class DataLevelMatchFactory
     {
         public float TimeLevel;
+
         public SerializableDictionary<ItemFactoryType, int> DictLevelTarget =
             new SerializableDictionary<ItemFactoryType, int>();
 

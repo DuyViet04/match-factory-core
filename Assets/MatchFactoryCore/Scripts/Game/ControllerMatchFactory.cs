@@ -37,7 +37,7 @@ namespace MatchFactoryCore.Scripts.Game
         public float spawnInHighValue;
         public float maxX, maxZ;
 
-        public static readonly int MaxSlot = 7;
+        private const int MaxSlot = 7;
         public List<GameObject> ItemSlots => itemSlots;
         public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
@@ -56,12 +56,16 @@ namespace MatchFactoryCore.Scripts.Game
         {
             controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
             controllerItemFactory3D.OnJumpOnBoardComplete += SpawnItemFactory2D;
+            controllerCollectionBar.OnItemMatched += RemoveItemFactory;
+            controllerCollectionBar.OnInsertItemCompleted += CheckLose;
         }
 
         private void OnDisable()
         {
             controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
             controllerItemFactory3D.OnJumpOnBoardComplete -= SpawnItemFactory2D;
+            controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
+            controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
         }
 
         private void Awake()
@@ -95,7 +99,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void InitializeLevel(int level, Action onReady)
         {
-            OnLevelTargetChanged?.Invoke(_targetDictionary);
             var dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
             TimeLevel = dataLevel.TimeLevel;
             var levelTarget = dataLevel.DictLevelTarget;
@@ -123,6 +126,7 @@ namespace MatchFactoryCore.Scripts.Game
                 }
             }
 
+            OnLevelTargetChanged?.Invoke(_targetDictionary);
             StartCoroutine(WaitForReady(onReady));
         }
 
@@ -220,11 +224,21 @@ namespace MatchFactoryCore.Scripts.Game
             if (remainTarget > 0)
             {
                 _targetDictionary[itemFactory.ItemFactoryType]--;
+                OnLevelTargetChanged?.Invoke(_targetDictionary);
                 if (IsWin())
                 {
                     _stateMachine.ChangeState(MatchFactoryState.Win);
                 }
             }
+        }
+
+        private void RemoveItemFactory(IItemFactory2D itemFactory2D)
+        {
+            ItemFactory itemFactory = itemFactory2D as ItemFactory;
+            if (itemFactory == null) return;
+            _dictItemFactory.Remove(itemFactory.Id);
+            Destroy(itemFactory.gameObject);
+            Debug.Log(_dictItemFactory.Count);
         }
 
         bool IsWin()
@@ -240,6 +254,14 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             return isWin;
+        }
+
+        private void CheckLose(int dictCount)
+        {
+            if (dictCount == MaxSlot)
+            {
+                _stateMachine.ChangeState(MatchFactoryState.Lose);
+            }
         }
 
         public void UpdateTimeLevel()
