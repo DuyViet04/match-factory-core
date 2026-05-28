@@ -224,7 +224,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             for (int i = 0; i < idList.Count; i++)
             {
-                Destroy(_dictItemFactory[idList[i]]);
+                Destroy(_dictItemFactory[idList[i]].gameObject);
                 _dictItemFactory.Remove(idList[i]);
             }
         }

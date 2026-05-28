@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Game
@@ -23,8 +22,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id)
         {
-            ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI,
-                GetPositionJump2D(itemFactory2D.ItemFactoryType), Quaternion.identity);
+            Vector2 jumpPos = GetPositionJump2D(itemFactory2D.ItemFactoryType);
+
+            ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI, jumpPos, Quaternion.identity);
             newItemFactory2D.transform.SetParent(holder.transform);
             newItemFactory2D.Initialize(id, itemFactory2D);
             newItemFactory2D.gameObject.SetActive(false);
@@ -33,7 +33,6 @@ namespace MatchFactoryCore.Scripts.Game
 
             SortDictAfterInsert(newItemFactory2D);
             CheckMatch(newItemFactory2D);
-            SortDictAfterMatch();
         }
 
         public Vector3 GetPositionTo3DJump(ItemFactoryType type)
@@ -46,15 +45,15 @@ namespace MatchFactoryCore.Scripts.Game
             bool hasItemSame = false;
             for (int i = 0; i < _dictItemFactory2D.Count; i++)
             {
-                if (_dictItemFactory2D.ElementAt(i).Value.ItemFactory.ItemFactoryType == type &&
-                    i < _dictItemFactory2D.Count - 1)
+                var item = _dictItemFactory2D.ElementAt(i).Value;
+                if (item.ItemFactory.ItemFactoryType == type)
                 {
                     hasItemSame = true;
                 }
 
-                if (hasItemSame && _dictItemFactory2D.ElementAt(i).Value.ItemFactory.ItemFactoryType != type)
+                if (hasItemSame && item.ItemFactory.ItemFactoryType != type)
                 {
-                    return collectionBarSlots[i + 1].position;
+                    return collectionBarSlots[i].position;
                 }
             }
 
@@ -63,6 +62,8 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void SortDictAfterInsert(ItemFactory2D itemChoose)
         {
+            _dictItemFactory2D.Remove(itemChoose.Id);
+
             Dictionary<int, ItemFactory2D> beforeItemChoose = new Dictionary<int, ItemFactory2D>();
             Dictionary<int, ItemFactory2D> afterItemChoose = new Dictionary<int, ItemFactory2D>();
             afterItemChoose.Add(itemChoose.Id, itemChoose);
@@ -70,30 +71,44 @@ namespace MatchFactoryCore.Scripts.Game
             bool hasItemSame = false;
             for (int i = 0; i < _dictItemFactory2D.Count; i++)
             {
-                if (_dictItemFactory2D.ElementAt(i).Value.ItemFactory.ItemFactoryType ==
-                    itemChoose.ItemFactory.ItemFactoryType &&
-                    i < _dictItemFactory2D.Count - 1)
+                var currentKey = _dictItemFactory2D.ElementAt(i).Key;
+                var currentItem = _dictItemFactory2D.ElementAt(i).Value;
+
+                if (currentItem.ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType)
                 {
                     hasItemSame = true;
                 }
 
-                if (hasItemSame && _dictItemFactory2D.ElementAt(i).Value.ItemFactory.ItemFactoryType !=
-                    itemChoose.ItemFactory.ItemFactoryType)
+                if (hasItemSame && currentItem.ItemFactory.ItemFactoryType != itemChoose.ItemFactory.ItemFactoryType)
                 {
-                    afterItemChoose.Add(i, _dictItemFactory2D.ElementAt(i).Value);
-                    _dictItemFactory2D.ElementAt(i).Value.JumpOnBar(collectionBarSlots[i + 1].position);
-                    _dictItemFactory2D.ElementAt(i).Value.IndexFromBar = i;
+                    afterItemChoose.Add(currentKey, currentItem);
                 }
                 else
                 {
-                    beforeItemChoose.Add(i, _dictItemFactory2D.ElementAt(i).Value);
-                    _dictItemFactory2D.ElementAt(i).Value.IndexFromBar = i;
+                    beforeItemChoose.Add(currentKey, currentItem);
                 }
             }
 
             _dictItemFactory2D.Clear();
-            _dictItemFactory2D.AddRange(beforeItemChoose);
-            _dictItemFactory2D.AddRange(afterItemChoose);
+            foreach (var kvp in beforeItemChoose)
+            {
+                _dictItemFactory2D.Add(kvp.Key, kvp.Value);
+            }
+
+            foreach (var kvp in afterItemChoose)
+            {
+                _dictItemFactory2D.Add(kvp.Key, kvp.Value);
+            }
+
+            for (int i = 0; i < _dictItemFactory2D.Count; i++)
+            {
+                var item = _dictItemFactory2D.ElementAt(i).Value;
+                item.IndexFromBar = i;
+                if (item != itemChoose)
+                {
+                    item.JumpOnBar(collectionBarSlots[i].position);
+                }
+            }
         }
 
         private void CheckMatch(ItemFactory2D itemFactory2D)
@@ -102,31 +117,31 @@ namespace MatchFactoryCore.Scripts.Game
             List<int> idList = new List<int>();
             List<ItemFactory2D> dictMatchs = new List<ItemFactory2D>();
             ItemFactoryType itemFactory2DType = itemFactory2D.ItemFactory.ItemFactoryType;
+
             for (int i = 0; i < _dictItemFactory2D.Count; i++)
             {
-                if (_dictItemFactory2D.ElementAt(i).Value == null) continue;
-                if (_dictItemFactory2D.ElementAt(i).Value != null &&
-                    _dictItemFactory2D.ElementAt(i).Value.ItemFactory.ItemFactoryType == itemFactory2DType)
+                var item = _dictItemFactory2D.ElementAt(i).Value;
+                if (item != null && item.ItemFactory.ItemFactoryType == itemFactory2DType)
                 {
-                    dictMatchs.Add(_dictItemFactory2D[i]);
-                    _dictItemFactory2D.Remove(_dictItemFactory2D.ElementAt(i).Key);
+                    dictMatchs.Add(item);
+                }
+            }
+
+            if (dictMatchs.Count == 3)
+            {
+                foreach (var item in dictMatchs)
+                {
+                    idList.Add(item.Id);
+                    _dictItemFactory2D.Remove(item.Id);
                 }
 
-                if (dictMatchs.Count == 3)
-                {
-                    foreach (var item in dictMatchs)
-                    {
-                        idList.Add(item.Id);
-                        _dictItemFactory2D.Remove(item.Id);
-                    }
+                dictMatchs[0].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Left);
+                dictMatchs[1].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Center);
+                dictMatchs[2].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Right);
 
-                    dictMatchs[0].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Left);
-                    dictMatchs[1].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Center);
-                    dictMatchs[2].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Right);
+                OnItemMatched?.Invoke(idList);
 
-                    OnItemMatched?.Invoke(idList);
-                    break;
-                }
+                SortDictAfterMatch();
             }
 
             if (_dictItemFactory2D.Count == MaxCollectionBarSlots)
@@ -143,15 +158,11 @@ namespace MatchFactoryCore.Scripts.Game
 
             for (int i = 0; i < _dictItemFactory2D.Count; i++)
             {
-                if (_dictItemFactory2D.ContainsKey(i))
-                {
-                    itemFactory2DArray[i] = _dictItemFactory2D[i];
-                }
-                else
-                {
-                    itemFactory2DArray[i] = null;
-                }
+                itemFactory2DArray[i] = _dictItemFactory2D.ElementAt(i).Value;
+            }
 
+            for (int i = 0; i < MaxCollectionBarSlots; i++)
+            {
                 if (i < MaxCollectionBarSlots - 1)
                 {
                     while (itemFactory2DArray[i] == null && itemFactory2DArray[i + 1] != null)
@@ -159,9 +170,20 @@ namespace MatchFactoryCore.Scripts.Game
                         itemFactory2DArray[i] = itemFactory2DArray[i + 1];
                         itemFactory2DArray[i + 1] = null;
                         itemFactory2DArray[i].IndexFromBar = i;
-                        itemFactory2DArray[i].JumpOnBar(collectionBarSlots[i + 1].position);
+                        itemFactory2DArray[i].JumpOnBar(collectionBarSlots[i].position);
                         if (i >= 1) i--;
                     }
+                }
+            }
+
+            _dictItemFactory2D.Clear();
+            for (int i = 0; i < MaxCollectionBarSlots; i++)
+            {
+                if (itemFactory2DArray[i] != null)
+                {
+                    _dictItemFactory2D.Add(itemFactory2DArray[i].Id, itemFactory2DArray[i]);
+                    itemFactory2DArray[i].IndexFromBar = i;
+                    itemFactory2DArray[i].JumpOnBar(collectionBarSlots[i].position);
                 }
             }
         }

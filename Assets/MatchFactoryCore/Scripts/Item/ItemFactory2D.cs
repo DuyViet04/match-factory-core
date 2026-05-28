@@ -56,6 +56,11 @@ namespace MatchFactoryCore.Scripts.Item
                         .Append(_rectTransform.DOMove(position, 0.25f).SetEase(Ease.InBack));
                     break;
             }
+
+            _jumpOnMatchSequence.OnComplete(() =>
+            {
+                Destroy(gameObject);
+            });
         }
     }
 }

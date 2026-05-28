@@ -56,7 +56,8 @@ namespace MatchFactoryCore.Scripts.Game
 
             if (Pointer.current.press.wasReleasedThisFrame)
             {
-                _lastItemFactory3D.ObjectOutline.enabled = false;
+                if (_lastItemFactory3D != null)
+                    _lastItemFactory3D.ObjectOutline.enabled = false;
 
                 if (!_hasMovedEnoughForDrag)
                 {
