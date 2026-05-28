@@ -2,6 +2,15 @@
 
 namespace MatchFactoryCore.Scripts.Game.State
 {
+    public enum MatchFactoryState
+    {
+        Init,
+        Playing,
+        Pause,
+        Win,
+        Lose
+    }
+
     public abstract class BaseState : IState
     {
         protected readonly ControllerMatchFactory Controller;

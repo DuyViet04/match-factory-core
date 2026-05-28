@@ -13,14 +13,7 @@ namespace MatchFactoryCore.Scripts.Item
         public float SpriteScaleOnBar { get; set; }
         public float SpriteScaleWhenChange { get; set; }
 
-        public void MoveToBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null);
-
-        public void JumpOnBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null);
-
-        public void Match(List<RectTransform> collectionBarSlots, List<(int, IItemFactory2D)> dictMatchs,
-            Action onMatched = null);
-
-        public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int numJump, Action onComplete = null);
+        // public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int targetFinalIndex, Action onComplete = null);
 
         public void ChangeTo3D();
     }

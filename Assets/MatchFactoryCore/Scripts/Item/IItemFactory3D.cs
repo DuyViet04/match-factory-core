@@ -5,11 +5,11 @@ namespace MatchFactoryCore.Scripts.Item
 {
     public interface IItemFactory3D
     {
-        public Rigidbody RigidbodyObject { get; set; }
-        public Collider ColliderObject { get; set; }
+        public Rigidbody ObjectRigidbody { get; set; }
+        public Collider ObjectCollider { get; set; }
+        public Outline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
-        public float Size { get; set; }
-        public float Weight { get; set; }
+        public float PrefabSize { get; set; }
         public float PrefabScale { get; set; }
 
         public void JumpFromBoard(Vector3 toTarget, Action onComplete = null);

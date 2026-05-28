@@ -25,7 +25,7 @@ namespace MatchFactoryCore.Scripts.Game.State
                 return;
             }
 
-            Controller.ControllerItemFactory3D.OnUpdate();
+            Controller.ControllerItemFactory3D.UpdateRaycast();
         }
     }
 }

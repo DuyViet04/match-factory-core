@@ -10,15 +10,6 @@ using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Game
 {
-    public enum MatchFactoryState
-    {
-        Init,
-        Playing,
-        Pause,
-        Win,
-        Lose
-    }
-
     [DefaultExecutionOrder(-100)]
     public class ControllerMatchFactory : MonoBehaviour
     {
@@ -50,12 +41,10 @@ namespace MatchFactoryCore.Scripts.Game
 
         // Cache
         Vector3 _randomSpawnPoint;
-        int _id;
 
         private void OnEnable()
         {
             controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
-            controllerItemFactory3D.OnJumpOnBoardComplete += SpawnItemFactory2D;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
         }
@@ -63,7 +52,6 @@ namespace MatchFactoryCore.Scripts.Game
         private void OnDisable()
         {
             controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
-            controllerItemFactory3D.OnJumpOnBoardComplete -= SpawnItemFactory2D;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
         }
@@ -130,6 +118,7 @@ namespace MatchFactoryCore.Scripts.Game
                     Spawn(item.Key, i);
                 }
             }
+
             StartCoroutine(WaitForReady(onReady));
         }
 
@@ -161,7 +150,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         #endregion
 
-        #region Helper
+        #region Spawn Helper
 
         void Spawn(ItemFactoryType itemFactoryType, int index)
         {
@@ -174,36 +163,23 @@ namespace MatchFactoryCore.Scripts.Game
 
             var newItemFactory3D = Instantiate(so.prefab, GetRandomSpawnPoint(), Quaternion.identity);
             newItemFactory3D.transform.parent = holder.transform;
-            ItemFactory itemFactoryComp = newItemFactory3D.AddComponent<ItemFactory>();
-
-            var outline = newItemFactory3D.AddComponent<Outline>();
-            outline.OutlineMode = Outline.Mode.OutlineAll;
-            outline.OutlineColor = Color.yellow;
-            outline.OutlineWidth = 5;
-            outline.enabled = false;
+            ItemFactory itemFactoryComp = newItemFactory3D.GetComponent<ItemFactory>();
 
             InitItemFactory3DContext initItemFactory3DContext = new InitItemFactory3DContext()
             {
                 Id = (int)itemFactoryType + index,
-                FactoryType = itemFactoryType,
                 Prefab = newItemFactory3D,
-                Sprite = so.sprite,
-                Size = so.prefabSize,
                 PrefabScale = so.prefabScale,
-                PrefabBaseRotation = so.prefab.transform.rotation.eulerAngles,
+                PrefabSize = so.prefabSize,
+                Sprite = so.sprite,
+                ItemFactoryType = itemFactoryType,
                 SpriteScaleOnBar = so.spriteScaleOnBar,
                 SpriteScaleWhenChange = so.spriteScaleWhenChange
             };
             itemFactoryComp.Initialize(initItemFactory3DContext);
             _dictItemFactory.TryAdd(initItemFactory3DContext.Id, itemFactoryComp);
             IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
-            _itemsRigidbody.Add(itemFactory3D.RigidbodyObject);
-        }
-
-        private void SpawnItemFactory2D(Vector3 spawnPoint)
-        {
-            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(_id), spawnPoint,
-                rectTransform => { _dictItemFactory[_id].SpriteTransform = rectTransform; });
+            _itemsRigidbody.Add(itemFactory3D.ObjectRigidbody);
         }
 
         Vector3 GetRandomSpawnPoint()
@@ -218,22 +194,34 @@ namespace MatchFactoryCore.Scripts.Game
 
         #endregion
 
+        #region Event Actions
+
         private void CheckLevelTarget(int id)
         {
-            _id = id;
-            _dictItemFactory.TryGetValue(id, out var itemFactory);
+            _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory == null) return;
-            _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out var remainTarget);
+            
+            _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
             if (remainTarget > 0)
             {
                 _targetDictionary[itemFactory.ItemFactoryType]--;
-                OnLevelTargetChanged?.Invoke(_targetDictionary);
                 if (IsWin())
                 {
                     _stateMachine.ChangeState(MatchFactoryState.Win);
                 }
+
+                OnLevelTargetChanged?.Invoke(_targetDictionary);
             }
+            
+            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
+            itemFactory.JumpFromBoard(controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType),
+                () =>
+                {
+                    controllerCollectionBar.SetActiveItemChoose(id);
+                });
         }
+
+        #endregion
 
         private void RemoveItemFactory(IItemFactory2D itemFactory2D)
         {

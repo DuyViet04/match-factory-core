@@ -1137,8 +1137,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88c2be41b17f4cd1bfff6c33ff5d47ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Game.ControllerCollectionBar
-  controllerMatchFactory: {fileID: 1019175764}
   mainCamera: {fileID: 1135401819}
+  itemFactoryUI: {fileID: -8534741582124626164, guid: a87f6b82795d1f549aac3986e431a3ea, type: 3}
   collectionBarSlots:
   - {fileID: 796410641}
   - {fileID: 1673232170}

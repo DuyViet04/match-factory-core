@@ -15,114 +15,97 @@ namespace MatchFactoryCore.Scripts.Game
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
 
+        Vector2 _pointerPos;
+        RaycastHit _hit;
+        ItemFactory _itemFactory;
+        IItemFactory3D _itemFactory3D;
+
         Vector2 _startMousePos;
         bool _isPressing;
         bool _hasMovedEnoughForDrag;
-        int _lastDragId;
-        private GameObject _lastItemGameObject;
+        int _lastId;
+        IItemFactory3D _lastItemFactory3D;
 
-        public void OnUpdate()
+        public void UpdateRaycast()
         {
-            var pointerPos = Pointer.current.position.ReadValue();
-            var rayCamera = mainCamera.ScreenPointToRay(pointerPos);
-            var isHit = Physics.Raycast(rayCamera, out RaycastHit hit, int.MaxValue,
-                LayerMask.GetMask(ItemFactory3DLayer));
-            if (!isHit || hit.collider == null) return;
-            var itemFactoryGo = hit.collider.gameObject;
+            // if (Pointer.current.press.wasPressedThisFrame || Pointer.current.press.wasReleasedThisFrame)
+            if (Pointer.current.press.isPressed)
+            {
+                _pointerPos = Pointer.current.position.ReadValue();
+                Physics.Raycast(mainCamera.ScreenPointToRay(_pointerPos), out _hit, int.MaxValue,
+                    LayerMask.GetMask(ItemFactory3DLayer));
+                if (_hit.collider == null) return;
+                GameObject go = _hit.collider.gameObject;
+                _itemFactory = go.GetComponent<ItemFactory>();
+                _itemFactory3D = _itemFactory as IItemFactory3D;
+            }
+            // else return;
 
             if (Pointer.current.press.wasPressedThisFrame)
             {
-                _startMousePos = pointerPos;
+                _startMousePos = _pointerPos;
                 _isPressing = true;
                 _hasMovedEnoughForDrag = false;
-                _lastDragId = -1;
-                _lastItemGameObject = null;
+                _lastId = -1;
+                _lastItemFactory3D = null;
 
-                var outline = itemFactoryGo.GetComponent<Outline>();
-                if (outline != null)
+                _itemFactory3D.ObjectOutline.enabled = true;
+                _itemFactory3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
+
+                _lastItemFactory3D = _itemFactory3D;
+            }
+
+            if (Pointer.current.press.wasReleasedThisFrame)
+            {
+                _lastItemFactory3D.ObjectOutline.enabled = false;
+
+                if (!_hasMovedEnoughForDrag)
                 {
-                    outline.enabled = true;
+                    HandleItemFactory3D(_itemFactory3D, _itemFactory.Id);
                 }
 
-                var itemFactoryEntity = itemFactoryGo.GetComponent<ItemFactory>();
-                var itemFactory3D = itemFactoryGo.GetComponent<IItemFactory3D>();
-                itemFactory3D.RigidbodyObject.AddForce(Vector3.up, ForceMode.Impulse);
-                _lastDragId = itemFactoryEntity.Id;
-                _lastItemGameObject = itemFactoryGo;
+                _isPressing = false;
+                _lastId = -1;
+                _lastItemFactory3D = null;
             }
 
             if (_isPressing)
             {
                 if (!_hasMovedEnoughForDrag)
                 {
-                    if (Vector2.Distance(_startMousePos, pointerPos) > DragThreshold)
+                    if (Vector2.Distance(_startMousePos, _pointerPos) > DragThreshold)
                     {
                         _hasMovedEnoughForDrag = true;
                     }
                 }
 
-                if (_hasMovedEnoughForDrag)
+                if (_hasMovedEnoughForDrag && _itemFactory.Id != _lastId)
                 {
-                    var itemFactoryEntity = itemFactoryGo.GetComponent<ItemFactory>();
-                    var itemFactory3D = itemFactoryGo.GetComponent<IItemFactory3D>();
-                    if (itemFactoryEntity.Id != _lastDragId)
+                    _itemFactory3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
+                    _itemFactory3D.ObjectOutline.enabled = true;
+
+                    if (_lastItemFactory3D != null)
                     {
-                        itemFactory3D.RigidbodyObject.AddForce(Vector3.up, ForceMode.Impulse);
-                        _lastDragId = itemFactoryEntity.Id;
+                        _itemFactory3D.ObjectOutline.enabled = false;
 
-                        var outline = itemFactoryGo.GetComponent<Outline>();
-                        if (outline != null)
-                        {
-                            outline.enabled = true;
-                        }
-
-                        if (_lastItemGameObject != null)
-                        {
-                            var lastOutline = _lastItemGameObject.GetComponent<Outline>();
-                            if (lastOutline != null)
-                            {
-                                lastOutline.enabled = false;
-                            }
-
-                            _lastItemGameObject = itemFactoryGo;
-                        }
+                        _lastItemFactory3D = _itemFactory3D;
                     }
-                }
-            }
 
-            if (Pointer.current.press.wasReleasedThisFrame)
-            {
-                _isPressing = false;
-
-                if (_lastItemGameObject != null)
-                {
-                    var outline = _lastItemGameObject.GetComponent<Outline>();
-                    if (outline != null)
-                    {
-                        outline.enabled = false;
-                    }
-                }
-
-                if (!_hasMovedEnoughForDrag)
-                {
-                    var itemFactoryEntity = itemFactoryGo.GetComponent<ItemFactory>();
-                    var itemFactory3D = itemFactoryGo.GetComponent<IItemFactory3D>();
-                    OnPointerReleased?.Invoke(itemFactoryEntity.Id);
-
-                    HandleItemFactory3D(itemFactory3D);
+                    _lastId = _itemFactory.Id;
                 }
             }
         }
 
-        private void HandleItemFactory3D(IItemFactory3D itemFactory3D)
+        private void HandleItemFactory3D(IItemFactory3D itemFactory3D, int id)
         {
-            var jumpTargetPos = itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1);
-            itemFactory3D.JumpFromBoard(jumpTargetPos,
-                () =>
-                {
-                    OnJumpOnBoardComplete?.Invoke(jumpTargetPos);
-                    itemFactory3D.ChangeTo2D();
-                });
+            OnPointerReleased?.Invoke(id);
+            // var jumpTargetPos = itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1);
+            // itemFactory3D.JumpFromBoard(jumpTargetPos,
+            //     () =>
+            //     {
+            //         OnJumpOnBoardComplete?.Invoke(jumpTargetPos);
+            //         itemFactory3D.ChangeTo2D();
+            //     });
         }
     }
 }
