@@ -120,8 +120,8 @@ namespace MatchFactoryCore.Scripts.Game
             itemFactory3D.JumpFromBoard(jumpTargetPos,
                 () =>
                 {
-                    itemFactory3D.ChangeTo2D();
                     OnJumpOnBoardComplete?.Invoke(jumpTargetPos);
+                    itemFactory3D.ChangeTo2D();
                 });
         }
     }

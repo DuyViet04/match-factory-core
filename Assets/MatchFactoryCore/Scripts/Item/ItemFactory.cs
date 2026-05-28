@@ -117,7 +117,7 @@ namespace MatchFactoryCore.Scripts.Item
             var slotTransform = collectionBarSlots[targetIndex];
             _moveToBarSequence.Join(SpriteTransform.DOMove(targetPos, 0.25f))
                 .Join(SpriteTransform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.25f))
-                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.25f))
                 .OnComplete(() =>
                 {
                     slotTransform.anchoredPosition = collectionBarSlots[targetIndex].anchoredPosition;
@@ -131,8 +131,8 @@ namespace MatchFactoryCore.Scripts.Item
             var targetPos = collectionBarSlots[targetIndex].position;
             var slotTransform = collectionBarSlots[targetIndex];
             _jumpOnBarSequence
-                .Join(SpriteTransform.DOJump(targetPos, 100, 1, 0.5f))
-                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                .Join(SpriteTransform.DOJump(targetPos, 100, 1, 0.25f))
+                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.25f))
                 .OnComplete(() =>
                 {
                     slotTransform.anchoredPosition = collectionBarSlots[targetIndex].anchoredPosition;
@@ -162,9 +162,9 @@ namespace MatchFactoryCore.Scripts.Item
             _matchSequence.Append(sprite1.SpriteTransform.DOMove(matchPos1, 0.25f).SetEase(Ease.InBack))
                 .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
                 .Join(sprite3.SpriteTransform.DOMove(matchPos3, 0.25f).SetEase(Ease.InBack))
-                .Append(sprite1.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
-                .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
-                .Join(sprite3.SpriteTransform.DOMove(matchPos2, 0.5f).SetEase(Ease.InBack))
+                .Append(sprite1.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
+                .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
+                .Join(sprite3.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
                 .OnComplete(() => onMatched?.Invoke());
         }
 
@@ -183,7 +183,7 @@ namespace MatchFactoryCore.Scripts.Item
                 var slotTransform = collectionBarSlots[capturedIndex];
                 _jumpOnBarSequence
                     .Append(SpriteTransform.DOJump(targetPos, 100, 1, timePerStep))
-                    .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                    .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.25f))
                     .OnComplete(() =>
                     {
                         slotTransform.anchoredPosition = collectionBarSlots[capturedIndex].anchoredPosition;

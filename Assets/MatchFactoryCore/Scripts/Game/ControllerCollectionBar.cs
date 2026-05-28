@@ -31,10 +31,13 @@ namespace MatchFactoryCore.Scripts.Game
             Action<RectTransform> setRectTransform)
         {
             var screenPos = mainCamera.WorldToScreenPoint(spawnPoint);
+            
             var newItemFactory2D = new GameObject("ItemFactory2D");
             var spriteTransform = newItemFactory2D.AddComponent<RectTransform>();
             newItemFactory2D.transform.SetParent(holder.transform);
             newItemFactory2D.transform.SetPositionAndRotation(screenPos, Quaternion.identity);
+            newItemFactory2D.transform.localScale = Vector3.one * itemFactory2D.SpriteScaleWhenChange;
+            
             var itemFactory2DUi = newItemFactory2D.AddComponent<Image>();
             itemFactory2DUi.sprite = itemFactory2D.Sprite;
             itemFactory2DUi.SetNativeSize();
