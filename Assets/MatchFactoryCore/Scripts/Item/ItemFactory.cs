@@ -112,7 +112,6 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void MoveToBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null)
         {
-            _moveToBarSequence?.Kill();
             _moveToBarSequence = DOTween.Sequence();
             var targetPos = collectionBarSlots[targetIndex].position;
             var slotTransform = collectionBarSlots[targetIndex];
@@ -128,7 +127,6 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void JumpOnBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null)
         {
-            _jumpOnBarSequence?.Kill();
             _jumpOnBarSequence = DOTween.Sequence();
             var targetPos = collectionBarSlots[targetIndex].position;
             var slotTransform = collectionBarSlots[targetIndex];

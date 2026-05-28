@@ -52,7 +52,7 @@ namespace MatchFactoryCore.Scripts.Game
 
             foreach (var shiftedIndex in shiftedIndices)
             {
-                _dictItemFactory2D[shiftedIndex].JumpOnBar(collectionBarSlots, shiftedIndex);
+                _dictItemFactory2D[shiftedIndex + 1].JumpOnBar(collectionBarSlots, shiftedIndex + 1);
             }
 
             if (isMatch)
@@ -108,8 +108,8 @@ namespace MatchFactoryCore.Scripts.Game
                     for (int j = MaxCollectionBarSlots - 1; j > i + 1; j--)
                     {
                         _dictItemFactory2D[j] = _dictItemFactory2D[j - 1];
-                        if (_dictItemFactory2D[j] != null)
-                            shiftedIndices.Add(j);
+                        if (_dictItemFactory2D[j - 1] != null)
+                            shiftedIndices.Add(j - 1);
                     }
 
                     _dictItemFactory2D[i + 1] = itemFactory2D;
