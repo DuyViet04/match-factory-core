@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
 using UnityEngine;
 
@@ -12,8 +10,6 @@ namespace MatchFactoryCore.Scripts.Item
         public ItemFactoryType ItemFactoryType { get; set; }
         public float SpriteScaleOnBar { get; set; }
         public float SpriteScaleWhenChange { get; set; }
-
-        // public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int targetFinalIndex, Action onComplete = null);
 
         public void ChangeTo3D();
     }

@@ -10,7 +10,6 @@ namespace MatchFactoryCore.Scripts.Game
         [SerializeField] private Camera mainCamera;
 
         public event Action<int> OnPointerReleased;
-        public event Action<Vector3> OnJumpOnBoardComplete;
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
@@ -99,13 +98,6 @@ namespace MatchFactoryCore.Scripts.Game
         private void HandleItemFactory3D(IItemFactory3D itemFactory3D, int id)
         {
             OnPointerReleased?.Invoke(id);
-            // var jumpTargetPos = itemFactory3D.Prefab.transform.position + new Vector3(0, 5, -1);
-            // itemFactory3D.JumpFromBoard(jumpTargetPos,
-            //     () =>
-            //     {
-            //         OnJumpOnBoardComplete?.Invoke(jumpTargetPos);
-            //         itemFactory3D.ChangeTo2D();
-            //     });
         }
     }
 }

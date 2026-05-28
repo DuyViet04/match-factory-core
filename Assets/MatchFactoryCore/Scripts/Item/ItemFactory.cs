@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using UnityEngine;
@@ -113,82 +112,6 @@ namespace MatchFactoryCore.Scripts.Item
         #endregion
 
         #region Behaviour 2D Object
-
-        readonly Vector3 _baseSpriteScale = Vector3.one;
-        Sequence _moveToBarSequence;
-        Sequence _jumpOnBarSequence;
-        Sequence _jumpOnBarWhenMatchSequence;
-        Sequence _matchSequence;
-
-        // public void MoveToBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null)
-        // {
-        //     _moveToBarSequence = DOTween.Sequence();
-        //     var targetPos = collectionBarSlots[targetIndex].position;
-        //     var slotTransform = collectionBarSlots[targetIndex];
-        //     _moveToBarSequence.Join(SpriteTransform.DOMove(targetPos, 0.25f))
-        //         .Join(SpriteTransform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.25f))
-        //         .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.25f))
-        //         .OnComplete(() =>
-        //         {
-        //             slotTransform.anchoredPosition = collectionBarSlots[targetIndex].anchoredPosition;
-        //             onComplete?.Invoke();
-        //         });
-        // }
-        //
-        //
-        //
-        // public void Match(List<RectTransform> collectionBarSlots, List<(int, ItemFactory2D)> dictMatchs,
-        //     Action onMatched)
-        // {
-        //     _matchSequence = DOTween.Sequence();
-        //
-        //     if (dictMatchs.Count != 3) return;
-        //
-        //     var collectionBarIndex1 = dictMatchs[0].Item1;
-        //     var collectionBarIndex2 = dictMatchs[1].Item1;
-        //     var collectionBarIndex3 = dictMatchs[2].Item1;
-        //     var sprite1 = (ItemFactory)dictMatchs[0].Item2.ItemFactory;
-        //     var sprite2 = (ItemFactory)dictMatchs[1].Item2.ItemFactory;
-        //     var sprite3 = (ItemFactory)dictMatchs[2].Item2.ItemFactory;
-        //
-        //     var matchHigh = 100;
-        //     var matchPos1 = collectionBarSlots[collectionBarIndex1].position + new Vector3(0, matchHigh, 0);
-        //     var matchPos2 = collectionBarSlots[collectionBarIndex2].position + new Vector3(0, matchHigh, 0);
-        //     var matchPos3 = collectionBarSlots[collectionBarIndex3].position + new Vector3(0, matchHigh, 0);
-        //
-        //     _matchSequence.Append(sprite1.SpriteTransform.DOMove(matchPos1, 0.25f).SetEase(Ease.InBack))
-        //         .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
-        //         .Join(sprite3.SpriteTransform.DOMove(matchPos3, 0.25f).SetEase(Ease.InBack))
-        //         .Append(sprite1.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
-        //         .Join(sprite2.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
-        //         .Join(sprite3.SpriteTransform.DOMove(matchPos2, 0.25f).SetEase(Ease.InBack))
-        //         .OnComplete(() => onMatched?.Invoke());
-        // }
-
-        // public void JumpOnBarWhenMatched(List<RectTransform> collectionBarSlots, int targetFinalIndex,
-        //     Action onComplete = null)
-        // {
-        //     _jumpOnBarWhenMatchSequence = DOTween.Sequence();
-        //
-        //     var timePerStep = 0.25f / 3;
-        //     var startIndex = targetFinalIndex + 3 - 1;
-        //     for (int step = startIndex; step >= targetFinalIndex; step--)
-        //     {
-        //         var capturedIndex = step;
-        //         var targetPos = collectionBarSlots[capturedIndex].position;
-        //         var slotTransform = collectionBarSlots[capturedIndex];
-        //         _jumpOnBarWhenMatchSequence
-        //             .Append(SpriteTransform.DOJump(targetPos, 100, 1, timePerStep))
-        //             .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.25f))
-        //             .OnComplete(() =>
-        //             {
-        //                 slotTransform.anchoredPosition = collectionBarSlots[capturedIndex].anchoredPosition;
-        //                 onComplete?.Invoke();
-        //             });
-        //     }
-        //
-        //     _jumpOnBarWhenMatchSequence.OnComplete(() => onComplete?.Invoke());
-        // }
 
         public void ChangeTo3D()
         {

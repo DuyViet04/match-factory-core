@@ -200,7 +200,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory == null) return;
-            
+
             _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
             if (remainTarget > 0)
             {
@@ -212,24 +212,21 @@ namespace MatchFactoryCore.Scripts.Game
 
                 OnLevelTargetChanged?.Invoke(_targetDictionary);
             }
-            
+
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
             itemFactory.JumpFromBoard(controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType),
-                () =>
-                {
-                    controllerCollectionBar.SetActiveItemChoose(id);
-                });
+                () => { controllerCollectionBar.SetActiveItemChoose(id); });
         }
 
         #endregion
 
-        private void RemoveItemFactory(IItemFactory2D itemFactory2D)
+        private void RemoveItemFactory(List<int> idList)
         {
-            ItemFactory itemFactory = itemFactory2D as ItemFactory;
-            if (itemFactory == null) return;
-            _dictItemFactory.Remove(itemFactory.Id);
-            Destroy(itemFactory.gameObject);
-            Debug.Log(_dictItemFactory.Count);
+            for (int i = 0; i < idList.Count; i++)
+            {
+                Destroy(_dictItemFactory[idList[i]]);
+                _dictItemFactory.Remove(idList[i]);
+            }
         }
 
         bool IsWin()
@@ -247,9 +244,9 @@ namespace MatchFactoryCore.Scripts.Game
             return isWin;
         }
 
-        private void CheckLose(int dictCount)
+        private void CheckLose(bool isFull)
         {
-            if (dictCount == MaxSlot)
+            if (isFull)
             {
                 _stateMachine.ChangeState(MatchFactoryState.Lose);
             }
