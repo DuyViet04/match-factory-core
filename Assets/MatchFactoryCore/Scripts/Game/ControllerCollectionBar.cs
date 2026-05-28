@@ -81,14 +81,8 @@ namespace MatchFactoryCore.Scripts.Game
             }
             else
             {
-                for (int i = MaxCollectionBarSlots - 1; i >= 0; i--)
-                {
-                    if (_dictItemFactory2D[i] != null)
-                    {
-                        OnInsertItemCompleted?.Invoke(i);
-                        break;
-                    }
-                }
+                if (_dictItemFactory2D[MaxCollectionBarSlots - 1] != null)
+                    OnInsertItemCompleted?.Invoke(MaxCollectionBarSlots);
             }
         }
 

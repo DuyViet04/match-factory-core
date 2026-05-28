@@ -74,6 +74,11 @@ namespace MatchFactoryCore.Scripts.Game
             InitializeState();
         }
 
+        private void Start()
+        {
+            OnLevelTargetChanged?.Invoke(_targetDictionary);
+        }
+
         private void Update()
         {
             _stateMachine.UpdateState();
@@ -125,8 +130,6 @@ namespace MatchFactoryCore.Scripts.Game
                     Spawn(item.Key, i);
                 }
             }
-
-            OnLevelTargetChanged?.Invoke(_targetDictionary);
             StartCoroutine(WaitForReady(onReady));
         }
 

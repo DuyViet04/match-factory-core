@@ -115,9 +115,15 @@ namespace MatchFactoryCore.Scripts.Item
             _moveToBarSequence?.Kill();
             _moveToBarSequence = DOTween.Sequence();
             var targetPos = collectionBarSlots[targetIndex].position;
+            var slotTransform = collectionBarSlots[targetIndex];
             _moveToBarSequence.Join(SpriteTransform.DOMove(targetPos, 0.25f))
                 .Join(SpriteTransform.DOScale(_baseSpriteScale * SpriteScaleOnBar, 0.25f))
-                .OnComplete(() => onComplete?.Invoke());
+                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                .OnComplete(() =>
+                {
+                    slotTransform.anchoredPosition = collectionBarSlots[targetIndex].anchoredPosition;
+                    onComplete?.Invoke();
+                });
         }
 
         public void JumpOnBar(List<RectTransform> collectionBarSlots, int targetIndex, Action onComplete = null)
@@ -125,9 +131,15 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpOnBarSequence?.Kill();
             _jumpOnBarSequence = DOTween.Sequence();
             var targetPos = collectionBarSlots[targetIndex].position;
+            var slotTransform = collectionBarSlots[targetIndex];
             _jumpOnBarSequence
                 .Join(SpriteTransform.DOJump(targetPos, 100, 1, 0.5f))
-                .OnComplete(() => onComplete?.Invoke());
+                .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                .OnComplete(() =>
+                {
+                    slotTransform.anchoredPosition = collectionBarSlots[targetIndex].anchoredPosition;
+                    onComplete?.Invoke();
+                });
         }
 
         public void Match(List<RectTransform> collectionBarSlots, List<(int, IItemFactory2D)> dictMatchs,
@@ -170,7 +182,15 @@ namespace MatchFactoryCore.Scripts.Item
             {
                 var capturedIndex = step;
                 var targetPos = collectionBarSlots[capturedIndex].position;
-                _jumpOnBarSequence.Append(SpriteTransform.DOJump(targetPos, 100, 1, timePerStep));
+                var slotTransform = collectionBarSlots[capturedIndex];
+                _jumpOnBarSequence
+                    .Append(SpriteTransform.DOJump(targetPos, 100, 1, timePerStep))
+                    .Append(slotTransform.DOPunchPosition(Vector2.down * 50, 0.1f, 3, 0.5f))
+                    .OnComplete(() =>
+                    {
+                        slotTransform.anchoredPosition = collectionBarSlots[capturedIndex].anchoredPosition;
+                        onComplete?.Invoke();
+                    });
             }
 
             _jumpOnBarSequence.OnComplete(() => onComplete?.Invoke());
@@ -181,11 +201,5 @@ namespace MatchFactoryCore.Scripts.Item
         }
 
         #endregion
-
-
-        Vector3 GetWorldPosition(Vector3 screenPos, Camera mainCam)
-        {
-            return mainCam.ScreenToWorldPoint(screenPos);
-        }
     }
 }
