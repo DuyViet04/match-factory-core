@@ -1140,13 +1140,13 @@ MonoBehaviour:
   mainCamera: {fileID: 1135401819}
   itemFactoryUI: {fileID: -8534741582124626164, guid: a87f6b82795d1f549aac3986e431a3ea, type: 3}
   collectionBarSlots:
-  - {fileID: 1055896000}
-  - {fileID: 1158281650}
-  - {fileID: 1437012759}
-  - {fileID: 560182457}
-  - {fileID: 1240878451}
-  - {fileID: 1896625742}
-  - {fileID: 275553170}
+  - {fileID: 796410641}
+  - {fileID: 1673232170}
+  - {fileID: 1941067392}
+  - {fileID: 263727508}
+  - {fileID: 178716354}
+  - {fileID: 2121129615}
+  - {fileID: 1282801668}
   holder: {fileID: 106053042}
 --- !u!1 &1135401817
 GameObject:

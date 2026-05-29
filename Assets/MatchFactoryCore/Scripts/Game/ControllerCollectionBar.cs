@@ -18,8 +18,20 @@ namespace MatchFactoryCore.Scripts.Game
         public event Action<bool> OnInsertItemCompleted;
 
         private const int MaxCollectionBarSlots = 7;
+
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
+
         // private readonly Dictionary<int, ItemFactory2D> _dictItemFactory2D = new Dictionary<int, ItemFactory2D>();
+        private RectTransform[] _cacheRectTransform;
+
+        private void Awake()
+        {
+            _cacheRectTransform = new RectTransform[collectionBarSlots.Count];
+            for (int i = 0; i < collectionBarSlots.Count; i++)
+            {
+                _cacheRectTransform[i] = collectionBarSlots[i];
+            }
+        }
 
         public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id)
         {
@@ -90,9 +102,10 @@ namespace MatchFactoryCore.Scripts.Game
             BounceBarSlot(insertIndex);
             for (int i = insertIndex + 1; i < _itemFactory2DList.Count; i++)
             {
+                int capturedIndex = i;
                 _itemFactory2DList[i].IndexFromBar = i;
                 _itemFactory2DList[i].JumpOnBar(collectionBarSlots[i].position,
-                    () => { BounceBarSlot(i); });
+                    () => { BounceBarSlot(capturedIndex); });
             }
         }
 
@@ -149,10 +162,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void BounceBarSlot(int index)
         {
-            Vector2 cachePos = collectionBarSlots[index].anchoredPosition;
             collectionBarSlots[index].DOPunchPosition(Vector2.down * 50, 0.1f, 5, 5).OnComplete(() =>
             {
-                collectionBarSlots[index].anchoredPosition = cachePos;
+                collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index].anchoredPosition;
             });
         }
 
