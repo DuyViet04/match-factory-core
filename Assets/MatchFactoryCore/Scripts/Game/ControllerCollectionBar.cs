@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
@@ -67,7 +66,7 @@ namespace MatchFactoryCore.Scripts.Game
             return _itemFactory2DList.Count;
         }
 
-        public void HandleItemFactory2D(ItemFactory2D itemChoose)
+        private void HandleItemFactory2D(ItemFactory2D itemChoose)
         {
             SortAfterInsert(itemChoose);
 
@@ -83,7 +82,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void SortAfterInsert(ItemFactory2D itemChoose, Action onComplete = null)
+        private void SortAfterInsert(ItemFactory2D itemChoose)
         {
             int insertIndex = GetIndexToInsert(itemChoose.ItemFactory.ItemFactoryType);
             _itemFactory2DList.Insert(insertIndex, itemChoose);
@@ -91,8 +90,9 @@ namespace MatchFactoryCore.Scripts.Game
             BounceBarSlot(insertIndex);
             for (int i = insertIndex + 1; i < _itemFactory2DList.Count; i++)
             {
-                _itemFactory2DList[i].JumpOnBar(collectionBarSlots[i].position, () => { BounceBarSlot(i); });
                 _itemFactory2DList[i].IndexFromBar = i;
+                _itemFactory2DList[i].JumpOnBar(collectionBarSlots[i].position,
+                    () => { BounceBarSlot(i); });
             }
         }
 
@@ -149,159 +149,12 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void BounceBarSlot(int index)
         {
-            RectTransform cache = collectionBarSlots[index];
+            Vector2 cachePos = collectionBarSlots[index].anchoredPosition;
             collectionBarSlots[index].DOPunchPosition(Vector2.down * 50, 0.1f, 5, 5).OnComplete(() =>
             {
-                collectionBarSlots[index].anchoredPosition = cache.anchoredPosition;
+                collectionBarSlots[index].anchoredPosition = cachePos;
             });
         }
-
-        // private Vector2 GetPositionJump2D(ItemFactoryType type)
-        // {
-        //     bool hasItemSame = false;
-        //     for (int i = 0; i < _dictItemFactory2D.Count; i++)
-        //     {
-        //         var item = _dictItemFactory2D.ElementAt(i).Value;
-        //         if (item.ItemFactory.ItemFactoryType == type)
-        //         {
-        //             hasItemSame = true;
-        //         }
-        //
-        //         if (hasItemSame && item.ItemFactory.ItemFactoryType != type)
-        //         {
-        //             return collectionBarSlots[i].position;
-        //         }
-        //     }
-        //
-        //     return collectionBarSlots[_dictItemFactory2D.Count].position;
-        // }
-
-        // private void SortDictAfterInsert(ItemFactory2D itemChoose)
-        // {
-        //     _dictItemFactory2D.Remove(itemChoose.Id);
-        //
-        //     Dictionary<int, ItemFactory2D> beforeItemChoose = new Dictionary<int, ItemFactory2D>();
-        //     Dictionary<int, ItemFactory2D> afterItemChoose = new Dictionary<int, ItemFactory2D>();
-        //     afterItemChoose.Add(itemChoose.Id, itemChoose);
-        //
-        //     bool hasItemSame = false;
-        //     for (int i = 0; i < _dictItemFactory2D.Count; i++)
-        //     {
-        //         var currentKey = _dictItemFactory2D.ElementAt(i).Key;
-        //         var currentItem = _dictItemFactory2D.ElementAt(i).Value;
-        //
-        //         if (currentItem.ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType)
-        //         {
-        //             hasItemSame = true;
-        //         }
-        //
-        //         if (hasItemSame && currentItem.ItemFactory.ItemFactoryType != itemChoose.ItemFactory.ItemFactoryType)
-        //         {
-        //             afterItemChoose.Add(currentKey, currentItem);
-        //         }
-        //         else
-        //         {
-        //             beforeItemChoose.Add(currentKey, currentItem);
-        //         }
-        //     }
-        //
-        //     _dictItemFactory2D.Clear();
-        //     foreach (var kvp in beforeItemChoose)
-        //     {
-        //         _dictItemFactory2D.Add(kvp.Key, kvp.Value);
-        //     }
-        //
-        //     foreach (var kvp in afterItemChoose)
-        //     {
-        //         _dictItemFactory2D.Add(kvp.Key, kvp.Value);
-        //     }
-        //
-        //     for (int i = 0; i < _dictItemFactory2D.Count; i++)
-        //     {
-        //         var item = _dictItemFactory2D.ElementAt(i).Value;
-        //         item.IndexFromBar = i;
-        //         if (item != itemChoose)
-        //         {
-        //             item.JumpOnBar(collectionBarSlots[i].position);
-        //         }
-        //     }
-        // }
-
-        // private void CheckMatch(ItemFactory2D itemFactory2D)
-        // {
-        //     bool isFull = false;
-        //     List<int> idList = new List<int>();
-        //     List<ItemFactory2D> dictMatchs = new List<ItemFactory2D>();
-        //     ItemFactoryType itemFactory2DType = itemFactory2D.ItemFactory.ItemFactoryType;
-        //
-        //     for (int i = 0; i < _dictItemFactory2D.Count; i++)
-        //     {
-        //         var item = _dictItemFactory2D.ElementAt(i).Value;
-        //         if (item != null && item.ItemFactory.ItemFactoryType == itemFactory2DType)
-        //         {
-        //             dictMatchs.Add(item);
-        //         }
-        //     }
-        //
-        //     if (dictMatchs.Count == 3)
-        //     {
-        //         foreach (var item in dictMatchs)
-        //         {
-        //             idList.Add(item.Id);
-        //             _dictItemFactory2D.Remove(item.Id);
-        //         }
-        //
-        //         dictMatchs[0].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Left);
-        //         dictMatchs[1].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Center);
-        //         dictMatchs[2].JumpMatch(dictMatchs[1].transform.position, JumpTypeMatch.Right);
-        //
-        //         OnItemMatched?.Invoke(idList);
-        //
-        //         SortDictAfterMatch();
-        //     }
-        //
-        //     if (_dictItemFactory2D.Count == MaxCollectionBarSlots)
-        //     {
-        //         isFull = true;
-        //     }
-        //
-        //     OnInsertItemCompleted?.Invoke(isFull);
-        // }
-        // private void SortDictAfterMatch()
-        // {
-        //     ItemFactory2D[] itemFactory2DArray = new ItemFactory2D[MaxCollectionBarSlots];
-        //
-        //     for (int i = 0; i < _dictItemFactory2D.Count; i++)
-        //     {
-        //         itemFactory2DArray[i] = _dictItemFactory2D.ElementAt(i).Value;
-        //     }
-        //
-        //     for (int i = 0; i < MaxCollectionBarSlots; i++)
-        //     {
-        //         if (i < MaxCollectionBarSlots - 1)
-        //         {
-        //             while (itemFactory2DArray[i] == null && itemFactory2DArray[i + 1] != null)
-        //             {
-        //                 itemFactory2DArray[i] = itemFactory2DArray[i + 1];
-        //                 itemFactory2DArray[i + 1] = null;
-        //                 itemFactory2DArray[i].IndexFromBar = i;
-        //                 itemFactory2DArray[i].JumpOnBar(collectionBarSlots[i].position);
-        //                 if (i >= 1) i--;
-        //             }
-        //         }
-        //     }
-        //
-        //     _dictItemFactory2D.Clear();
-        //     for (int i = 0; i < MaxCollectionBarSlots; i++)
-        //     {
-        //         if (itemFactory2DArray[i] != null)
-        //         {
-        //             _dictItemFactory2D.Add(itemFactory2DArray[i].Id, itemFactory2DArray[i]);
-        //             itemFactory2DArray[i].IndexFromBar = i;
-        //             itemFactory2DArray[i].JumpOnBar(collectionBarSlots[i].position);
-        //         }
-        //     }
-        // }
 
         public void SetActiveItemChoose(int id, Action onComplete = null)
         {
