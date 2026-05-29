@@ -13,6 +13,7 @@ namespace MatchFactoryCore.Scripts.Game.State
         public override void OnEnter()
         {
             Debug.Log("Enter Init State");
+            Controller.stateName = "Init";
             Controller.InitializeLevel(1, () => StateMachine.ChangeState(MatchFactoryState.Playing));
         }
     }

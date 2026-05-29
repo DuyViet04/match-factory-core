@@ -11,12 +11,10 @@ namespace MatchFactoryCore.Scripts.Item
 
         public GameObject Prefab;
         public float PrefabSize;
-        public float PrefabScale;
 
         public Sprite Sprite;
         public ItemFactoryType ItemFactoryType;
         public float SpriteScaleOnBar;
-        public float SpriteScaleWhenChange;
     }
 
     public class ItemFactory : ItemEntity, IItemFactory3D, IItemFactory2D
@@ -26,6 +24,8 @@ namespace MatchFactoryCore.Scripts.Item
         // public int Id { get; private set; }
         //
         // #endregion
+
+        private float _scaleWhenJump = 1.25f;
 
         #region Data 3D Object
 
@@ -38,7 +38,6 @@ namespace MatchFactoryCore.Scripts.Item
         public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
-        public float PrefabScale { get; set; }
 
         #endregion
 
@@ -47,7 +46,6 @@ namespace MatchFactoryCore.Scripts.Item
         public Sprite Sprite { get; set; }
         public ItemFactoryType ItemFactoryType { get; set; }
         public float SpriteScaleOnBar { get; set; }
-        public float SpriteScaleWhenChange { get; set; }
 
         #endregion
 
@@ -60,9 +58,7 @@ namespace MatchFactoryCore.Scripts.Item
 
             Sprite = itemFactory3DContext.Sprite;
             ItemFactoryType = itemFactory3DContext.ItemFactoryType;
-            PrefabScale = itemFactory3DContext.PrefabScale;
             SpriteScaleOnBar = itemFactory3DContext.SpriteScaleOnBar;
-            SpriteScaleWhenChange = itemFactory3DContext.SpriteScaleWhenChange;
 
             ObjectRigidbody = Prefab.GetComponent<Rigidbody>();
             ObjectCollider = Prefab.GetComponent<Collider>();
@@ -72,6 +68,7 @@ namespace MatchFactoryCore.Scripts.Item
                 ObjectOutline = Prefab.AddComponent<ItemOutline>();
                 ObjectOutline.enabled = false;
             }
+
             if (ObjectRigidbody != null && ObjectCollider != null)
             {
                 Bounds bounds = ObjectCollider.bounds;
@@ -89,18 +86,22 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpSequence;
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null, Action changeTo2D = null)
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null, Action<Vector3, float> changeTo2D = null)
         {
             Debug.Log("JumpFromBoard");
+            Vector3 worldPos;
+            float scale;
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Append(Prefab.transform.DOJump(toTarget, 1, 1, 0.5f));
-            _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * PrefabScale, 0.25f));
-            _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.25f));
-            _jumpSequence.InsertCallback(0.25f, () => { changeTo2D?.Invoke(); });
-            _jumpSequence.OnComplete(() =>
+            _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
+            _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.1f));
+            _jumpSequence.InsertCallback(0.1f, () =>
             {
-                onComplete?.Invoke();
+                worldPos = Prefab.transform.position;
+                scale = Prefab.transform.localScale.x;
+                changeTo2D?.Invoke(worldPos, scale);
             });
+            _jumpSequence.OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void OnExplode()

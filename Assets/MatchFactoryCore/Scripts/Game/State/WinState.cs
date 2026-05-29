@@ -13,6 +13,7 @@ namespace MatchFactoryCore.Scripts.Game.State
         public override void OnEnter()
         {
             Debug.LogWarning("OnEnter WinState");
+            Controller.stateName = "Win";
         }
     }
 }

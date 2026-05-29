@@ -22,24 +22,30 @@ namespace MatchFactoryCore.Scripts.Game
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
 
         // private readonly Dictionary<int, ItemFactory2D> _dictItemFactory2D = new Dictionary<int, ItemFactory2D>();
-        private RectTransform[] _cacheRectTransform;
+        private Vector2[] _cacheRectTransform;
 
         private void Awake()
         {
-            _cacheRectTransform = new RectTransform[collectionBarSlots.Count];
+            _cacheRectTransform = new Vector2[collectionBarSlots.Count];
             for (int i = 0; i < collectionBarSlots.Count; i++)
             {
-                _cacheRectTransform[i] = collectionBarSlots[i];
+                _cacheRectTransform[i] = collectionBarSlots[i].anchoredPosition;
             }
         }
 
-        public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id)
+        public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id, Vector3 worldPos, float scale)
         {
+            Sequence moveSequence = DOTween.Sequence();
             Vector2 jumpPos = GetPositionJump2D(itemFactory2D.ItemFactoryType);
-
-            ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI, jumpPos, Quaternion.identity);
+            Vector2 spawnPos = mainCamera.WorldToScreenPoint(worldPos);
+            ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI, spawnPos, Quaternion.identity);
+            newItemFactory2D.transform.localEulerAngles = Vector3.one * scale;
             newItemFactory2D.transform.SetParent(holder.transform);
             newItemFactory2D.Initialize(id, itemFactory2D);
+
+            moveSequence.Append(newItemFactory2D.transform.DOMove(jumpPos, 0.4f))
+                .Join(newItemFactory2D.transform.DOScale(itemFactory2D.SpriteScaleOnBar, 0.4f));
+
             newItemFactory2D.gameObject.SetActive(true);
             HandleItemFactory2D(newItemFactory2D);
         }
@@ -160,11 +166,12 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void BounceBarSlot(int index)
+        private void BounceBarSlot(int index)
         {
+            collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index];
             collectionBarSlots[index].DOPunchPosition(Vector2.down * 50, 0.1f, 5, 5).OnComplete(() =>
             {
-                collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index].anchoredPosition;
+                collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index];
             });
         }
 

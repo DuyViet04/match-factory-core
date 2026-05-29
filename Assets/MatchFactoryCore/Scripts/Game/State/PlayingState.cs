@@ -13,6 +13,7 @@ namespace MatchFactoryCore.Scripts.Game.State
         public override void OnEnter()
         {
             Debug.Log("Enter Playing State");
+            Controller.stateName = "Play";
         }
 
         public override void OnUpdate()

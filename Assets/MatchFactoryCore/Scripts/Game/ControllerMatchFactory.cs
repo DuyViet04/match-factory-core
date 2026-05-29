@@ -22,14 +22,12 @@ namespace MatchFactoryCore.Scripts.Game
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
         [SerializeField] private GameObject holder;
-        [SerializeField] private List<GameObject> itemSlots = new List<GameObject>();
 
         //Test
+        public string stateName;
         public float spawnInHighValue;
         public float maxX, maxZ;
 
-        private const int MaxSlot = 7;
-        public List<GameObject> ItemSlots => itemSlots;
         public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
         public float TimeLevel { get; private set; }
@@ -169,12 +167,10 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 Id = (int)itemFactoryType + index,
                 Prefab = newItemFactory3D,
-                PrefabScale = so.prefabScale,
                 PrefabSize = so.prefabSize,
                 Sprite = so.sprite,
                 ItemFactoryType = itemFactoryType,
                 SpriteScaleOnBar = so.spriteScaleOnBar,
-                SpriteScaleWhenChange = so.spriteScaleWhenChange
             };
             itemFactoryComp.Initialize(initItemFactory3DContext);
             _dictItemFactory.TryAdd(initItemFactory3DContext.Id, itemFactoryComp);
@@ -215,9 +211,9 @@ namespace MatchFactoryCore.Scripts.Game
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
             itemFactory.JumpFromBoard(targetJumpPos, null,
-                () =>
+                (pos, scale) =>
                 {
-                    controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
+                    controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id, pos, scale);
                     itemFactory.ChangeTo2D();
                 });
         }
