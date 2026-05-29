@@ -20,14 +20,17 @@ namespace MatchFactoryCore.Scripts.Game
         private const int MaxCollectionBarSlots = 7;
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
 
-        Vector2[] _cacheRectTransform;
+        Vector2[] _cacheAnchorPosition;
+        Vector3[] _cacheSlotPosition;
 
         private void Awake()
         {
-            _cacheRectTransform = new Vector2[collectionBarSlots.Count];
+            _cacheAnchorPosition = new Vector2[collectionBarSlots.Count];
+            _cacheSlotPosition = new Vector3[collectionBarSlots.Count];
             for (int i = 0; i < collectionBarSlots.Count; i++)
             {
-                _cacheRectTransform[i] = collectionBarSlots[i].anchoredPosition;
+                _cacheAnchorPosition[i] = collectionBarSlots[i].anchoredPosition;
+                _cacheSlotPosition[i] = collectionBarSlots[i].position;
             }
         }
 
@@ -62,12 +65,12 @@ namespace MatchFactoryCore.Scripts.Game
 
         private Vector2 GetPositionJump2D(ItemFactoryType type)
         {
-            return collectionBarSlots[GetIndexToInsert(type)].position;
+            return _cacheSlotPosition[GetIndexToInsert(type)];
         }
 
         private Vector2 GetPositionJump2D(int index)
         {
-            return collectionBarSlots[index].position;
+            return _cacheSlotPosition[index];
         }
 
         private int GetIndexToInsert(ItemFactoryType type)
@@ -172,10 +175,10 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void BounceBarSlot(int index)
         {
-            collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index];
+            collectionBarSlots[index].anchoredPosition = _cacheAnchorPosition[index];
             collectionBarSlots[index].DOPunchPosition(Vector2.down * 50, 0.1f, 5, 5).OnComplete(() =>
             {
-                collectionBarSlots[index].anchoredPosition = _cacheRectTransform[index];
+                collectionBarSlots[index].anchoredPosition = _cacheAnchorPosition[index];
             });
         }
 
