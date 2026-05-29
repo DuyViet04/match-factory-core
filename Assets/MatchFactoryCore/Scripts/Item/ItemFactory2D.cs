@@ -44,16 +44,16 @@ namespace MatchFactoryCore.Scripts.Item
             switch (jumpType)
             {
                 case JumpTypeMatch.Left:
-                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f)
-                        .SetEase(Ease.InBack)).Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
+                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f))
+                        .Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
                     break;
                 case JumpTypeMatch.Center:
-                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f)
-                        .SetEase(Ease.InBack)).Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
+                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f))
+                        .Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
                     break;
                 case JumpTypeMatch.Right:
-                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f)
-                        .SetEase(Ease.InBack)).Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
+                    _jumpOnMatchSequence.Append(RectTransform.DOMove(currentPos + high, 0.25f))
+                        .Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack));
                     break;
             }
 
@@ -80,7 +80,7 @@ namespace MatchFactoryCore.Scripts.Item
             while (current != targetIndex)
             {
                 current += direction;
-                int capturedIndex = current; // capture để lambda không bị closure lỗi
+                int capturedIndex = current;
                 _jumpAfterMatchSequence.Append(
                     RectTransform.DOJump(getSlotPosition(capturedIndex), 100, 1, timePerStep)
                         .OnComplete(() => { onJumpStep?.Invoke(capturedIndex); }));

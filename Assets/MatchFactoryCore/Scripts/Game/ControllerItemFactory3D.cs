@@ -13,21 +13,17 @@ namespace MatchFactoryCore.Scripts.Game
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
-
         private int _layerMask;
-        private Vector2 _lastPointerPos;
-        private Vector2 _lastRaycastPointerPos;
-
-        Vector2 _pointerPos;
+        
+        Vector2 _lastRaycastPointerPos;
+        Vector2 _startMousePos;
         RaycastHit _hit;
         ItemFactory _itemFactory;
         IItemFactory3D _itemFactory3D;
-
-        Vector2 _startMousePos;
+        IItemFactory3D _lastItemFactory3D;
         bool _isPressing;
         bool _hasMovedEnoughForDrag;
         int _lastId;
-        IItemFactory3D _lastItemFactory3D;
 
         private void Awake()
         {
@@ -42,7 +38,8 @@ namespace MatchFactoryCore.Scripts.Game
             bool wasPressed = Pointer.current.press.wasPressedThisFrame;
             bool wasReleased = Pointer.current.press.wasReleasedThisFrame;
 
-            bool shouldRaycast = wasPressed || wasReleased || (_isPressing && _hasMovedEnoughForDrag && currentPointerPos != _lastRaycastPointerPos);
+            bool shouldRaycast = wasPressed || wasReleased || 
+                                 (_isPressing && _hasMovedEnoughForDrag && currentPointerPos != _lastRaycastPointerPos);
 
             bool hitSomething = false;
             ItemFactory hitItemFactory = null;
@@ -66,7 +63,6 @@ namespace MatchFactoryCore.Scripts.Game
 
             if (wasPressed)
             {
-                _pointerPos = currentPointerPos;
                 _startMousePos = currentPointerPos;
                 _isPressing = true;
                 _hasMovedEnoughForDrag = false;
@@ -160,8 +156,6 @@ namespace MatchFactoryCore.Scripts.Game
                     }
                 }
             }
-
-            _lastPointerPos = currentPointerPos;
         }
 
         private void HandleItemFactory3D(IItemFactory3D itemFactory3D, int id)

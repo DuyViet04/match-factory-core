@@ -18,11 +18,9 @@ namespace MatchFactoryCore.Scripts.Game
         public event Action<bool> OnInsertItemCompleted;
 
         private const int MaxCollectionBarSlots = 7;
-
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
 
-        // private readonly Dictionary<int, ItemFactory2D> _dictItemFactory2D = new Dictionary<int, ItemFactory2D>();
-        private Vector2[] _cacheRectTransform;
+        Vector2[] _cacheRectTransform;
 
         private void Awake()
         {
@@ -36,15 +34,22 @@ namespace MatchFactoryCore.Scripts.Game
         public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id, Vector3 worldPos, float scale)
         {
             Sequence moveSequence = DOTween.Sequence();
-            Vector2 jumpPos = GetPositionJump2D(itemFactory2D.ItemFactoryType);
+            int indexToInsert = GetIndexToInsert(itemFactory2D.ItemFactoryType);
+            Vector2 jumpPos = GetPositionJump2D(indexToInsert);
             Vector2 spawnPos = mainCamera.WorldToScreenPoint(worldPos);
             ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI, spawnPos, Quaternion.identity);
+
             newItemFactory2D.transform.localEulerAngles = Vector3.one * scale;
             newItemFactory2D.transform.SetParent(holder.transform);
             newItemFactory2D.Initialize(id, itemFactory2D);
 
             moveSequence.Append(newItemFactory2D.transform.DOMove(jumpPos, 0.4f))
-                .Join(newItemFactory2D.transform.DOScale(itemFactory2D.SpriteScaleOnBar, 0.4f));
+                .Join(newItemFactory2D.transform.DOScale(itemFactory2D.SpriteScaleOnBar, 0.4f))
+                .OnComplete((() =>
+                {
+                    newItemFactory2D.RectTransform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                    BounceBarSlot(indexToInsert);
+                }));
 
             newItemFactory2D.gameObject.SetActive(true);
             HandleItemFactory2D(newItemFactory2D);
@@ -105,7 +110,6 @@ namespace MatchFactoryCore.Scripts.Game
             int insertIndex = GetIndexToInsert(itemChoose.ItemFactory.ItemFactoryType);
             _itemFactory2DList.Insert(insertIndex, itemChoose);
             _itemFactory2DList[insertIndex].IndexFromBar = insertIndex;
-            BounceBarSlot(insertIndex);
             for (int i = insertIndex + 1; i < _itemFactory2DList.Count; i++)
             {
                 int capturedIndex = i;
@@ -138,9 +142,9 @@ namespace MatchFactoryCore.Scripts.Game
                     matchsList[0].JumpMatch(GetPositionJump2D(matchsList[0].IndexFromBar),
                         GetPositionJump2D(matchsList[1].IndexFromBar), JumpTypeMatch.Left);
                     matchsList[1].JumpMatch(GetPositionJump2D(matchsList[1].IndexFromBar),
-                        GetPositionJump2D(matchsList[1].IndexFromBar), JumpTypeMatch.Left);
+                        GetPositionJump2D(matchsList[1].IndexFromBar), JumpTypeMatch.Center);
                     matchsList[2].JumpMatch(GetPositionJump2D(matchsList[2].IndexFromBar),
-                        GetPositionJump2D(matchsList[1].IndexFromBar), JumpTypeMatch.Left);
+                        GetPositionJump2D(matchsList[1].IndexFromBar), JumpTypeMatch.Right);
                     isMatch = true;
 
                     OnItemMatched?.Invoke(idList);
@@ -155,13 +159,13 @@ namespace MatchFactoryCore.Scripts.Game
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                ItemFactory2D item = _itemFactory2DList[i];
-                int oldIndex = item.IndexFromBar;
+                ItemFactory2D itemFactory2D = _itemFactory2DList[i];
+                int oldIndex = itemFactory2D.IndexFromBar;
                 int newIndex = i;
 
-                item.IndexFromBar = newIndex;
+                itemFactory2D.IndexFromBar = newIndex;
 
-                item.JumpAfterMatch(oldIndex, newIndex, idx => GetPositionJump2D(idx), null,
+                itemFactory2D.JumpAfterMatch(oldIndex, newIndex, idx => GetPositionJump2D(idx), null,
                     BounceBarSlot);
             }
         }
@@ -175,6 +179,7 @@ namespace MatchFactoryCore.Scripts.Game
             });
         }
 
+        [Obsolete]
         public void SetActiveItemChoose(int id, Action onComplete = null)
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)

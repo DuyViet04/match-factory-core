@@ -13,11 +13,9 @@ namespace MatchFactoryCore.Scripts.Game
     [DefaultExecutionOrder(-100)]
     public class ControllerMatchFactory : MonoBehaviour
     {
-        [Header("References")] [SerializeField]
-        private ControllerItemFactory3D controllerItemFactory3D;
-
+        [Header("References")] 
+        [SerializeField] private ControllerItemFactory3D controllerItemFactory3D;
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
-
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
@@ -70,7 +68,7 @@ namespace MatchFactoryCore.Scripts.Game
             _stateMachine.UpdateState();
         }
 
-        #region InitializeItemFactory3D
+        #region Initialize
 
         void InitializeState()
         {
@@ -117,9 +115,10 @@ namespace MatchFactoryCore.Scripts.Game
                 }
             }
 
-            StartCoroutine(WaitForReady(onReady));
+            onReady?.Invoke();
         }
 
+        [Obsolete]
         IEnumerator WaitForReady(Action onReady)
         {
             yield return null;
@@ -218,8 +217,6 @@ namespace MatchFactoryCore.Scripts.Game
                 });
         }
 
-        #endregion
-
         private void RemoveItemFactory(List<int> idList)
         {
             for (int i = 0; i < idList.Count; i++)
@@ -252,6 +249,8 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        #endregion
+
         public void UpdateTimeLevel()
         {
             TimeLevel -= Time.deltaTime;
@@ -263,7 +262,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             _dictItemFactory.TryGetValue(id, out var itemFactory);
             if (itemFactory == null) return null;
-            return (IItemFactory2D)itemFactory;
+            return itemFactory as IItemFactory2D;
         }
     }
 }

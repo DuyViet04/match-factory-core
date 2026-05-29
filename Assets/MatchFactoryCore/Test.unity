@@ -1131,7 +1131,7 @@ MonoBehaviour:
   infoLevelsMatch3Factory: {fileID: 11400000, guid: 315327c543c739c4a94e87b7a642ba30, type: 2}
   holder: {fileID: 1809800383}
   stateName: 
-  spawnInHighValue: 13
+  spawnInHighValue: 7
   maxX: 4
   maxZ: 4
 --- !u!4 &1019175765
