@@ -27,8 +27,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void UpdateRaycast()
         {
-            // if (Pointer.current.press.wasPressedThisFrame || Pointer.current.press.wasReleasedThisFrame)
-            if (Pointer.current.press.isPressed)
+            if (Pointer.current.press.wasPressedThisFrame || Pointer.current.press.wasReleasedThisFrame)
             {
                 _pointerPos = Pointer.current.position.ReadValue();
                 Physics.Raycast(mainCamera.ScreenPointToRay(_pointerPos), out _hit, int.MaxValue,
@@ -38,7 +37,7 @@ namespace MatchFactoryCore.Scripts.Game
                 _itemFactory = go.GetComponent<ItemFactory>();
                 _itemFactory3D = _itemFactory as IItemFactory3D;
             }
-            // else return;
+            else return;
 
             if (Pointer.current.press.wasPressedThisFrame)
             {

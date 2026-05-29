@@ -20,5 +20,5 @@ MonoBehaviour:
         m_keys: e8030000d0070000
         m_values: 0f0000000f000000
       DictOtherObjectInLevel:
-        m_keys: d0070000b80b0000a00f0000
-        m_values: 1e0000001e0000001e000000
+        m_keys: b80b0000a00f0000
+        m_values: 1e0000001e000000

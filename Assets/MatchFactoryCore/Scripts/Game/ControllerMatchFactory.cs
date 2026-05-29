@@ -213,9 +213,13 @@ namespace MatchFactoryCore.Scripts.Game
                 OnLevelTargetChanged?.Invoke(_targetDictionary);
             }
 
-            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
-            itemFactory.JumpFromBoard(controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType),
-                () => { controllerCollectionBar.SetActiveItemChoose(id); });
+            Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
+            itemFactory.JumpFromBoard(targetJumpPos, null,
+                () =>
+                {
+                    controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
+                    itemFactory.ChangeTo2D();
+                });
         }
 
         #endregion

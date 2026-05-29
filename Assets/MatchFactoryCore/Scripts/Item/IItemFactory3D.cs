@@ -12,7 +12,7 @@ namespace MatchFactoryCore.Scripts.Item
         public float PrefabSize { get; set; }
         public float PrefabScale { get; set; }
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null);
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null, Action changeTo2D = null);
         public void OnExplode();
         public void ChangeTo2D(Action onComplete = null);
     }
