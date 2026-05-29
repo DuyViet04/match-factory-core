@@ -35,7 +35,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
-        public Outline ObjectOutline { get; set; }
+        public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
         public float PrefabScale { get; set; }
@@ -66,7 +66,12 @@ namespace MatchFactoryCore.Scripts.Item
 
             ObjectRigidbody = Prefab.GetComponent<Rigidbody>();
             ObjectCollider = Prefab.GetComponent<Collider>();
-            ObjectOutline = Prefab.GetComponent<Outline>();
+            ObjectOutline = Prefab.GetComponent<ItemOutline>();
+            if (ObjectOutline == null)
+            {
+                ObjectOutline = Prefab.AddComponent<ItemOutline>();
+                ObjectOutline.enabled = false;
+            }
             if (ObjectRigidbody != null && ObjectCollider != null)
             {
                 Bounds bounds = ObjectCollider.bounds;

@@ -7,7 +7,7 @@ namespace MatchFactoryCore.Scripts.Item
     {
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
-        public Outline ObjectOutline { get; set; }
+        public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
         public float PrefabScale { get; set; }
