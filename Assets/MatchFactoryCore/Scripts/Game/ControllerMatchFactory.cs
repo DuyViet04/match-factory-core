@@ -212,7 +212,6 @@ namespace MatchFactoryCore.Scripts.Game
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
             targetJumpPos.y -= mainCamera.transform.position.y;
-            Debug.Log(targetJumpPos);
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
             itemFactory.JumpFromBoard(targetJumpPos, () =>
             {
