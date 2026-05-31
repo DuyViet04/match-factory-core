@@ -1126,6 +1126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Game.GameMatchFactoryController
   controllerItemFactory3D: {fileID: 1853017284}
+  mainCamera: {fileID: 1135401819}
   controllerCollectionBar: {fileID: 1127701121}
   infoItemsMatch3Factory: {fileID: 11400000, guid: 9cca2dd89fe4f0043afb112f6d0c1c48, type: 2}
   infoLevelsMatch3Factory: {fileID: 11400000, guid: 315327c543c739c4a94e87b7a642ba30, type: 2}

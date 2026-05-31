@@ -13,9 +13,11 @@ namespace MatchFactoryCore.Scripts.Game
     [DefaultExecutionOrder(-100)]
     public class ControllerMatchFactory : MonoBehaviour
     {
-        [Header("References")] 
-        [SerializeField] private ControllerItemFactory3D controllerItemFactory3D;
+        [Header("References")] [SerializeField]
+        private ControllerItemFactory3D controllerItemFactory3D;
+
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
+        [SerializeField] private Camera mainCamera;
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
@@ -209,12 +211,13 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
-            itemFactory.JumpFromBoard(targetJumpPos, null,
-                (pos, scale) =>
-                {
-                    controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id, pos, scale);
-                    itemFactory.ChangeTo2D();
-                });
+            targetJumpPos.y -= mainCamera.transform.position.y;
+            Debug.Log(targetJumpPos);
+            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
+            itemFactory.JumpFromBoard(targetJumpPos, () =>
+            {
+                controllerCollectionBar.SetActiveItemChoose(id);
+            });
         }
 
         private void RemoveItemFactory(List<int> idList)

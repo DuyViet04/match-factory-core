@@ -86,22 +86,18 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpSequence;
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null, Action<Vector3, float> changeTo2D = null)
+        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null)
         {
             Debug.Log("JumpFromBoard");
-            Vector3 worldPos;
-            float scale;
             _jumpSequence = DOTween.Sequence();
-            _jumpSequence.Append(Prefab.transform.DOJump(toTarget, 1, 1, 0.5f));
-            _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
-            _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.1f));
-            _jumpSequence.InsertCallback(0.1f, () =>
+            _jumpSequence.Append(Prefab.transform.DOJump(toTarget, 5f, 1, 0.5f));
+            // _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
+            _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
+            _jumpSequence.OnComplete(() =>
             {
-                worldPos = Prefab.transform.position;
-                scale = Prefab.transform.localScale.x;
-                changeTo2D?.Invoke(worldPos, scale);
+                ChangeTo2D();
+                onComplete?.Invoke();
             });
-            _jumpSequence.OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void OnExplode()
