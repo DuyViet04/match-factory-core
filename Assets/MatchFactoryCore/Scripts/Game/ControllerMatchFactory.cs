@@ -1,12 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game.State;
 using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Game
 {
@@ -19,26 +17,18 @@ namespace MatchFactoryCore.Scripts.Game
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
-        [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
-        [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
-        [SerializeField] private GameObject holder;
 
         //Test
         public string stateName;
-        public float spawnInHighValue;
-        public float maxX, maxZ;
 
         public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
         public float TimeLevel { get; private set; }
 
+        private Dictionary<ItemFactoryType, int> _targetDictionary;
+        private Dictionary<int, ItemFactory> _dictItemFactory;
         private StateMachine<MatchFactoryState> _stateMachine;
-        private readonly Dictionary<ItemFactoryType, int> _targetDictionary = new();
-        private readonly List<Rigidbody> _itemsRigidbody = new List<Rigidbody>();
-        private readonly Dictionary<int, ItemFactory> _dictItemFactory = new Dictionary<int, ItemFactory>();
 
-        // Cache
-        Vector3 _randomSpawnPoint;
 
         private void OnEnable()
         {
@@ -56,13 +46,14 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void Awake()
         {
-            InitializeDictionary();
             InitializeState();
+            _targetDictionary = controllerItemFactory3D.GetTargetDictionary();
+            _dictItemFactory = controllerItemFactory3D.GetDictItemFactory();
         }
 
         private void Start()
         {
-            OnLevelTargetChanged?.Invoke(_targetDictionary);
+            OnLevelTargetChanged?.Invoke(controllerItemFactory3D.GetTargetDictionary());
         }
 
         private void Update()
@@ -72,7 +63,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Initialize
 
-        void InitializeState()
+        private void InitializeState()
         {
             _stateMachine = new StateMachine<MatchFactoryState>();
             _stateMachine.AddState(MatchFactoryState.Init, new InitState(this, _stateMachine));
@@ -83,110 +74,11 @@ namespace MatchFactoryCore.Scripts.Game
             _stateMachine.SetInitState(MatchFactoryState.Init);
         }
 
-        void InitializeDictionary()
-        {
-            infoItemsMatch3Factory.SetCache();
-        }
-
         public void InitializeLevel(int level, Action onReady)
         {
-            var dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
+            DataLevelMatchFactory dataLevel = controllerItemFactory3D.GetDataLevel(level);
             TimeLevel = dataLevel.TimeLevel;
-            var levelTarget = dataLevel.DictLevelTarget;
-            var otherObjInLevel = dataLevel.DictOtherObjectInLevel;
-
-            _itemsRigidbody.Clear();
-
-            // Spawn item cần thu thập
-            foreach (var item in levelTarget)
-            {
-                for (int i = 0; i < item.Value; i++)
-                {
-                    Spawn(item.Key, i);
-                }
-
-                _targetDictionary.TryAdd(item.Key, item.Value);
-            }
-
-            // Spawn item khác
-            foreach (var item in otherObjInLevel)
-            {
-                for (int i = 0; i < item.Value; i++)
-                {
-                    Spawn(item.Key, i);
-                }
-            }
-
-            onReady?.Invoke();
-        }
-
-        [Obsolete]
-        IEnumerator WaitForReady(Action onReady)
-        {
-            yield return null;
-            while (true)
-            {
-                var isReady = true;
-                foreach (var rigid in _itemsRigidbody)
-                {
-                    if (!rigid.IsSleeping())
-                    {
-                        isReady = false;
-                        break;
-                    }
-                }
-
-                if (isReady)
-                {
-                    Debug.Log("Ready");
-                    onReady?.Invoke();
-                    yield break;
-                }
-
-                yield return null;
-            }
-        }
-
-        #endregion
-
-        #region Spawn Helper
-
-        void Spawn(ItemFactoryType itemFactoryType, int index)
-        {
-            infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory.TryGetValue(itemFactoryType, out var so);
-            if (so == null)
-            {
-                Debug.LogError($"{itemFactoryType} not found");
-                return;
-            }
-
-            var newItemFactory3D = Instantiate(so.prefab, GetRandomSpawnPoint(), Quaternion.identity);
-            newItemFactory3D.transform.parent = holder.transform;
-            ItemFactory itemFactoryComp = newItemFactory3D.GetComponent<ItemFactory>();
-
-            InitItemFactory3DContext initItemFactory3DContext = new InitItemFactory3DContext()
-            {
-                Id = (int)itemFactoryType + index,
-                Prefab = newItemFactory3D,
-                PrefabSize = so.prefabSize,
-                Sprite = so.sprite,
-                ItemFactoryType = itemFactoryType,
-                SpriteScaleOnBar = so.spriteScaleOnBar,
-            };
-            itemFactoryComp.Initialize(initItemFactory3DContext);
-            _dictItemFactory.TryAdd(initItemFactory3DContext.Id, itemFactoryComp);
-            IItemFactory3D itemFactory3D = itemFactoryComp as IItemFactory3D;
-            _itemsRigidbody.Add(itemFactory3D.ObjectRigidbody);
-        }
-
-        Vector3 GetRandomSpawnPoint()
-        {
-            var randX = Random.Range(-maxX, maxX);
-            var randZ = Random.Range(-maxZ, maxZ);
-            _randomSpawnPoint.x = randX;
-            _randomSpawnPoint.y = spawnInHighValue;
-            _randomSpawnPoint.z = randZ;
-            return _randomSpawnPoint;
+            controllerItemFactory3D.SpawnAllItem(level, onReady);
         }
 
         #endregion
@@ -213,19 +105,12 @@ namespace MatchFactoryCore.Scripts.Game
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
             targetJumpPos.y -= mainCamera.transform.position.y;
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
-            itemFactory.JumpFromBoard(targetJumpPos, () =>
-            {
-                controllerCollectionBar.SetActiveItemChoose(id);
-            });
+            itemFactory.ActionBehaviour(targetJumpPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
         }
 
         private void RemoveItemFactory(List<int> idList)
         {
-            for (int i = 0; i < idList.Count; i++)
-            {
-                Destroy(_dictItemFactory[idList[i]].gameObject);
-                _dictItemFactory.Remove(idList[i]);
-            }
+            controllerItemFactory3D.RemoveItemFactory(idList);
         }
 
         bool IsWin()

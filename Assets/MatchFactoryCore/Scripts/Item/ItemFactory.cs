@@ -17,14 +17,8 @@ namespace MatchFactoryCore.Scripts.Item
         public float SpriteScaleOnBar;
     }
 
-    public class ItemFactory : ItemEntity, IItemFactory3D, IItemFactory2D
+    public class ItemFactory : ItemEntity, IItem3D, IItemFactory2D
     {
-        // #region Entity
-        //
-        // public int Id { get; private set; }
-        //
-        // #endregion
-
         private float _scaleWhenJump = 1.25f;
 
         #region Data 3D Object
@@ -86,7 +80,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpSequence;
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null)
+        public void ActionBehaviour(Vector3 toTarget, Action onComplete = null)
         {
             Debug.Log("JumpFromBoard");
             _jumpSequence = DOTween.Sequence();
@@ -95,20 +89,13 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
             _jumpSequence.OnComplete(() =>
             {
-                ChangeTo2D();
+                Prefab.SetActive(false);
                 onComplete?.Invoke();
             });
         }
 
         public void OnExplode()
         {
-        }
-
-        public void ChangeTo2D(Action onComplete = null)
-        {
-            Debug.Log("ChangeTo2D");
-            Prefab.SetActive(false);
-            onComplete?.Invoke();
         }
 
         #endregion

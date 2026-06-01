@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
 {
-    public interface IItemFactory3D
+    public interface IItem3D
     {
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
@@ -11,8 +11,7 @@ namespace MatchFactoryCore.Scripts.Item
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
 
-        public void JumpFromBoard(Vector3 toTarget, Action onComplete = null);
+        public void ActionBehaviour(Vector3 toTarget, Action onComplete = null);
         public void OnExplode();
-        public void ChangeTo2D(Action onComplete = null);
     }
 }
