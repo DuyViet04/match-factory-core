@@ -26,6 +26,7 @@ namespace MatchFactoryCore.Scripts.Game
         public float TimeLevel { get; private set; }
 
         private Dictionary<ItemFactoryType, int> _targetDictionary;
+        private Dictionary<ItemFactoryType, int> _otherItemDictionary;
         private Dictionary<int, ItemFactory> _dictItemFactory;
         private StateMachine<MatchFactoryState> _stateMachine;
 
@@ -49,6 +50,7 @@ namespace MatchFactoryCore.Scripts.Game
             InitializeState();
             _targetDictionary = controllerItemFactory3D.GetTargetDictionary();
             _dictItemFactory = controllerItemFactory3D.GetDictItemFactory();
+            _otherItemDictionary = controllerItemFactory3D.GetOtherItemDictionary();
         }
 
         private void Start()
@@ -90,8 +92,9 @@ namespace MatchFactoryCore.Scripts.Game
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory == null) return;
 
-            _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
-            if (remainTarget > 0)
+            bool isTarget = _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
+            bool isOther = _otherItemDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainOther);
+            if (isTarget && remainTarget > 0)
             {
                 _targetDictionary[itemFactory.ItemFactoryType]--;
                 if (IsWin())
@@ -100,6 +103,11 @@ namespace MatchFactoryCore.Scripts.Game
                 }
 
                 OnLevelTargetChanged?.Invoke(_targetDictionary);
+            }
+
+            if (isOther && remainOther > 0)
+            {
+                _otherItemDictionary[itemFactory.ItemFactoryType]--;
             }
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);

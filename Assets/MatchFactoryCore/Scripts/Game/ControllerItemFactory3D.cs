@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using UnityEngine;
@@ -218,6 +219,8 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        #region Item Action Rule
+
         private void HandleItemAction(IItem3D item3D, int id)
         {
             ActionType actionType = item3D.ActionType;
@@ -267,6 +270,7 @@ namespace MatchFactoryCore.Scripts.Game
                     _dictItemAction.TryGetValue(id, out ItemAction firework);
                     if (firework != null)
                     {
+                        _dictItemAction.Remove(firework.Id);
                         List<ItemAction> fireworkList = new List<ItemAction> { firework };
                         for (int i = 0; i < 2; i++)
                         {
@@ -294,7 +298,23 @@ namespace MatchFactoryCore.Scripts.Game
                     break;
                 }
             }
+
+            if (typeList.Count == 0)
+            {
+                _dictItemAction.TryGetValue(id, out ItemAction firework);
+                if (firework != null)
+                {
+                    _dictItemAction.Remove(firework.Id);
+                    Sequence sequence = DOTween.Sequence();
+                    sequence.Append(firework.transform.DOMove(firework.transform.position + Vector3.up * 2, 0.25f))
+                        .Append(firework.transform.DOShakePosition(0.25f))
+                        .Join(firework.transform.DOScale(Vector3.zero, 0.25f))
+                        .OnComplete(() => { Destroy(firework.gameObject); });
+                }
+            }
         }
+
+        #endregion
 
         public void RemoveItemFactory(List<int> idList)
         {
@@ -415,6 +435,11 @@ namespace MatchFactoryCore.Scripts.Game
         public Dictionary<ItemFactoryType, int> GetTargetDictionary()
         {
             return _targetDictionary;
+        }
+
+        public Dictionary<ItemFactoryType, int> GetOtherItemDictionary()
+        {
+            return _otherItemDictionary;
         }
 
         public Dictionary<int, ItemFactory> GetDictItemFactory()
