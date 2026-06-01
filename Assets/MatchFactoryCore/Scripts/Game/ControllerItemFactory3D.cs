@@ -21,6 +21,7 @@ namespace MatchFactoryCore.Scripts.Game
         public float maxX, maxZ;
 
         public event Action<int> OnPointerReleased;
+        public event Action<int> OnItemActionHourglassUse;
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
@@ -229,6 +230,9 @@ namespace MatchFactoryCore.Scripts.Game
                 case ActionType.Firework:
                     HandleItemActionFirework(id);
                     break;
+                case ActionType.Hourglass:
+                    HandleItemActionHourglass(id);
+                    break;
             }
         }
 
@@ -259,10 +263,20 @@ namespace MatchFactoryCore.Scripts.Game
 
                     List<ItemFactory> itemFactoryTargets = new List<ItemFactory>();
                     int counting = 0;
-                    for (int i = itemFactoryList.Count - 1; i >= 0; i--)
+                    int idx = 0;
+                    while (counting < 3)
                     {
-                        itemFactoryTargets.Add(itemFactoryList[i]);
-                        counting++;
+                        if (itemFactoryList[idx].gameObject.activeSelf == false)
+                        {
+                            idx++;
+                            continue;
+                        }
+                        else
+                        {
+                            itemFactoryTargets.Add(itemFactoryList[idx]);
+                            counting++;
+                            idx++;
+                        }
 
                         if (counting == 3) break;
                     }
@@ -305,12 +319,19 @@ namespace MatchFactoryCore.Scripts.Game
                 if (firework != null)
                 {
                     _dictItemAction.Remove(firework.Id);
-                    Sequence sequence = DOTween.Sequence();
-                    sequence.Append(firework.transform.DOMove(firework.transform.position + Vector3.up * 2, 0.25f))
-                        .Append(firework.transform.DOShakePosition(0.25f))
-                        .Join(firework.transform.DOScale(Vector3.zero, 0.25f))
-                        .OnComplete(() => { Destroy(firework.gameObject); });
+                    firework.Explode();
                 }
+            }
+        }
+
+        private void HandleItemActionHourglass(int id)
+        {
+            _dictItemAction.TryGetValue(id, out ItemAction hourglass);
+            if (hourglass != null)
+            {
+                _dictItemAction.Remove(hourglass.Id);
+                OnItemActionHourglassUse?.Invoke(10);
+                hourglass.Explode();
             }
         }
 

@@ -44,12 +44,19 @@ MonoBehaviour:
       sprite: {fileID: 7482667652216324306, guid: 78f116189c00be04685c8b619c018f5a, type: 3}
       spriteScaleOnBar: 0.5
   DictInfoItemActionsMatch3Factory:
-    m_keys: 01000000
+    m_keys: 0100000002000000
     m_values:
     - itemFactoryType: 0
       itemFactoryCollectionType: 0
       prefab: {fileID: 7532878828684950317, guid: c3d00a823ead3ea4b98251d8d1ce0ac7, type: 3}
       prefabSize: 0.5
       actionType: 1
+      sprite: {fileID: 0}
+      spriteScaleOnBar: 0
+    - itemFactoryType: 0
+      itemFactoryCollectionType: 0
+      prefab: {fileID: 5915937912591050976, guid: da2a4cd8b08e646499186aaefcfb9f58, type: 3}
+      prefabSize: 0.5
+      actionType: 2
       sprite: {fileID: 0}
       spriteScaleOnBar: 0

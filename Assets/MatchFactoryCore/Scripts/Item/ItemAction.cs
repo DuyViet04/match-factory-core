@@ -18,6 +18,8 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
+        Sequence _explodeSequence;
+
         public void InitializeItemAction(InitItem3DContext context)
         {
             Id = context.Id;
@@ -58,6 +60,11 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void Explode(Action onComplete = null)
         {
+            _explodeSequence = DOTween.Sequence();
+            _explodeSequence.Append(Prefab.transform.DOMove(Prefab.transform.position + Vector3.up * 2, 0.25f))
+                .Append(Prefab.transform.DOShakePosition(0.25f))
+                .Join(Prefab.transform.DOScale(Vector3.zero, 0.25f))
+                .OnComplete(() => { Destroy(Prefab.gameObject); });
         }
     }
 }

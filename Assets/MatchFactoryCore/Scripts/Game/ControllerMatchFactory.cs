@@ -34,6 +34,7 @@ namespace MatchFactoryCore.Scripts.Game
         private void OnEnable()
         {
             controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
+            controllerItemFactory3D.OnItemActionHourglassUse += UpdateTime;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
         }
@@ -41,6 +42,7 @@ namespace MatchFactoryCore.Scripts.Game
         private void OnDisable()
         {
             controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
+            controllerItemFactory3D.OnItemActionHourglassUse -= UpdateTime;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
         }
@@ -108,12 +110,22 @@ namespace MatchFactoryCore.Scripts.Game
             if (isOther && remainOther > 0)
             {
                 _otherItemDictionary[itemFactory.ItemFactoryType]--;
+                if (_otherItemDictionary[itemFactory.ItemFactoryType] <= 0)
+                {
+                    _otherItemDictionary.Remove(itemFactory.ItemFactoryType);
+                }
             }
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
             targetJumpPos.y -= mainCamera.transform.position.y;
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
             itemFactory.ActionBehaviour(targetJumpPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
+        }
+
+        private void UpdateTime(int timeValue)
+        {
+            TimeLevel += timeValue;
+            OnTimeLevelChanged?.Invoke(TimeLevel);
         }
 
         private void RemoveItemFactory(List<int> idList)

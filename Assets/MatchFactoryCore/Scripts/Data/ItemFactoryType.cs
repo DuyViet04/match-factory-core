@@ -18,6 +18,6 @@ namespace MatchFactoryCore.Scripts.Data
     {
         Normal = 0,
         Firework = 1,
-        Sunglasses = 2,
+        Hourglass = 2,
     }
 }

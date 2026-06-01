@@ -23,5 +23,5 @@ MonoBehaviour:
         m_keys: b80b0000a00f0000
         m_values: 1e0000001e000000
       DictItemAction:
-        m_keys: 01000000
-        m_values: 05000000
+        m_keys: 0100000002000000
+        m_values: 0500000005000000
