@@ -59,7 +59,7 @@ namespace MatchFactoryCore.Scripts.Item
             ObjectRigidbody = Prefab.GetComponent<Rigidbody>();
             ObjectCollider = Prefab.GetComponent<Collider>();
             ObjectOutline = Prefab.GetComponent<ItemOutline>();
-            
+
             if (ObjectOutline != null)
             {
                 ObjectOutline.enabled = false;
@@ -81,11 +81,11 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpSequence;
 
-        public void ActionBehaviour(Vector3 toTarget, Action onComplete = null)
+        public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
             Debug.Log("JumpFromBoard");
             _jumpSequence = DOTween.Sequence();
-            _jumpSequence.Append(Prefab.transform.DOJump(toTarget, 5f, 1, 0.5f));
+            _jumpSequence.Append(Prefab.transform.DOJump(targetPos, 5f, 1, 0.5f));
             // _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
             _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
             _jumpSequence.OnComplete(() =>

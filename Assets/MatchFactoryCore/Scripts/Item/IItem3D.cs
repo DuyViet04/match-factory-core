@@ -13,7 +13,8 @@ namespace MatchFactoryCore.Scripts.Item
         public float PrefabSize { get; set; }
         public ActionType ActionType { get; set; }
 
-        public void ActionBehaviour(Vector3 toTarget, Action onComplete = null);
+        public void ActionBehaviour(Vector3 targetPos, Action onComplete = null);
+
         public void OnExplode();
     }
 }

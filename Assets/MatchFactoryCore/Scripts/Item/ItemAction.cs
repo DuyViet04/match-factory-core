@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using UnityEngine;
 
@@ -41,8 +42,10 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        public void ActionBehaviour(Vector3 toTarget, Action onComplete = null)
+        public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
+            Prefab.transform.DOJump(targetPos, 10f, 1, 1f)
+                .OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void OnExplode()
