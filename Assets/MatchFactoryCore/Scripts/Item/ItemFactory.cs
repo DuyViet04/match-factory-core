@@ -5,12 +5,13 @@ using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
 {
-    public struct InitItemFactory3DContext
+    public struct InitItem3DContext
     {
         public int Id;
 
         public GameObject Prefab;
         public float PrefabSize;
+        public ActionType ActionType;
 
         public Sprite Sprite;
         public ItemFactoryType ItemFactoryType;
@@ -25,13 +26,13 @@ namespace MatchFactoryCore.Scripts.Item
 
         Vector3 _basePrefabScale;
         Vector3 _prefabBaseRotation;
-        float _weight;
 
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
+        public ActionType ActionType { get; set; }
 
         #endregion
 
@@ -43,23 +44,24 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
-        public void Initialize(InitItemFactory3DContext itemFactory3DContext)
+        public void Initialize(InitItem3DContext item3DContext)
         {
-            Id = itemFactory3DContext.Id;
+            Id = item3DContext.Id;
 
-            Prefab = itemFactory3DContext.Prefab;
-            PrefabSize = itemFactory3DContext.PrefabSize;
+            Prefab = item3DContext.Prefab;
+            PrefabSize = item3DContext.PrefabSize;
+            ActionType = item3DContext.ActionType;
 
-            Sprite = itemFactory3DContext.Sprite;
-            ItemFactoryType = itemFactory3DContext.ItemFactoryType;
-            SpriteScaleOnBar = itemFactory3DContext.SpriteScaleOnBar;
+            Sprite = item3DContext.Sprite;
+            ItemFactoryType = item3DContext.ItemFactoryType;
+            SpriteScaleOnBar = item3DContext.SpriteScaleOnBar;
 
             ObjectRigidbody = Prefab.GetComponent<Rigidbody>();
             ObjectCollider = Prefab.GetComponent<Collider>();
             ObjectOutline = Prefab.GetComponent<ItemOutline>();
-            if (ObjectOutline == null)
+            
+            if (ObjectOutline != null)
             {
-                ObjectOutline = Prefab.AddComponent<ItemOutline>();
                 ObjectOutline.enabled = false;
             }
 
@@ -68,7 +70,6 @@ namespace MatchFactoryCore.Scripts.Item
                 Bounds bounds = ObjectCollider.bounds;
                 float volume = bounds.size.x * bounds.size.y * bounds.size.z;
                 ObjectRigidbody.mass = volume * PrefabSize;
-                _weight = ObjectRigidbody.mass;
             }
 
             _basePrefabScale = Prefab.transform.localScale;

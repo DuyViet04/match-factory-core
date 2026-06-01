@@ -1,4 +1,5 @@
 using System;
+using MatchFactoryCore.Scripts.Data;
 using UnityEngine;
 
 namespace MatchFactoryCore.Scripts.Item
@@ -10,6 +11,7 @@ namespace MatchFactoryCore.Scripts.Item
         public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
+        public ActionType ActionType { get; set; }
 
         public void ActionBehaviour(Vector3 toTarget, Action onComplete = null);
         public void OnExplode();

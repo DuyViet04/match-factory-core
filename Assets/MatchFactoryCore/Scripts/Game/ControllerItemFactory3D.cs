@@ -23,6 +23,7 @@ namespace MatchFactoryCore.Scripts.Game
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
         private readonly Dictionary<int, ItemFactory> _dictItemFactory = new Dictionary<int, ItemFactory>();
+        private readonly Dictionary<int, ItemAction> _dictItemAction = new Dictionary<int, ItemAction>();
         private readonly Dictionary<ItemFactoryType, int> _targetDictionary = new Dictionary<ItemFactoryType, int>();
         private int _layerMask;
 
@@ -41,7 +42,7 @@ namespace MatchFactoryCore.Scripts.Game
             _layerMask = LayerMask.GetMask(ItemFactory3DLayer);
             InitializeDictionary();
         }
-        
+
         private void InitializeDictionary()
         {
             infoItemsMatch3Factory.SetCache();
@@ -49,9 +50,10 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnAllItem(int level, Action onReady)
         {
-            var dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
-            var levelTarget = dataLevel.DictLevelTarget;
-            var otherObjInLevel = dataLevel.DictOtherObjectInLevel;
+            DataLevelMatchFactory dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
+            Dictionary<ItemFactoryType, int> levelTarget = dataLevel.CacheDictLevelTarget;
+            Dictionary<ItemFactoryType, int> otherObjInLevel = dataLevel.CacheDictOtherObjectInLevel;
+            Dictionary<ActionType, int> dictItemAction = dataLevel.CacheDictItemAction;
 
             // Spawn item cần thu thập
             foreach (var item in levelTarget)
@@ -70,6 +72,35 @@ namespace MatchFactoryCore.Scripts.Game
                 for (int i = 0; i < item.Value; i++)
                 {
                     Spawn(item.Key, i);
+                }
+            }
+
+            foreach (var itemAction in dictItemAction)
+            {
+                for (int i = 0; i < itemAction.Value; i++)
+                {
+                    infoItemsMatch3Factory.CacheDictInfoItemActionsMatch3Factory.TryGetValue(itemAction.Key,
+                        out DataItemFactory dataItemAction);
+                    if (dataItemAction == null)
+                    {
+                        Debug.LogError($"{itemAction} not found");
+                        return;
+                    }
+
+                    GameObject newItemAction =
+                        Instantiate(dataItemAction.prefab, GetRandomSpawnPoint(), Quaternion.identity);
+                    newItemAction.transform.SetParent(holder.transform);
+                    ItemAction itemActionComp = newItemAction.GetComponent<ItemAction>();
+
+                    InitItem3DContext itemActionContext = new InitItem3DContext()
+                    {
+                        Id = (int)itemAction.Key * 10 + i,
+                        ActionType = itemAction.Key,
+                        Prefab = dataItemAction.prefab,
+                        PrefabSize = dataItemAction.prefabSize
+                    };
+                    itemActionComp.InitializeItemAction(itemActionContext);
+                    _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
                 }
             }
 
@@ -209,7 +240,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             OnPointerReleased?.Invoke(id);
         }
-        
+
         public void RemoveItemFactory(List<int> idList)
         {
             for (int i = 0; i < idList.Count; i++)
@@ -223,7 +254,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         void Spawn(ItemFactoryType itemFactoryType, int index)
         {
-            infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory.TryGetValue(itemFactoryType, out var so);
+            infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory.TryGetValue(itemFactoryType, out DataItemFactory so);
             if (so == null)
             {
                 Debug.LogError($"{itemFactoryType} not found");
@@ -234,17 +265,18 @@ namespace MatchFactoryCore.Scripts.Game
             newItemFactory3D.transform.parent = holder.transform;
             ItemFactory itemFactoryComp = newItemFactory3D.GetComponent<ItemFactory>();
 
-            InitItemFactory3DContext initItemFactory3DContext = new InitItemFactory3DContext()
+            InitItem3DContext initItem3DContext = new InitItem3DContext()
             {
                 Id = (int)itemFactoryType + index,
                 Prefab = newItemFactory3D,
                 PrefabSize = so.prefabSize,
+                ActionType = so.actionType,
                 Sprite = so.sprite,
                 ItemFactoryType = itemFactoryType,
                 SpriteScaleOnBar = so.spriteScaleOnBar,
             };
-            itemFactoryComp.Initialize(initItemFactory3DContext);
-            _dictItemFactory.TryAdd(initItemFactory3DContext.Id, itemFactoryComp);
+            itemFactoryComp.Initialize(initItem3DContext);
+            _dictItemFactory.TryAdd(initItem3DContext.Id, itemFactoryComp);
         }
 
         Vector3 GetRandomSpawnPoint()

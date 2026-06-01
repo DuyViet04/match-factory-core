@@ -14,8 +14,11 @@ namespace MatchFactoryCore.Scripts.Data
         public SerializableDictionary<ItemFactoryType, int> DictOtherObjectInLevel =
             new SerializableDictionary<ItemFactoryType, int>();
 
+        public SerializableDictionary<ActionType, int> DictItemAction = new SerializableDictionary<ActionType, int>();
+
         public Dictionary<ItemFactoryType, int> CacheDictLevelTarget;
         public Dictionary<ItemFactoryType, int> CacheDictOtherObjectInLevel;
+        public Dictionary<ActionType, int> CacheDictItemAction;
 
         public DataLevelMatchFactory()
         {
@@ -26,6 +29,8 @@ namespace MatchFactoryCore.Scripts.Data
             TimeLevel = source.TimeLevel;
             DictLevelTarget = source.DictLevelTarget;
             DictOtherObjectInLevel = source.DictOtherObjectInLevel;
+            DictItemAction = source.DictItemAction;
+            SetCache();
         }
 
         void SetCache()
@@ -40,6 +45,12 @@ namespace MatchFactoryCore.Scripts.Data
             foreach (var itemTemp in DictOtherObjectInLevel)
             {
                 CacheDictOtherObjectInLevel.TryAdd(itemTemp.Key, itemTemp.Value);
+            }
+
+            CacheDictItemAction = new Dictionary<ActionType, int>();
+            foreach (var itemTemp in DictItemAction)
+            {
+                CacheDictItemAction.TryAdd(itemTemp.Key, itemTemp.Value);
             }
         }
     }
