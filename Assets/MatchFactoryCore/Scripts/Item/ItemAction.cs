@@ -44,11 +44,19 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
-            Prefab.transform.DOJump(targetPos, 10f, 1, 1f)
-                .OnComplete(() => { onComplete?.Invoke(); });
+            ObjectRigidbody.isKinematic = true;
+            ObjectRigidbody.useGravity = false;
+
+            Vector3 middle = new Vector3(0f, 7f, 3.5f);
+            Vector3[] path = new[] { middle, targetPos };
+            ObjectRigidbody.DOPath(path, 2f, PathType.CatmullRom).OnComplete(() =>
+            {
+                Destroy(gameObject);
+                onComplete?.Invoke();
+            });
         }
 
-        public void OnExplode()
+        public void Explode(Action onComplete = null)
         {
         }
     }

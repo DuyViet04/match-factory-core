@@ -15,6 +15,6 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null);
 
-        public void OnExplode();
+        public void Explode(Action onComplete = null);
     }
 }

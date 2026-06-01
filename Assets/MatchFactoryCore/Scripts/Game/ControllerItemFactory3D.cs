@@ -108,10 +108,14 @@ namespace MatchFactoryCore.Scripts.Game
                     _item3D.ObjectOutline.enabled = true;
                     _item3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
 
+                    _lastItem3D = _item3D;
                     if (_itemFactory != null)
                     {
-                        _lastItem3D = _item3D;
                         _lastId = _itemFactory.Id;
+                    }
+                    else if (_itemAction != null)
+                    {
+                        _lastId = _itemAction.Id;
                     }
                 }
                 else
@@ -169,21 +173,23 @@ namespace MatchFactoryCore.Scripts.Game
                 {
                     if (hitSomething)
                     {
-                        if (hitItemFactory.Id != _lastId)
+                        int hitId = hitItemFactory != null ? hitItemFactory.Id : hitItemAction.Id;
+                        if (hitId != _lastId)
                         {
                             if (_lastItem3D != null && _lastItem3D != hitItem3D)
                             {
                                 _lastItem3D.ObjectOutline.enabled = false;
                             }
 
-                            hitItem3D.ObjectOutline.enabled = true;
+                            if (hitItem3D.ObjectOutline != null)
+                                hitItem3D.ObjectOutline.enabled = true;
                             hitItem3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
 
                             _itemFactory = hitItemFactory;
                             _itemAction = hitItemAction;
                             _item3D = hitItem3D;
                             _lastItem3D = hitItem3D;
-                            _lastId = hitItemFactory.Id;
+                            _lastId = hitId;
                         }
                     }
                     else
@@ -269,7 +275,7 @@ namespace MatchFactoryCore.Scripts.Game
                             InitItem3DContext cloneContext = new InitItem3DContext()
                             {
                                 ActionType = firework.ActionType,
-                                Prefab = firework.Prefab,
+                                Prefab = cloneFirework.gameObject,
                                 PrefabSize = firework.PrefabSize,
                             };
                             cloneFirework.InitializeItemAction(cloneContext);
@@ -278,8 +284,10 @@ namespace MatchFactoryCore.Scripts.Game
 
                         for (int i = 0; i < itemFactoryTargets.Count; i++)
                         {
-                            fireworkList[i].ActionBehaviour(itemFactoryTargets[i].transform.position);
-                            Debug.Log(itemFactoryTargets[i].Id);
+                            _dictItemFactory.Remove(itemFactoryTargets[i].Id);
+                            int index = i;
+                            fireworkList[index].ActionBehaviour(itemFactoryTargets[index].transform.position,
+                                () => { itemFactoryTargets[index].Explode(); });
                         }
                     }
 
@@ -349,7 +357,7 @@ namespace MatchFactoryCore.Scripts.Game
                     {
                         Id = (int)itemAction.Key * 10 + i,
                         ActionType = itemAction.Key,
-                        Prefab = dataItemAction.prefab,
+                        Prefab = newItemAction,
                         PrefabSize = dataItemAction.prefabSize
                     };
                     itemActionComp.InitializeItemAction(itemActionContext);

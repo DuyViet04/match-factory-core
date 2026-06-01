@@ -24,15 +24,17 @@ namespace MatchFactoryCore.Scripts.Item
 
         #region Data 3D Object
 
-        Vector3 _basePrefabScale;
-        Vector3 _prefabBaseRotation;
-
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
         public ActionType ActionType { get; set; }
+
+        private float _explodeScale = 1.25f;
+
+        Vector3 _basePrefabScale;
+        Vector3 _prefabBaseRotation;
 
         #endregion
 
@@ -80,6 +82,7 @@ namespace MatchFactoryCore.Scripts.Item
         #region Behaviour 3D Object
 
         Sequence _jumpSequence;
+        Sequence _explodeSequence;
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
@@ -95,8 +98,18 @@ namespace MatchFactoryCore.Scripts.Item
             });
         }
 
-        public void OnExplode()
+        public void Explode(Action onComplete = null)
         {
+            Debug.Log("Explode");
+            _explodeSequence = DOTween.Sequence();
+            _explodeSequence.Append(Prefab.transform.DOScale(_basePrefabScale * _explodeScale, 0.25f))
+                // .Join(Prefab.transform.DOShakePosition(0.25f))
+                .Append(Prefab.transform.DOScale(Vector3.zero, 0.25f))
+                .OnComplete(() =>
+                {
+                    Destroy(gameObject);
+                    onComplete?.Invoke();
+                });
         }
 
         #endregion
