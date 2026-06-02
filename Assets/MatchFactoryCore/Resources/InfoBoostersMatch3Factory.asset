@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 807473d5a5524f9685bf93abd6bb1452, type: 3}
+  m_Name: InfoBoostersMatch3Factory
+  m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Data.InfoBoostersMatch3Factory
+  DictInfoBoostersMatch3Factory:
+    m_keys: 00000000010000000200000003000000
+    m_values:
+    - boosterSprite: {fileID: -9095717837082945937, guid: 1c8e5ad8e876c10498f7d418a3359e95, type: 3}
+      boosterType: 0
+      boosterCount: 3
+    - boosterSprite: {fileID: -2413806693520163455, guid: 9a16fdbacc5cab1439d5e89d5aacf69d, type: 3}
+      boosterType: 1
+      boosterCount: 3
+    - boosterSprite: {fileID: 7482667652216324306, guid: 78f116189c00be04685c8b619c018f5a, type: 3}
+      boosterType: 2
+      boosterCount: 3
+    - boosterSprite: {fileID: 7482667652216324306, guid: 68732b7946540954cbdc597138f9bebf, type: 3}
+      boosterType: 3
+      boosterCount: 3

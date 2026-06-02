@@ -74,57 +74,6 @@ namespace MatchFactoryCore.Scripts.Game
             });
         }
 
-        #region Gets Sets
-
-        public Vector3 GetPositionTo3DJump(ItemFactoryType type)
-        {
-            return mainCamera.ScreenToWorldPoint(GetPositionJump2D(type));
-        }
-
-        private Vector2 GetPositionJump2D(ItemFactoryType type)
-        {
-            return collectionBarSlots[GetIndexToInsert(type)].position;
-        }
-
-        private Vector2 GetPositionJump2D(int index)
-        {
-            return collectionBarSlots[index].position;
-        }
-
-        private int GetIndexToInsert(ItemFactoryType type)
-        {
-            bool canInsert = false;
-            for (int i = 0; i < _itemFactory2DList.Count; i++)
-            {
-                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == type)
-                {
-                    canInsert = true;
-                }
-
-                if (canInsert && _itemFactory2DList[i].ItemFactory.ItemFactoryType != type)
-                {
-                    return i;
-                }
-            }
-
-            return _itemFactory2DList.Count;
-        }
-
-        public void SetActiveItemChoose(int id, Action onComplete = null)
-        {
-            for (int i = 0; i < _itemFactory2DList.Count; i++)
-            {
-                if (_itemFactory2DList[i].Id == id)
-                {
-                    _itemFactory2DList[i].gameObject.SetActive(true);
-                    onComplete?.Invoke();
-                    break;
-                }
-            }
-        }
-
-        #endregion
-
         private void InsertItem(ItemFactory2D itemChoose, out List<ItemFactory2D> itemMoves)
         {
             itemMoves = new List<ItemFactory2D>();
@@ -245,6 +194,33 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        public void PlaySequenceAfterUseHutBui(Action onComplete = null)
+        {
+            if (_itemFactory2DList.Count == 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            int completedCount = 0;
+            int total = _itemFactory2DList.Count;
+
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                int capturedOldIndex = _itemFactory2DList[i].IndexFromBar;
+                _itemFactory2DList[i].IndexFromBar = i;
+                int capturedNewIndex = i;
+                _itemFactory2DList[i].JumpAfterMatch(capturedOldIndex, capturedNewIndex,
+                    idx => GetPositionJump2D(idx),
+                    () =>
+                    {
+                        completedCount++;
+                        if (completedCount == total) onComplete?.Invoke();
+                    },
+                    BounceBarSlot);
+            }
+        }
+
         private void BounceBarSlot(int index)
         {
             collectionBarSlots[index].anchoredPosition = _cacheAnchorPosition[index];
@@ -253,5 +229,99 @@ namespace MatchFactoryCore.Scripts.Game
                 collectionBarSlots[index].anchoredPosition = _cacheAnchorPosition[index];
             });
         }
+
+        #region Gets Sets
+
+        public Vector3 GetPositionTo3DJump(ItemFactoryType type)
+        {
+            return mainCamera.ScreenToWorldPoint(GetPositionJump2D(type));
+        }
+
+        private Vector2 GetPositionJump2D(ItemFactoryType type)
+        {
+            return collectionBarSlots[GetIndexToInsert(type)].position;
+        }
+
+        private Vector2 GetPositionJump2D(int index)
+        {
+            return collectionBarSlots[index].position;
+        }
+
+        private int GetIndexToInsert(ItemFactoryType type)
+        {
+            bool canInsert = false;
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == type)
+                {
+                    canInsert = true;
+                }
+
+                if (canInsert && _itemFactory2DList[i].ItemFactory.ItemFactoryType != type)
+                {
+                    return i;
+                }
+            }
+
+            return _itemFactory2DList.Count;
+        }
+
+        public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position)
+        {
+            foreach (var item2DTemp in list2D)
+            {
+                if (_itemFactory2DList.Contains(item2DTemp))
+                {
+                    item2DTemp.MoveToHutBui(position, 0.1f);
+                    _itemFactory2DList.Remove(item2DTemp);
+                }
+            }
+        }
+
+        public void SetActiveItemChoose(int id, Action onComplete = null)
+        {
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                if (_itemFactory2DList[i].Id == id)
+                {
+                    _itemFactory2DList[i].gameObject.SetActive(true);
+                    onComplete?.Invoke();
+                    break;
+                }
+            }
+        }
+
+        public List<ItemFactory2D> GetLastTargetItem2DOnBar()
+        {
+            List<ItemFactory2D> result = new List<ItemFactory2D>();
+            for (int i = _itemFactory2DList.Count - 1; i >= 0; i--)
+            {
+                bool isTarget = ControllerMatchFactory.Ins.CheckTargetItemById(_itemFactory2DList[i].Id);
+                if (isTarget) result.Add(_itemFactory2DList[i]);
+            }
+
+            return result;
+        }
+
+        public List<ItemFactory2D> GetAllItemTargetOnBarByType(ItemFactoryType type)
+        {
+            List<ItemFactory2D> result = new List<ItemFactory2D>();
+            for (int i = _itemFactory2DList.Count - 1; i >= 0; i--)
+            {
+                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == type)
+                {
+                    result.Add(_itemFactory2DList[i]);
+                }
+            }
+
+            return result;
+        }
+
+        public List<ItemFactory2D> GetItemFactory2DList()
+        {
+            return _itemFactory2DList;
+        }
+
+        #endregion
     }
 }

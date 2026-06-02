@@ -11,12 +11,24 @@ namespace MatchFactoryCore.Scripts.Game
     [DefaultExecutionOrder(-100)]
     public class ControllerMatchFactory : MonoBehaviour
     {
+        private static ControllerMatchFactory _instance;
+
+        public static ControllerMatchFactory Ins
+        {
+            get
+            {
+                if (_instance == null) Debug.LogError("ControllerMatchFactory not instance");
+                return _instance;
+            }
+        }
+
         [Header("References")] [SerializeField]
         private ControllerItemFactory3D controllerItemFactory3D;
 
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
+        [SerializeField] private ControllerItemBooster controllerItemBooster;
 
         //Test
         public string stateName;
@@ -37,6 +49,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnItemActionHourglassUse += UpdateTime;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
+            controllerItemBooster.OnVacuumBoosterUse += OnVacuumBoosterUse;
         }
 
         private void OnDisable()
@@ -45,10 +58,34 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnItemActionHourglassUse -= UpdateTime;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
+            controllerItemBooster.OnVacuumBoosterUse -= OnVacuumBoosterUse;
+
+        }
+
+        private void OnVacuumBoosterUse(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
+        {
+            if (list2D != null && list2D.Count > 0)
+            {
+                controllerCollectionBar.MoveToVacuum(list2D, position);
+            }
+
+            if (list3D != null && list3D.Count > 0)
+            {
+                controllerItemFactory3D.MoveToVacuum(list3D, position);
+            }
         }
 
         private void Awake()
         {
+            if (_instance == null)
+            {
+                _instance = this;
+            }
+            else
+            {
+                Debug.LogError($"{GetType().Name} is already instantiated");
+            }
+
             InitializeState();
             _targetDictionary = controllerItemFactory3D.GetTargetDictionary();
             _dictItemFactory = controllerItemFactory3D.GetDictItemFactory();
@@ -89,8 +126,23 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Event Actions
 
+        public MatchFactoryState GetCurrentState()
+        {
+            return _stateMachine.CurrentStateKey;
+        }
+
+        public void PushOnLevelTargetChangeEvent()
+        {
+            OnLevelTargetChanged?.Invoke(controllerItemFactory3D.GetTargetDictionary());
+            if (IsWin())
+            {
+                _stateMachine.ChangeState(MatchFactoryState.Win);
+            }
+        }
+
         private void CheckLevelTarget(int id)
         {
+            // Todo: chuyen ve func trong 3d
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory == null) return;
 
@@ -117,7 +169,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
-            targetJumpPos.y -= mainCamera.transform.position.y;
+            targetJumpPos.y = 0;
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
             itemFactory.ActionBehaviour(targetJumpPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
         }
@@ -171,5 +223,59 @@ namespace MatchFactoryCore.Scripts.Game
             if (itemFactory == null) return null;
             return itemFactory as IItemFactory2D;
         }
+
+        #region Gets Sets
+
+        public Dictionary<int, ItemFactory> GetDictItemFactory()
+        {
+            return controllerItemFactory3D.GetDictItemFactory();
+        }
+
+        public Dictionary<ItemFactoryType, int> GetTargetDictionary()
+        {
+            return controllerItemFactory3D.GetTargetDictionary();
+        }
+
+        public bool CheckTargetItemById(int id)
+        {
+            return controllerItemFactory3D.CheckIsTargetItemById(id);
+        }
+
+        public List<IItem3D> GetRandomItemByType(ItemFactoryType type, int count)
+        {
+            return controllerItemFactory3D.GetRandomItemByType(type, count);
+        }
+
+        public List<ItemFactory> GetRandomTargetListItem()
+        {
+            return controllerItemFactory3D.GetRandomTargetListItem();
+        }
+
+        public List<ItemFactory2D> GetLastTargetItem2DOnBar()
+        {
+            return controllerCollectionBar.GetLastTargetItem2DOnBar();
+        }
+
+        public List<ItemFactory2D> GetAllItemTargetOnBarByType(ItemFactoryType type)
+        {
+            return controllerCollectionBar.GetAllItemTargetOnBarByType(type);
+        }
+
+        public List<ItemFactory2D> GetItemFactory2DList()
+        {
+            return controllerCollectionBar.GetItemFactory2DList();
+        }
+
+        public void PlaySequenceAfterUseHutBui()
+        {
+            controllerCollectionBar.PlaySequenceAfterUseHutBui();
+        }
+
+        public List<IItem3D> GetListItemRandomByBooster(int count)
+        {
+            return controllerItemFactory3D.GetListItemRandomByBooster(count);
+        }
+        
+        #endregion
     }
 }

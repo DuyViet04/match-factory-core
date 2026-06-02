@@ -468,6 +468,124 @@ namespace MatchFactoryCore.Scripts.Game
             return _dictItemFactory;
         }
 
+        public ItemFactory GetItemFactoryById(int id)
+        {
+            _dictItemFactory.TryGetValue(id, out ItemFactory item);
+            return item;
+        }
+
+        public bool CheckIsTargetItemById(int id)
+        {
+            ItemFactory item = GetItemFactoryById(id);
+            return _targetDictionary.TryGetValue(item.ItemFactoryType, out _);
+        }
+
+        public Dictionary<ItemFactoryType, List<ItemFactory>> GetDictAllItem()
+        {
+            Dictionary<ItemFactoryType, List<ItemFactory>> dict = new Dictionary<ItemFactoryType, List<ItemFactory>>();
+            foreach (var item in _dictItemFactory)
+            {
+                if (dict.ContainsKey(item.Value.ItemFactoryType))
+                {
+                    dict[item.Value.ItemFactoryType].Add(item.Value);
+                }
+                else
+                {
+                    dict.Add(item.Value.ItemFactoryType, new List<ItemFactory>());
+                    dict[item.Value.ItemFactoryType].Add(item.Value);
+                }
+            }
+
+            return dict;
+        }
+
+        public List<ItemFactory> GetListItemByType(ItemFactoryType type)
+        {
+            var allItem = GetDictAllItem();
+            allItem.TryGetValue(type, out List<ItemFactory> list);
+            return list;
+        }
+
+        public List<IItem3D> GetListItemRandomByBooster(int count)
+        {
+            List<IItem3D> result = new List<IItem3D>();
+            var allItem = GetDictAllItem();
+            List<ItemFactory> list = new List<ItemFactory>();
+            foreach (var item in allItem)
+            {
+                list.AddRange(item.Value);
+            }
+
+            if (list.Count <= 0)
+            {
+                return result;
+            }
+
+            int randomIndex = Random.Range(0, list.Count);
+            ItemFactoryType type = list[randomIndex].ItemFactoryType;
+
+            var typeList = allItem[type];
+            List<ItemFactory> copy = new List<ItemFactory>(typeList);
+            for (int i = 0; i < count; i++)
+            {
+                int randIndex = Random.Range(0, copy.Count);
+                result.Add(copy[randIndex]);
+                copy.RemoveAt(randIndex);
+            }
+
+            return result;
+        }
+
+        public List<IItem3D> GetRandomItemByType(ItemFactoryType type, int count)
+        {
+            List<IItem3D> result = new List<IItem3D>();
+            List<ItemFactory> list = GetListItemByType(type);
+            if (list.Count < count)
+            {
+                Debug.LogError($"{type} not enough items");
+                return result;
+            }
+            else
+            {
+                List<ItemFactory> copyList = new List<ItemFactory>();
+                copyList.AddRange(list);
+                for (int i = 0; i < count; i++)
+                {
+                    int randomIndex = Random.Range(0, copyList.Count);
+                    result.Add(copyList[randomIndex]);
+                    copyList.RemoveAt(randomIndex);
+                }
+
+                return result;
+            }
+        }
+
+        public List<ItemFactory> GetRandomTargetListItem()
+        {
+            List<ItemFactory> result = new List<ItemFactory>();
+            List<ItemFactory> allTargetItem = GetAllTargetItem();
+            int randomIndex = Random.Range(0, allTargetItem.Count);
+            ItemFactory randomItem = allTargetItem[randomIndex];
+            result.AddRange(GetListItemByType(randomItem.ItemFactoryType));
+            return result;
+        }
+
+        private List<ItemFactory> GetAllTargetItem()
+        {
+            List<ItemFactory> result = new List<ItemFactory>();
+            foreach (var item in _targetDictionary)
+            {
+                result.AddRange(GetListItemByType(item.Key));
+            }
+
+            return result;
+        }
+
         #endregion
+
+        public void MoveToVacuum(List<IItem3D> list3D, Vector3 position)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

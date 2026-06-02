@@ -14,6 +14,7 @@ namespace MatchFactoryCore.Scripts.Item
         public ActionType ActionType { get; set; }
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null);
+        public void JumpToBooster(Vector3 targetPos, Action onComplete = null);
 
         public void Explode(Action onComplete = null);
     }

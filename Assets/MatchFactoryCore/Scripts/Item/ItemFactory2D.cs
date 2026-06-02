@@ -22,6 +22,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpOnMatchSequence;
         Sequence _jumpAfterMatchSequence;
+        Sequence _moveToHutBuiSequence;
 
         public void Initialize(int id, IItemFactory2D itemFactory)
         {
@@ -86,6 +87,24 @@ namespace MatchFactoryCore.Scripts.Item
             }
 
             _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); });
+        }
+
+        public void MoveToHutBui(Vector3 targetPos, float delay, Action onComplete = null)
+        {
+            _moveToHutBuiSequence = DOTween.Sequence();
+            Vector3 startPos = RectTransform.position;
+            Vector3 middlePos = (startPos + (targetPos - startPos) * 0.5f);
+            middlePos.x -= 1f;
+            middlePos.y += 1f;
+            Vector3[] path = { middlePos, targetPos };
+
+            _moveToHutBuiSequence.Append(RectTransform.DOPath(path, 0.75f).SetDelay(delay))
+                .Insert(delay, RectTransform.DOScale(RectTransform.localScale * 0.5f, 0.75f - delay))
+                .OnComplete(() =>
+                {
+                    Destroy(gameObject);
+                    onComplete?.Invoke();
+                });
         }
     }
 }
