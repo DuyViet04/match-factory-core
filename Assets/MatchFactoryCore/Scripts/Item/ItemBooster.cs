@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game;
 using MatchFactoryCore.Scripts.Game.State;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = System.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
@@ -31,9 +29,9 @@ namespace MatchFactoryCore.Scripts.Item
         [SerializeField] private Image image;
         [SerializeField] private Text textCount;
 
-        public Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
-        public Action<int> OnSpringBoosterUse;
-        public Action<int> OnFreezeGunBoosterUse;
+        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
+        public event Action<int> OnSpringBoosterUse;
+        public event Action<int> OnFreezeGunBoosterUse;
 
         public void InitializeBooster(Sprite boosterSprite, BoosterType boosterType, int boosterCount)
         {
@@ -54,70 +52,43 @@ namespace MatchFactoryCore.Scripts.Item
             switch (BoosterType)
             {
                 case BoosterType.Vacuum:
-                    Debug.Log("HutBui");
-                    HandleBoosterHutBui();
+                    Debug.Log("Vacuum");
+                    HandleBoosterVacuum();
                     break;
                 case BoosterType.Spring:
-                    Debug.Log("DemNhun");
+                    Debug.Log("Spring");
                     break;
                 case BoosterType.Fan:
-                    Debug.Log("Quat");
+                    Debug.Log("Fan");
                     break;
                 case BoosterType.FreezeGun:
-                    Debug.Log("Sung");
+                    Debug.Log("FreezeGun");
                     break;
             }
         }
 
-        private void HandleBoosterHutBui()
+        private void HandleBoosterVacuum()
         {
             if (BoosterCount == 0) return;
-            BoosterCount--;
             List<ItemFactory2D> target2DItems = ControllerMatchFactory.Ins.GetLastTargetItem2DOnBar();
 
-            // todo: co the chuyen ve iitem2d
+            // TODO: Có thể chuyển về IItemFactory2D
             if (target2DItems.Count > 0)
             {
                 int remainCount = numberItemGet - target2DItems.Count;
-                List<IItem3D> randomTargetItems =
-                    ControllerMatchFactory.Ins.GetRandomItemByType(
-                        target2DItems.FirstOrDefault().ItemFactory.ItemFactoryType, remainCount);
+                List<IItem3D> randomTargetItems = ControllerMatchFactory.Ins.GetRandomItemByType(
+                    target2DItems.FirstOrDefault()!.ItemFactory.ItemFactoryType, remainCount);
                 if (randomTargetItems.Count >= remainCount)
                 {
-                    for (int i = 0; i < target2DItems.Count; i++)
-                    {
-                        float delay = i * 0.1f;
-                        target2DItems[i].MoveToHutBui(RectTransform.position, delay);
-                    }
-
-                    ControllerMatchFactory.Ins.PlaySequenceAfterUseHutBui();
-
-
-                    for (int i = 0; i < randomTargetItems.Count; i++)
-                    {
-                        Vector3 targetPos = Camera.main.ScreenToWorldPoint(transform.position);
-                        targetPos.y = 0;
-                        int capturedIndex = i;
-                        randomTargetItems[i].ActionBehaviour(targetPos,
-                            () => { Destroy(randomTargetItems[capturedIndex].Prefab); });
-                    }
-
                     OnVacuumBoosterUse?.Invoke(randomTargetItems, target2DItems, transform.position);
-                    return;
+                    BoosterCount--;
                 }
             }
-
+            else
             {
                 List<IItem3D> randomItems = ControllerMatchFactory.Ins.GetListItemRandomByBooster(numberItemGet);
-
-                for (int i = 0; i < randomItems.Count; i++)
-                {
-                    Vector3 targetPos = Camera.main.ScreenToWorldPoint(transform.position);
-                    targetPos.y = 0;
-                    randomItems[i].ActionBehaviour(targetPos);
-                }
-                
                 OnVacuumBoosterUse?.Invoke(randomItems, null, transform.position);
+                BoosterCount--;
             }
 
             textCount.text = BoosterCount.ToString();

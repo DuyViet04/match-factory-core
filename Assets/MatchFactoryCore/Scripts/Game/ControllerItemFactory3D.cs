@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using UnityEngine;
@@ -22,6 +21,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public event Action<int> OnPointerReleased;
         public event Action<int> OnItemActionHourglassUse;
+        public event Action<ItemFactoryType> OnVacuumBoosterUse;
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
@@ -53,6 +53,7 @@ namespace MatchFactoryCore.Scripts.Game
             infoItemsMatch3Factory.SetCache();
         }
 
+        // TODO: Chỉ làm việc với IItem3D
         public void UpdateRaycast()
         {
             if (Pointer.current == null) return;
@@ -81,13 +82,13 @@ namespace MatchFactoryCore.Scripts.Game
 
                     if (hitItemFactory != null)
                     {
-                        hitItem3D = hitItemFactory as IItem3D;
+                        hitItem3D = hitItemFactory;
                         hitSomething = true;
                     }
 
                     if (hitItemAction != null)
                     {
-                        hitItem3D = hitItemAction as IItem3D;
+                        hitItem3D = hitItemAction;
                         hitSomething = true;
                     }
                 }
@@ -220,6 +221,30 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        public void RemoveItemFactory(List<int> idList)
+        {
+            foreach (var idTemp in idList)
+            {
+                Destroy(_dictItemFactory[idTemp].gameObject);
+                _dictItemFactory.Remove(idTemp);
+            }
+        }
+
+        public void MoveToVacuum(List<IItem3D> list3D, Vector3 position)
+        {
+            if (list3D != null && list3D.Count > 0)
+            {
+                foreach (var item3DTemp in list3D)
+                {
+                    Vector3 targetPosition = mainCamera.ScreenToWorldPoint(position);
+                    item3DTemp.JumpToBooster(targetPosition);
+                    int item3DId = ((ItemFactory)item3DTemp).Id;
+                    _dictItemFactory.Remove(item3DId);
+                    OnVacuumBoosterUse?.Invoke(((ItemFactory)item3DTemp).ItemFactoryType);
+                }
+            }
+        }
+
         #region Item Action Rule
 
         private void HandleItemAction(IItem3D item3D, int id)
@@ -336,15 +361,6 @@ namespace MatchFactoryCore.Scripts.Game
         }
 
         #endregion
-
-        public void RemoveItemFactory(List<int> idList)
-        {
-            for (int i = 0; i < idList.Count; i++)
-            {
-                Destroy(_dictItemFactory[idList[i]].gameObject);
-                _dictItemFactory.Remove(idList[i]);
-            }
-        }
 
         #region Spawn Helper
 
@@ -468,7 +484,7 @@ namespace MatchFactoryCore.Scripts.Game
             return _dictItemFactory;
         }
 
-        public ItemFactory GetItemFactoryById(int id)
+        private ItemFactory GetItemFactoryById(int id)
         {
             _dictItemFactory.TryGetValue(id, out ItemFactory item);
             return item;
@@ -480,7 +496,7 @@ namespace MatchFactoryCore.Scripts.Game
             return _targetDictionary.TryGetValue(item.ItemFactoryType, out _);
         }
 
-        public Dictionary<ItemFactoryType, List<ItemFactory>> GetDictAllItem()
+        private Dictionary<ItemFactoryType, List<ItemFactory>> GetDictAllItem()
         {
             Dictionary<ItemFactoryType, List<ItemFactory>> dict = new Dictionary<ItemFactoryType, List<ItemFactory>>();
             foreach (var item in _dictItemFactory)
@@ -499,7 +515,7 @@ namespace MatchFactoryCore.Scripts.Game
             return dict;
         }
 
-        public List<ItemFactory> GetListItemByType(ItemFactoryType type)
+        private List<ItemFactory> GetListItemByType(ItemFactoryType type)
         {
             var allItem = GetDictAllItem();
             allItem.TryGetValue(type, out List<ItemFactory> list);
@@ -509,22 +525,17 @@ namespace MatchFactoryCore.Scripts.Game
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             List<IItem3D> result = new List<IItem3D>();
-            var allItem = GetDictAllItem();
-            List<ItemFactory> list = new List<ItemFactory>();
-            foreach (var item in allItem)
-            {
-                list.AddRange(item.Value);
-            }
+            List<ItemFactory> allTargetItem = GetAllTargetItem();
 
-            if (list.Count <= 0)
+            if (allTargetItem.Count <= 0)
             {
                 return result;
             }
 
-            int randomIndex = Random.Range(0, list.Count);
-            ItemFactoryType type = list[randomIndex].ItemFactoryType;
+            int randomIndex = Random.Range(0, allTargetItem.Count);
+            ItemFactoryType type = allTargetItem[randomIndex].ItemFactoryType;
 
-            var typeList = allItem[type];
+            List<ItemFactory> typeList = GetListItemByType(type);
             List<ItemFactory> copy = new List<ItemFactory>(typeList);
             for (int i = 0; i < count; i++)
             {
@@ -536,7 +547,7 @@ namespace MatchFactoryCore.Scripts.Game
             return result;
         }
 
-        public List<IItem3D> GetRandomItemByType(ItemFactoryType type, int count)
+        public List<IItem3D> GetRandomItemsByType(ItemFactoryType type, int count)
         {
             List<IItem3D> result = new List<IItem3D>();
             List<ItemFactory> list = GetListItemByType(type);
@@ -560,16 +571,6 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public List<ItemFactory> GetRandomTargetListItem()
-        {
-            List<ItemFactory> result = new List<ItemFactory>();
-            List<ItemFactory> allTargetItem = GetAllTargetItem();
-            int randomIndex = Random.Range(0, allTargetItem.Count);
-            ItemFactory randomItem = allTargetItem[randomIndex];
-            result.AddRange(GetListItemByType(randomItem.ItemFactoryType));
-            return result;
-        }
-
         private List<ItemFactory> GetAllTargetItem()
         {
             List<ItemFactory> result = new List<ItemFactory>();
@@ -582,10 +583,5 @@ namespace MatchFactoryCore.Scripts.Game
         }
 
         #endregion
-
-        public void MoveToVacuum(List<IItem3D> list3D, Vector3 position)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

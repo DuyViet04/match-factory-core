@@ -47,6 +47,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
             controllerItemFactory3D.OnItemActionHourglassUse += UpdateTime;
+            controllerItemFactory3D.OnVacuumBoosterUse += CheckTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
             controllerItemBooster.OnVacuumBoosterUse += OnVacuumBoosterUse;
@@ -56,23 +57,10 @@ namespace MatchFactoryCore.Scripts.Game
         {
             controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
             controllerItemFactory3D.OnItemActionHourglassUse -= UpdateTime;
+            controllerItemFactory3D.OnVacuumBoosterUse -= CheckTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
             controllerItemBooster.OnVacuumBoosterUse -= OnVacuumBoosterUse;
-
-        }
-
-        private void OnVacuumBoosterUse(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
-        {
-            if (list2D != null && list2D.Count > 0)
-            {
-                controllerCollectionBar.MoveToVacuum(list2D, position);
-            }
-
-            if (list3D != null && list3D.Count > 0)
-            {
-                controllerItemFactory3D.MoveToVacuum(list3D, position);
-            }
         }
 
         private void Awake()
@@ -126,20 +114,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Event Actions
 
-        public MatchFactoryState GetCurrentState()
-        {
-            return _stateMachine.CurrentStateKey;
-        }
-
-        public void PushOnLevelTargetChangeEvent()
-        {
-            OnLevelTargetChanged?.Invoke(controllerItemFactory3D.GetTargetDictionary());
-            if (IsWin())
-            {
-                _stateMachine.ChangeState(MatchFactoryState.Win);
-            }
-        }
-
         private void CheckLevelTarget(int id)
         {
             // Todo: chuyen ve func trong 3d
@@ -172,6 +146,24 @@ namespace MatchFactoryCore.Scripts.Game
             targetJumpPos.y = 0;
             controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
             itemFactory.ActionBehaviour(targetJumpPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
+        }
+
+        // TODO: First
+        private void CheckTarget(ItemFactoryType countRemove)
+        {
+        }
+
+        private void OnVacuumBoosterUse(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
+        {
+            if (list2D != null && list2D.Count > 0)
+            {
+                controllerCollectionBar.MoveToVacuum(list2D, position);
+            }
+
+            if (list3D != null && list3D.Count > 0)
+            {
+                controllerItemFactory3D.MoveToVacuum(list3D, position);
+            }
         }
 
         private void UpdateTime(int timeValue)
@@ -217,24 +209,7 @@ namespace MatchFactoryCore.Scripts.Game
             OnTimeLevelChanged?.Invoke(TimeLevel);
         }
 
-        private IItemFactory2D GetItemFactory2DById(int id)
-        {
-            _dictItemFactory.TryGetValue(id, out var itemFactory);
-            if (itemFactory == null) return null;
-            return itemFactory as IItemFactory2D;
-        }
-
         #region Gets Sets
-
-        public Dictionary<int, ItemFactory> GetDictItemFactory()
-        {
-            return controllerItemFactory3D.GetDictItemFactory();
-        }
-
-        public Dictionary<ItemFactoryType, int> GetTargetDictionary()
-        {
-            return controllerItemFactory3D.GetTargetDictionary();
-        }
 
         public bool CheckTargetItemById(int id)
         {
@@ -243,12 +218,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public List<IItem3D> GetRandomItemByType(ItemFactoryType type, int count)
         {
-            return controllerItemFactory3D.GetRandomItemByType(type, count);
-        }
-
-        public List<ItemFactory> GetRandomTargetListItem()
-        {
-            return controllerItemFactory3D.GetRandomTargetListItem();
+            return controllerItemFactory3D.GetRandomItemsByType(type, count);
         }
 
         public List<ItemFactory2D> GetLastTargetItem2DOnBar()
@@ -256,26 +226,23 @@ namespace MatchFactoryCore.Scripts.Game
             return controllerCollectionBar.GetLastTargetItem2DOnBar();
         }
 
-        public List<ItemFactory2D> GetAllItemTargetOnBarByType(ItemFactoryType type)
-        {
-            return controllerCollectionBar.GetAllItemTargetOnBarByType(type);
-        }
-
-        public List<ItemFactory2D> GetItemFactory2DList()
-        {
-            return controllerCollectionBar.GetItemFactory2DList();
-        }
-
-        public void PlaySequenceAfterUseHutBui()
-        {
-            controllerCollectionBar.PlaySequenceAfterUseHutBui();
-        }
-
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             return controllerItemFactory3D.GetListItemRandomByBooster(count);
         }
-        
+
+        private IItemFactory2D GetItemFactory2DById(int id)
+        {
+            _dictItemFactory.TryGetValue(id, out var itemFactory);
+            if (itemFactory == null) return null;
+            return itemFactory;
+        }
+
+        public MatchFactoryState GetCurrentState()
+        {
+            return _stateMachine.CurrentStateKey;
+        }
+
         #endregion
     }
 }

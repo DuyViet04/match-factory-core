@@ -96,10 +96,10 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             int completedCount = 0;
-            for (int i = 0; i < itemMoves.Count; i++)
+            foreach (var item2DTemp in itemMoves)
             {
-                int targetIndex = itemMoves[i].IndexFromBar;
-                itemMoves[i].JumpOnBar(GetPositionJump2D(targetIndex), () =>
+                int targetIndex = item2DTemp.IndexFromBar;
+                item2DTemp.JumpOnBar(GetPositionJump2D(targetIndex), () =>
                 {
                     BounceBarSlot(targetIndex);
                     completedCount++;
@@ -124,11 +124,11 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (matchsList.Count == 3)
                 {
-                    for (int j = 0; j < matchsList.Count; j++)
+                    foreach (var item2DTemp in matchsList)
                     {
-                        idList.Add(matchsList[j].Id);
-                        SetActiveItemChoose(matchsList[j].Id);
-                        _itemFactory2DList.Remove(matchsList[j]);
+                        idList.Add(item2DTemp.Id);
+                        SetActiveItemChoose(item2DTemp.Id);
+                        _itemFactory2DList.Remove(item2DTemp);
                     }
 
                     isMatch = true;
@@ -194,7 +194,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void PlaySequenceAfterUseHutBui(Action onComplete = null)
+        private void PlaySequenceAfterUseVacuum(Action onComplete = null)
         {
             if (_itemFactory2DList.Count == 0)
             {
@@ -219,6 +219,23 @@ namespace MatchFactoryCore.Scripts.Game
                     },
                     BounceBarSlot);
             }
+        }
+
+        public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position)
+        {
+            List<int> idList = new List<int>();
+            foreach (var item2DTemp in list2D)
+            {
+                if (_itemFactory2DList.Contains(item2DTemp))
+                {
+                    item2DTemp.MoveToVacuum(position, 0.1f);
+                    idList.Add(item2DTemp.Id);
+                    _itemFactory2DList.Remove(item2DTemp);
+                }
+            }
+
+            OnItemMatched?.Invoke(idList);
+            PlaySequenceAfterUseVacuum();
         }
 
         private void BounceBarSlot(int index)
@@ -266,25 +283,13 @@ namespace MatchFactoryCore.Scripts.Game
             return _itemFactory2DList.Count;
         }
 
-        public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position)
-        {
-            foreach (var item2DTemp in list2D)
-            {
-                if (_itemFactory2DList.Contains(item2DTemp))
-                {
-                    item2DTemp.MoveToHutBui(position, 0.1f);
-                    _itemFactory2DList.Remove(item2DTemp);
-                }
-            }
-        }
-
         public void SetActiveItemChoose(int id, Action onComplete = null)
         {
-            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            foreach (var item2DTemp in _itemFactory2DList)
             {
-                if (_itemFactory2DList[i].Id == id)
+                if (item2DTemp.Id == id)
                 {
-                    _itemFactory2DList[i].gameObject.SetActive(true);
+                    item2DTemp.gameObject.SetActive(true);
                     onComplete?.Invoke();
                     break;
                 }
@@ -301,25 +306,6 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             return result;
-        }
-
-        public List<ItemFactory2D> GetAllItemTargetOnBarByType(ItemFactoryType type)
-        {
-            List<ItemFactory2D> result = new List<ItemFactory2D>();
-            for (int i = _itemFactory2DList.Count - 1; i >= 0; i--)
-            {
-                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == type)
-                {
-                    result.Add(_itemFactory2DList[i]);
-                }
-            }
-
-            return result;
-        }
-
-        public List<ItemFactory2D> GetItemFactory2DList()
-        {
-            return _itemFactory2DList;
         }
 
         #endregion

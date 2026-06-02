@@ -12,12 +12,13 @@ namespace MatchFactoryCore.Scripts.Game
         [SerializeField] private GameObject boosterButtonPrefab;
         [SerializeField] private GameObject itemBoosterHolder;
 
-        Dictionary<BoosterType, ItemBooster> _itemBoosterDictionary = new Dictionary<BoosterType, ItemBooster>();
+        readonly Dictionary<BoosterType, ItemBooster> _itemBoosterDictionary =
+            new Dictionary<BoosterType, ItemBooster>();
 
 
-        public Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
-        public Action<int> OnSpringBoosterUse;
-        public Action<int> OnFreezeGunBoosterUse;
+        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
+        public event Action<int> OnSpringBoosterUse;
+        public event Action<int> OnFreezeGunBoosterUse;
 
         private void Awake()
         {
@@ -36,11 +37,9 @@ namespace MatchFactoryCore.Scripts.Game
                 switch (data.boosterType)
                 {
                     case BoosterType.Vacuum:
-                        OnVacuumBoosterUse = itemBoosterComp.OnVacuumBoosterUse;
+                        itemBoosterComp.OnVacuumBoosterUse += OnVacuumBoosterUse;
                         break;
                     case BoosterType.Spring:
-
-                        OnSpringBoosterUse = itemBoosterComp.OnSpringBoosterUse;
                         break;
                     case BoosterType.Fan:
                         Debug.Log("Quat");

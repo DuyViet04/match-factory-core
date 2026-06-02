@@ -1175,6 +1175,7 @@ MonoBehaviour:
   controllerItemFactory3D: {fileID: 1853017284}
   mainCamera: {fileID: 1135401819}
   controllerCollectionBar: {fileID: 1127701121}
+  controllerItemBooster: {fileID: 973448044}
   stateName: 
 --- !u!4 &1019175765
 Transform:
