@@ -21,7 +21,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public event Action<int> OnPointerReleased;
         public event Action<Dictionary<ItemFactoryType, int>> OnRemainTargetChanged;
-        public event Action<int> OnItemActionHourglassUse;
+        public event Action<float> OnItemActionHourglassUsed;
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
@@ -150,7 +150,9 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (!_hasMovedEnoughForDrag && _itemAction != null && _item3D != null)
                 {
-                    HandleItemAction(_item3D, _itemAction.Id);
+                    // TODO
+                    _itemAction.HandleItemAction();
+                    // HandleItemAction(_item3D, _itemAction.Id);
                 }
 
                 _isPressing = false;
@@ -307,122 +309,18 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        #region Item Action Rule
-
-        private void HandleItemAction(IItem3D item3D, int id)
+        private void HandleWhenItemActionFireworkUsed(IItem3D item3D)
         {
-            ActionType actionType = item3D.ActionType;
-            switch (actionType)
+            ItemAction itemAction = item3D as ItemAction;
+            if (itemAction != null)
             {
-                case ActionType.Firework:
-                    HandleItemActionFirework(id);
-                    break;
-                case ActionType.Hourglass:
-                    HandleItemActionHourglass(id);
-                    break;
+                itemAction.OnFireworkUsed -= HandleWhenItemActionFireworkUsed;
+                _dictItemAction.Remove(itemAction.Id);
             }
+
+            _dictItemFactory.Remove(((ItemFactory)item3D).Id);
+            item3D.Explode();
         }
-
-        private void HandleItemActionFirework(int id)
-        {
-            List<ItemFactoryType> typeList = new List<ItemFactoryType>();
-            foreach (var item in _otherItemDictionary)
-            {
-                typeList.Add(item.Key);
-            }
-
-            while (typeList.Count > 0)
-            {
-                int randIndex = Random.Range(0, typeList.Count);
-                ItemFactoryType itemType = typeList[randIndex];
-                int itemTypeCount = _otherItemDictionary[itemType];
-
-                if (itemTypeCount < 3)
-                {
-                    typeList.Remove(itemType);
-                }
-                else
-                {
-                    // Lấy list ItemFactory có type = type random
-                    List<ItemFactory> itemFactoryList = _dictItemFactory
-                        .Where(item => item.Key - item.Key % (int)itemType == (int)itemType)
-                        .Select(itemFactory => itemFactory.Value).ToList();
-
-                    List<ItemFactory> itemFactoryTargets = new List<ItemFactory>();
-                    int counting = 0;
-                    int idx = 0;
-                    while (counting < 3)
-                    {
-                        if (itemFactoryList[idx].gameObject.activeSelf == false)
-                        {
-                            idx++;
-                            continue;
-                        }
-                        else
-                        {
-                            itemFactoryTargets.Add(itemFactoryList[idx]);
-                            counting++;
-                            idx++;
-                        }
-
-                        if (counting == 3) break;
-                    }
-
-                    _dictItemAction.TryGetValue(id, out ItemAction firework);
-                    if (firework != null)
-                    {
-                        _dictItemAction.Remove(firework.Id);
-                        List<ItemAction> fireworkList = new List<ItemAction> { firework };
-                        for (int i = 0; i < 2; i++)
-                        {
-                            ItemAction cloneFirework = Instantiate(firework, firework.transform.position,
-                                firework.transform.rotation);
-                            InitItem3DContext cloneContext = new InitItem3DContext()
-                            {
-                                ActionType = firework.ActionType,
-                                Prefab = cloneFirework.gameObject,
-                                PrefabSize = firework.PrefabSize,
-                            };
-                            cloneFirework.InitializeItemAction(cloneContext);
-                            fireworkList.Add(cloneFirework);
-                        }
-
-                        for (int i = 0; i < itemFactoryTargets.Count; i++)
-                        {
-                            _dictItemFactory.Remove(itemFactoryTargets[i].Id);
-                            int index = i;
-                            fireworkList[index].ActionBehaviour(itemFactoryTargets[index].transform.position,
-                                () => { itemFactoryTargets[index].Explode(); });
-                        }
-                    }
-
-                    break;
-                }
-            }
-
-            if (typeList.Count == 0)
-            {
-                _dictItemAction.TryGetValue(id, out ItemAction firework);
-                if (firework != null)
-                {
-                    _dictItemAction.Remove(firework.Id);
-                    firework.Explode();
-                }
-            }
-        }
-
-        private void HandleItemActionHourglass(int id)
-        {
-            _dictItemAction.TryGetValue(id, out ItemAction hourglass);
-            if (hourglass != null)
-            {
-                _dictItemAction.Remove(hourglass.Id);
-                OnItemActionHourglassUse?.Invoke(10);
-                hourglass.Explode();
-            }
-        }
-
-        #endregion
 
         #region Spawn Helper
 
@@ -455,6 +353,7 @@ namespace MatchFactoryCore.Scripts.Game
                 _otherItemDictionary.TryAdd(item.Key, item.Value);
             }
 
+            // Spawn Item Action
             foreach (var itemAction in dictItemAction)
             {
                 for (int i = 0; i < itemAction.Value; i++)
@@ -472,14 +371,16 @@ namespace MatchFactoryCore.Scripts.Game
                     newItemAction.transform.SetParent(holder.transform);
                     ItemAction itemActionComp = newItemAction.GetComponent<ItemAction>();
 
-                    InitItem3DContext itemActionContext = new InitItem3DContext()
+                    InitItemActionContext itemActionContext = new InitItemActionContext()
                     {
                         Id = (int)itemAction.Key * 10 + i,
                         ActionType = itemAction.Key,
                         Prefab = newItemAction,
-                        PrefabSize = dataItemAction.prefabSize
+                        PrefabSize = dataItemAction.prefabSize,
                     };
                     itemActionComp.InitializeItemAction(itemActionContext);
+                    itemActionComp.OnFireworkUsed += HandleWhenItemActionFireworkUsed;
+                    itemActionComp.OnHourglassUsed += OnItemActionHourglassUsed;
                     _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
                 }
             }
@@ -534,11 +435,6 @@ namespace MatchFactoryCore.Scripts.Game
         public Dictionary<ItemFactoryType, int> GetTargetDictionary()
         {
             return _targetDictionary;
-        }
-
-        public Dictionary<ItemFactoryType, int> GetOtherItemDictionary()
-        {
-            return _otherItemDictionary;
         }
 
         public Dictionary<int, ItemFactory> GetDictItemFactory()
@@ -609,6 +505,36 @@ namespace MatchFactoryCore.Scripts.Game
             return result;
         }
 
+        public List<IItem3D> GetListItemRandomByItemAction(int count)
+        {
+            List<IItem3D> result = new List<IItem3D>();
+            List<ItemFactory> allOtherItem = GetAllOtherItem();
+            if (allOtherItem.Count <= 0)
+            {
+                return result;
+            }
+
+            int randomIndex = Random.Range(0, allOtherItem.Count);
+            ItemFactoryType type = allOtherItem[randomIndex].ItemFactoryType;
+
+            List<ItemFactory> sameTypeList = GetListItemByType(type);
+            if (sameTypeList == null || sameTypeList.Count == 0)
+            {
+                return result;
+            }
+
+            List<ItemFactory> copy = new List<ItemFactory>(sameTypeList);
+
+            for (int i = 0; i < count; i++)
+            {
+                int randIndex = Random.Range(0, copy.Count);
+                result.Add(copy[randIndex]);
+                copy.RemoveAt(randIndex);
+            }
+
+            return result;
+        }
+
         public List<IItem3D> GetRandomItemsByType(ItemFactoryType type, int count)
         {
             List<IItem3D> result = new List<IItem3D>();
@@ -639,6 +565,21 @@ namespace MatchFactoryCore.Scripts.Game
             foreach (var item in _targetDictionary)
             {
                 result.AddRange(GetListItemByType(item.Key));
+            }
+
+            return result;
+        }
+
+        private List<ItemFactory> GetAllOtherItem()
+        {
+            List<ItemFactory> result = new List<ItemFactory>();
+            foreach (var itemTemp in _otherItemDictionary)
+            {
+                List<ItemFactory> list = GetListItemByType(itemTemp.Key);
+                if (list != null)
+                {
+                    result.AddRange(list);
+                }
             }
 
             return result;

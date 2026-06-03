@@ -1,17 +1,29 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
+using MatchFactoryCore.Scripts.Game;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
+    public struct InitItemActionContext
+    {
+        public int Id;
+        public ActionType ActionType;
+        public GameObject Prefab;
+        public float PrefabSize;
+    }
+
     public class ItemAction : ItemEntity, IItem3D
     {
         #region Data
 
         [SerializeField] private float maxLength = 2;
         [SerializeField] private float maxHeight = 2;
+        [SerializeField] private int maxItemCount = 3;
+        [SerializeField] private int timeBonus = 10;
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
@@ -21,9 +33,12 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
+        public event Action<IItem3D> OnFireworkUsed;
+        public event Action<float> OnHourglassUsed;
+
         Sequence _explodeSequence;
 
-        public void InitializeItemAction(InitItem3DContext context)
+        public void InitializeItemAction(InitItemActionContext context)
         {
             Id = context.Id;
             Prefab = context.Prefab;
@@ -95,5 +110,64 @@ namespace MatchFactoryCore.Scripts.Item
                 .Join(Prefab.transform.DOScale(Vector3.zero, 0.25f))
                 .OnComplete(() => { Destroy(Prefab.gameObject); });
         }
+
+        #region Item Action Rule
+
+        public void HandleItemAction()
+        {
+            switch (ActionType)
+            {
+                case ActionType.Firework:
+                    HandleItemActionFirework();
+                    break;
+                case ActionType.Hourglass:
+                    HandleItemActionHourglass();
+                    break;
+            }
+        }
+
+        // TODO: Fix click nhanh
+        private void HandleItemActionFirework()
+        {
+            List<IItem3D> randomItemList = ControllerMatchFactory.Ins.GetListItemRandomByItemAction(maxItemCount);
+
+            if (randomItemList.Count > 0)
+            {
+                List<ItemAction> fireworkList = new List<ItemAction> { this };
+                for (int i = 0; i < randomItemList.Count - 1; i++)
+                {
+                    ItemAction cloneFirework = Instantiate(this, this.transform.position,
+                        this.transform.rotation);
+                    InitItemActionContext cloneContext = new InitItemActionContext()
+                    {
+                        ActionType = this.ActionType,
+                        Prefab = cloneFirework.gameObject,
+                        PrefabSize = this.PrefabSize,
+                    };
+                    cloneFirework.InitializeItemAction(cloneContext);
+                    fireworkList.Add(cloneFirework);
+                }
+
+                for (int i = 0; i < randomItemList.Count; i++)
+                {
+                    int index = i;
+                    fireworkList[i].ActionBehaviour(randomItemList[i].Prefab.transform.position,
+                        () => { OnFireworkUsed?.Invoke(randomItemList[index]); });
+                }
+            }
+            else
+            {
+                Explode();
+            }
+        }
+
+        // TODO: khong cong tgian
+        private void HandleItemActionHourglass()
+        {
+            OnHourglassUsed?.Invoke(timeBonus);
+            Explode();
+        }
     }
+
+    #endregion
 }

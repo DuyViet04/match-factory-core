@@ -45,7 +45,7 @@ namespace MatchFactoryCore.Scripts.Game
         private void OnEnable()
         {
             controllerItemFactory3D.OnPointerReleased += HandleSpawnItem2D;
-            controllerItemFactory3D.OnItemActionHourglassUse += UpdateTime;
+            controllerItemFactory3D.OnItemActionHourglassUsed += UpdateTime;
             controllerItemFactory3D.OnRemainTargetChanged += UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
@@ -58,7 +58,7 @@ namespace MatchFactoryCore.Scripts.Game
         private void OnDisable()
         {
             controllerItemFactory3D.OnPointerReleased -= HandleSpawnItem2D;
-            controllerItemFactory3D.OnItemActionHourglassUse -= UpdateTime;
+            controllerItemFactory3D.OnItemActionHourglassUsed -= UpdateTime;
             controllerItemFactory3D.OnRemainTargetChanged -= UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
@@ -224,7 +224,7 @@ namespace MatchFactoryCore.Scripts.Game
             OnFreezeTimeChanged?.Invoke(_timeFreeze);
         }
 
-        private void UpdateTime(int timeValue)
+        private void UpdateTime(float timeValue)
         {
             TimeLevel += timeValue;
             OnTimeLevelChanged?.Invoke(TimeLevel);
@@ -252,6 +252,11 @@ namespace MatchFactoryCore.Scripts.Game
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             return controllerItemFactory3D.GetListItemRandomByBooster(count);
+        }
+
+        public List<IItem3D> GetListItemRandomByItemAction(int count)
+        {
+            return controllerItemFactory3D.GetListItemRandomByItemAction(count);
         }
 
         public ItemFactory2D GetLastItem2DOnBar()
