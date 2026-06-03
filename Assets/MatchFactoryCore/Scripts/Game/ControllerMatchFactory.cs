@@ -51,6 +51,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
             controllerItemBooster.OnVacuumBoosterUsed += HandleWhenBoosterVacuumUsed;
             controllerItemBooster.OnSpringBoosterUsed += HandleWhenBoosterSpringUsed;
+            controllerItemBooster.OnFanBoosterUsed += HandleWhenBoosterFanUsed;
             controllerItemBooster.OnFreezeGunBoosterUsed += HandleWhenBoosterFreezeGunUsed;
         }
 
@@ -63,6 +64,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
             controllerItemBooster.OnVacuumBoosterUsed -= HandleWhenBoosterVacuumUsed;
             controllerItemBooster.OnSpringBoosterUsed -= HandleWhenBoosterSpringUsed;
+            controllerItemBooster.OnFanBoosterUsed += HandleWhenBoosterFanUsed;
             controllerItemBooster.OnFreezeGunBoosterUsed -= HandleWhenBoosterFreezeGunUsed;
         }
 
@@ -159,6 +161,11 @@ namespace MatchFactoryCore.Scripts.Game
 
             controllerItemFactory3D.JumpToBoard(id, startPos);
             controllerCollectionBar.DisableItem2D(id);
+        }
+
+        private void HandleWhenBoosterFanUsed()
+        {
+            controllerItemFactory3D.BlowByFanBooster();
         }
 
         private void HandleWhenBoosterFreezeGunUsed(int timeFreeze)

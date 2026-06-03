@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
@@ -9,6 +10,8 @@ namespace MatchFactoryCore.Scripts.Item
     {
         #region Data
 
+        [SerializeField] private float maxLength = 2;
+        [SerializeField] private float maxHeight = 2;
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
@@ -56,6 +59,24 @@ namespace MatchFactoryCore.Scripts.Item
                 Destroy(gameObject);
                 onComplete?.Invoke();
             });
+        }
+
+        public void BlowByFanBooster(float maxX, float maxZ, Action onComplete = null)
+        {
+            Vector3 startPos = Prefab.transform.position;
+
+            Vector3 nextPos = startPos + Vector3.forward * Random.Range(0, maxLength) +
+                              Vector3.up * Random.Range(0, maxZ);
+            nextPos.x = Mathf.Clamp(nextPos.x, -maxX, maxX);
+            nextPos.z = Mathf.Clamp(nextPos.z, -maxZ, maxZ);
+
+            Vector3 endPos = nextPos + Vector3.back * Random.Range(0, maxLength);
+            endPos.x = Mathf.Clamp(endPos.x, -maxX, maxX);
+            endPos.z = Mathf.Clamp(endPos.z, -maxZ, maxZ);
+
+            Vector3[] path = { endPos, nextPos };
+
+            Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom).OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void JumpToBooster(Vector3 targetPos, Action onComplete = null)

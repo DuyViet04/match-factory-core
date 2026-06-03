@@ -294,6 +294,19 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        public void BlowByFanBooster()
+        {
+            foreach (var itemFactoryTemp in _dictItemFactory.Values)
+            {
+                itemFactoryTemp.BlowByFanBooster(maxX, maxZ);
+            }
+
+            foreach (var itemActionTemp in _dictItemAction.Values)
+            {
+                itemActionTemp.BlowByFanBooster(maxX, maxZ);
+            }
+        }
+
         #region Item Action Rule
 
         private void HandleItemAction(IItem3D item3D, int id)

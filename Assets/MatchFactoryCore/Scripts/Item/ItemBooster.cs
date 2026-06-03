@@ -32,6 +32,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUsed;
         public event Action<int> OnSpringBoosterUsed;
+        public event Action OnFanBoosterUsed;
         public event Action<int> OnFreezeGunBoosterUsed;
 
         public void InitializeBooster(Sprite boosterSprite, BoosterType boosterType, int boosterCount)
@@ -62,6 +63,7 @@ namespace MatchFactoryCore.Scripts.Item
                     break;
                 case BoosterType.Fan:
                     Debug.Log("Fan");
+                    HandleBoosterFan();
                     break;
                 case BoosterType.FreezeGun:
                     Debug.Log("FreezeGun");
@@ -108,9 +110,12 @@ namespace MatchFactoryCore.Scripts.Item
             textCount.text = BoosterCount.ToString();
         }
 
-        // TODO: 
         private void HandleBoosterFan()
         {
+            if (BoosterCount == 0) return;
+            OnFanBoosterUsed?.Invoke();
+            BoosterCount--;
+            textCount.text = BoosterCount.ToString();
         }
 
         private void HandleBoosterFreezeGun()

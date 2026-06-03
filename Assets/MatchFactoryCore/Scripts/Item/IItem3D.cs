@@ -14,6 +14,7 @@ namespace MatchFactoryCore.Scripts.Item
         public ActionType ActionType { get; set; }
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null);
+        public void BlowByFanBooster(float maxX, float maxZ, Action onComplete = null);
         public void JumpToBooster(Vector3 targetPos, Action onComplete = null);
         public void JumpFromBooster(Vector3 targetPos, Action onComplete = null);
 
