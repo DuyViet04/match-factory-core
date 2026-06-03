@@ -24,6 +24,7 @@ namespace MatchFactoryCore.Scripts.Item
         public RectTransform RectTransform { get; set; }
 
         [SerializeField] private int numberItemGet = 3;
+        [SerializeField] private int freezeTime = 10;
 
         [SerializeField] private Button button;
         [SerializeField] private Image image;
@@ -31,7 +32,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUsed;
         public event Action<int> OnSpringBoosterUsed;
-        public event Action<int> OnFreezeGunBoosterUse;
+        public event Action<int> OnFreezeGunBoosterUsed;
 
         public void InitializeBooster(Sprite boosterSprite, BoosterType boosterType, int boosterCount)
         {
@@ -64,6 +65,7 @@ namespace MatchFactoryCore.Scripts.Item
                     break;
                 case BoosterType.FreezeGun:
                     Debug.Log("FreezeGun");
+                    HandleBoosterFreezeGun();
                     break;
             }
         }
@@ -100,8 +102,22 @@ namespace MatchFactoryCore.Scripts.Item
             if (BoosterCount == 0) return;
             ItemFactory2D lastItem2D = ControllerMatchFactory.Ins.GetLastItem2DOnBar();
             if (lastItem2D == null) return;
-            
+
             OnSpringBoosterUsed?.Invoke(lastItem2D.Id);
+            BoosterCount--;
+            textCount.text = BoosterCount.ToString();
+        }
+
+        // TODO: 
+        private void HandleBoosterFan()
+        {
+        }
+
+        private void HandleBoosterFreezeGun()
+        {
+            if (BoosterCount == 0) return;
+
+            OnFreezeGunBoosterUsed?.Invoke(freezeTime);
             BoosterCount--;
             textCount.text = BoosterCount.ToString();
         }

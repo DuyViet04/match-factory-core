@@ -248,7 +248,7 @@ namespace MatchFactoryCore.Scripts.Game
             });
         }
 
-        public void HandleBoosterSpringUsed(int id)
+        public void DisableItem2D(int id)
         {
             ItemFactory2D itemFactory2D = GetItemFactory2DById(id);
             _itemFactory2DList.Remove(itemFactory2D);

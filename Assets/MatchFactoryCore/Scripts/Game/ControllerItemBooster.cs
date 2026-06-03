@@ -18,7 +18,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUsed;
         public event Action<int> OnSpringBoosterUsed;
-        public event Action<int> OnFreezeGunBoosterUse;
+        public event Action<int> OnFreezeGunBoosterUsed;
 
         private void Awake()
         {
@@ -46,7 +46,29 @@ namespace MatchFactoryCore.Scripts.Game
                         Debug.Log("Quat");
                         break;
                     case BoosterType.FreezeGun:
-                        Debug.Log("Sung");
+                        itemBoosterComp.OnFreezeGunBoosterUsed += OnFreezeGunBoosterUsed;
+                        break;
+                }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var itemTemp in _itemBoosterDictionary)
+            {
+                switch (itemTemp.Key)
+                {
+                    case BoosterType.Vacuum:
+                        itemTemp.Value.OnVacuumBoosterUsed -= OnVacuumBoosterUsed;
+                        break;
+                    case BoosterType.Spring:
+                        itemTemp.Value.OnSpringBoosterUsed -= OnSpringBoosterUsed;
+                        break;
+                    case BoosterType.Fan:
+                        Debug.Log("Quat");
+                        break;
+                    case BoosterType.FreezeGun:
+                        itemTemp.Value.OnFreezeGunBoosterUsed -= OnFreezeGunBoosterUsed;
                         break;
                 }
             }

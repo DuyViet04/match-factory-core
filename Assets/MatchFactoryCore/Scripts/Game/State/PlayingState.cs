@@ -19,6 +19,7 @@ namespace MatchFactoryCore.Scripts.Game.State
         public override void OnUpdate()
         {
             Controller.UpdateTimeLevel();
+            Controller.UpdateFreezeTime();
 
             if (Controller.TimeLevel <= 0)
             {

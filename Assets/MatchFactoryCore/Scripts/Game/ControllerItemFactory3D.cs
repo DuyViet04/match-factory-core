@@ -272,13 +272,17 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void HandleBoosterSpringUsed(int id, Vector3 startPos)
+        public void JumpToBoard(int id, Vector3 startPos)
         {
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory != null)
             {
-                _targetDictionary[itemFactory.ItemFactoryType]++;
-                OnRemainTargetChanged?.Invoke(_targetDictionary);
+                bool isTarget = CheckIsTargetItemById(id);
+                if (isTarget)
+                {
+                    _targetDictionary[itemFactory.ItemFactoryType]++;
+                    OnRemainTargetChanged?.Invoke(_targetDictionary);
+                }
 
                 IItem3D item3D = itemFactory;
                 Vector3 endPos = GetRandomSpawnPoint();

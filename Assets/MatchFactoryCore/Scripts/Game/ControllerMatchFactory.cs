@@ -35,10 +35,12 @@ namespace MatchFactoryCore.Scripts.Game
 
         public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
+        public event Action<float> OnFreezeTimeChanged;
         public float TimeLevel { get; private set; }
 
         private StateMachine<MatchFactoryState> _stateMachine;
-
+        private bool _isFreezeTime;
+        private float _timeFreeze;
 
         private void OnEnable()
         {
@@ -47,8 +49,9 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged += UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
-            controllerItemBooster.OnVacuumBoosterUsed += HandleBoosterVacuumUsed;
-            controllerItemBooster.OnSpringBoosterUsed += HandleBoosterSpringUsed;
+            controllerItemBooster.OnVacuumBoosterUsed += HandleWhenBoosterVacuumUsed;
+            controllerItemBooster.OnSpringBoosterUsed += HandleWhenBoosterSpringUsed;
+            controllerItemBooster.OnFreezeGunBoosterUsed += HandleWhenBoosterFreezeGunUsed;
         }
 
         private void OnDisable()
@@ -58,8 +61,9 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged -= UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
-            controllerItemBooster.OnVacuumBoosterUsed -= HandleBoosterVacuumUsed;
-            controllerItemBooster.OnSpringBoosterUsed -= HandleBoosterSpringUsed;
+            controllerItemBooster.OnVacuumBoosterUsed -= HandleWhenBoosterVacuumUsed;
+            controllerItemBooster.OnSpringBoosterUsed -= HandleWhenBoosterSpringUsed;
+            controllerItemBooster.OnFreezeGunBoosterUsed -= HandleWhenBoosterFreezeGunUsed;
         }
 
         private void Awake()
@@ -134,7 +138,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void HandleBoosterVacuumUsed(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
+        private void HandleWhenBoosterVacuumUsed(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
         {
             if (list2D != null && list2D.Count > 0)
             {
@@ -147,14 +151,21 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void HandleBoosterSpringUsed(int id)
+        private void HandleWhenBoosterSpringUsed(int id)
         {
             ItemFactory2D itemFactory2D = controllerCollectionBar.GetItemFactory2DById(id);
             Vector3 startPos = mainCamera.ScreenToWorldPoint(itemFactory2D.RectTransform.position);
             startPos.y = mainCamera.transform.position.y / 2f;
 
-            controllerItemFactory3D.HandleBoosterSpringUsed(id, startPos);
-            controllerCollectionBar.HandleBoosterSpringUsed(id);
+            controllerItemFactory3D.JumpToBoard(id, startPos);
+            controllerCollectionBar.DisableItem2D(id);
+        }
+
+        private void HandleWhenBoosterFreezeGunUsed(int timeFreeze)
+        {
+            _isFreezeTime = true;
+            _timeFreeze += timeFreeze;
+            OnFreezeTimeChanged?.Invoke(_timeFreeze);
         }
 
         private void RemoveItemFactory(List<int> idList)
@@ -187,9 +198,23 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void UpdateTimeLevel()
         {
+            if (_isFreezeTime) return;
             TimeLevel -= Time.deltaTime;
             if (TimeLevel <= 0) TimeLevel = 0;
             OnTimeLevelChanged?.Invoke(TimeLevel);
+        }
+
+        public void UpdateFreezeTime()
+        {
+            if (!_isFreezeTime) return;
+            _timeFreeze -= Time.deltaTime;
+            if (_timeFreeze <= 0)
+            {
+                _isFreezeTime = false;
+                _timeFreeze = 0;
+            }
+
+            OnFreezeTimeChanged?.Invoke(_timeFreeze);
         }
 
         private void UpdateTime(int timeValue)
