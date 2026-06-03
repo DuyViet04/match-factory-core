@@ -84,6 +84,7 @@ namespace MatchFactoryCore.Scripts.Item
         Sequence _jumpSequence;
         Sequence _explodeSequence;
         Sequence _jumpToBoosterSequence;
+        Sequence _jumpFromBoosterSequence;
 
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
@@ -107,7 +108,18 @@ namespace MatchFactoryCore.Scripts.Item
                 .Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.75f))
                 .OnComplete(() =>
                 {
+                    onComplete?.Invoke();
                     Destroy(gameObject);
+                });
+        }
+
+        public void JumpFromBooster(Vector3 targetPos, Action onComplete = null)
+        {
+            Debug.Log("JumpFromBooster");
+            _jumpFromBoosterSequence = DOTween.Sequence();
+            _jumpFromBoosterSequence.Append(Prefab.transform.DOJump(targetPos, 2f, 1, 0.5f))
+                .OnComplete(() =>
+                {
                     onComplete?.Invoke();
                 });
         }

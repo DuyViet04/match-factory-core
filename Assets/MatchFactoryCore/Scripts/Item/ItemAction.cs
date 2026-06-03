@@ -62,6 +62,10 @@ namespace MatchFactoryCore.Scripts.Item
         {
         }
 
+        public void JumpFromBooster(Vector3 targetPos, Action onComplete = null)
+        {
+        }
+
         public void Explode(Action onComplete = null)
         {
             _explodeSequence = DOTween.Sequence();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
@@ -247,6 +248,13 @@ namespace MatchFactoryCore.Scripts.Game
             });
         }
 
+        public void HandleBoosterSpringUsed(int id)
+        {
+            ItemFactory2D itemFactory2D = GetItemFactory2DById(id);
+            _itemFactory2DList.Remove(itemFactory2D);
+            itemFactory2D.gameObject.SetActive(false);
+        }
+
         #region Gets Sets
 
         public Vector3 GetPositionTo3DJump(ItemFactoryType type)
@@ -306,6 +314,24 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             return result;
+        }
+
+        public ItemFactory2D GetLastItem2DOnBar()
+        {
+            return _itemFactory2DList.LastOrDefault();
+        }
+
+        public ItemFactory2D GetItemFactory2DById(int id)
+        {
+            foreach (var item2DTemp in _itemFactory2DList)
+            {
+                if (item2DTemp.Id == id)
+                {
+                    return item2DTemp;
+                }
+            }
+
+            return null;
         }
 
         #endregion

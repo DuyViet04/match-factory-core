@@ -11,7 +11,6 @@ namespace MatchFactoryCore.Scripts.Game
 {
     public class ControllerItemFactory3D : MonoBehaviour
     {
-        [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
@@ -270,6 +269,24 @@ namespace MatchFactoryCore.Scripts.Game
                     _targetDictionary[((ItemFactory)item3DTemp).ItemFactoryType]--;
                     OnRemainTargetChanged?.Invoke(_targetDictionary);
                 }
+            }
+        }
+
+        public void HandleBoosterSpringUsed(int id, Vector3 startPos)
+        {
+            _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
+            if (itemFactory != null)
+            {
+                _targetDictionary[itemFactory.ItemFactoryType]++;
+                OnRemainTargetChanged?.Invoke(_targetDictionary);
+
+                IItem3D item3D = itemFactory;
+                Vector3 endPos = GetRandomSpawnPoint();
+                endPos.y = mainCamera.transform.position.y / 2f;
+
+                item3D.Prefab.SetActive(true);
+                item3D.Prefab.transform.position = startPos;
+                item3D.JumpFromBooster(endPos);
             }
         }
 

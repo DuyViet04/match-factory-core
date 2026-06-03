@@ -47,7 +47,8 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged += UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
-            controllerItemBooster.OnVacuumBoosterUse += OnVacuumBoosterUse;
+            controllerItemBooster.OnVacuumBoosterUsed += HandleBoosterVacuumUsed;
+            controllerItemBooster.OnSpringBoosterUsed += HandleBoosterSpringUsed;
         }
 
         private void OnDisable()
@@ -57,7 +58,8 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged -= UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
-            controllerItemBooster.OnVacuumBoosterUse -= OnVacuumBoosterUse;
+            controllerItemBooster.OnVacuumBoosterUsed -= HandleBoosterVacuumUsed;
+            controllerItemBooster.OnSpringBoosterUsed -= HandleBoosterSpringUsed;
         }
 
         private void Awake()
@@ -132,7 +134,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void OnVacuumBoosterUse(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
+        private void HandleBoosterVacuumUsed(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
         {
             if (list2D != null && list2D.Count > 0)
             {
@@ -145,10 +147,14 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void UpdateTime(int timeValue)
+        private void HandleBoosterSpringUsed(int id)
         {
-            TimeLevel += timeValue;
-            OnTimeLevelChanged?.Invoke(TimeLevel);
+            ItemFactory2D itemFactory2D = controllerCollectionBar.GetItemFactory2DById(id);
+            Vector3 startPos = mainCamera.ScreenToWorldPoint(itemFactory2D.RectTransform.position);
+            startPos.y = mainCamera.transform.position.y / 2f;
+
+            controllerItemFactory3D.HandleBoosterSpringUsed(id, startPos);
+            controllerCollectionBar.HandleBoosterSpringUsed(id);
         }
 
         private void RemoveItemFactory(List<int> idList)
@@ -186,6 +192,12 @@ namespace MatchFactoryCore.Scripts.Game
             OnTimeLevelChanged?.Invoke(TimeLevel);
         }
 
+        private void UpdateTime(int timeValue)
+        {
+            TimeLevel += timeValue;
+            OnTimeLevelChanged?.Invoke(TimeLevel);
+        }
+
         #endregion
 
         #region Gets Sets
@@ -208,6 +220,11 @@ namespace MatchFactoryCore.Scripts.Game
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             return controllerItemFactory3D.GetListItemRandomByBooster(count);
+        }
+
+        public ItemFactory2D GetLastItem2DOnBar()
+        {
+            return controllerCollectionBar.GetLastItem2DOnBar();
         }
 
         public MatchFactoryState GetCurrentState()

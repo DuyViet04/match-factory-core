@@ -29,8 +29,8 @@ namespace MatchFactoryCore.Scripts.Item
         [SerializeField] private Image image;
         [SerializeField] private Text textCount;
 
-        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
-        public event Action<int> OnSpringBoosterUse;
+        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUsed;
+        public event Action<int> OnSpringBoosterUsed;
         public event Action<int> OnFreezeGunBoosterUse;
 
         public void InitializeBooster(Sprite boosterSprite, BoosterType boosterType, int boosterCount)
@@ -57,6 +57,7 @@ namespace MatchFactoryCore.Scripts.Item
                     break;
                 case BoosterType.Spring:
                     Debug.Log("Spring");
+                    HandleBoosterSpring();
                     break;
                 case BoosterType.Fan:
                     Debug.Log("Fan");
@@ -80,17 +81,28 @@ namespace MatchFactoryCore.Scripts.Item
                     target2DItems.FirstOrDefault()!.ItemFactory.ItemFactoryType, remainCount);
                 if (randomTargetItems.Count >= remainCount)
                 {
-                    OnVacuumBoosterUse?.Invoke(randomTargetItems, target2DItems, transform.position);
+                    OnVacuumBoosterUsed?.Invoke(randomTargetItems, target2DItems, transform.position);
                     BoosterCount--;
                 }
             }
             else
             {
                 List<IItem3D> randomItems = ControllerMatchFactory.Ins.GetListItemRandomByBooster(numberItemGet);
-                OnVacuumBoosterUse?.Invoke(randomItems, null, transform.position);
+                OnVacuumBoosterUsed?.Invoke(randomItems, null, transform.position);
                 BoosterCount--;
             }
 
+            textCount.text = BoosterCount.ToString();
+        }
+
+        private void HandleBoosterSpring()
+        {
+            if (BoosterCount == 0) return;
+            ItemFactory2D lastItem2D = ControllerMatchFactory.Ins.GetLastItem2DOnBar();
+            if (lastItem2D == null) return;
+            
+            OnSpringBoosterUsed?.Invoke(lastItem2D.Id);
+            BoosterCount--;
             textCount.text = BoosterCount.ToString();
         }
 

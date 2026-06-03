@@ -16,8 +16,8 @@ namespace MatchFactoryCore.Scripts.Game
             new Dictionary<BoosterType, ItemBooster>();
 
 
-        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUse;
-        public event Action<int> OnSpringBoosterUse;
+        public event Action<List<IItem3D>, List<ItemFactory2D>, Vector3> OnVacuumBoosterUsed;
+        public event Action<int> OnSpringBoosterUsed;
         public event Action<int> OnFreezeGunBoosterUse;
 
         private void Awake()
@@ -37,9 +37,10 @@ namespace MatchFactoryCore.Scripts.Game
                 switch (data.boosterType)
                 {
                     case BoosterType.Vacuum:
-                        itemBoosterComp.OnVacuumBoosterUse += OnVacuumBoosterUse;
+                        itemBoosterComp.OnVacuumBoosterUsed += OnVacuumBoosterUsed;
                         break;
                     case BoosterType.Spring:
+                        itemBoosterComp.OnSpringBoosterUsed += OnSpringBoosterUsed;
                         break;
                     case BoosterType.Fan:
                         Debug.Log("Quat");
