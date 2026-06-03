@@ -37,17 +37,14 @@ namespace MatchFactoryCore.Scripts.Game
         public event Action<float> OnTimeLevelChanged;
         public float TimeLevel { get; private set; }
 
-        private Dictionary<ItemFactoryType, int> _targetDictionary;
-        private Dictionary<ItemFactoryType, int> _otherItemDictionary;
-        private Dictionary<int, ItemFactory> _dictItemFactory;
         private StateMachine<MatchFactoryState> _stateMachine;
 
 
         private void OnEnable()
         {
-            controllerItemFactory3D.OnPointerReleased += CheckLevelTarget;
+            controllerItemFactory3D.OnPointerReleased += HandleSpawnItem2D;
             controllerItemFactory3D.OnItemActionHourglassUse += UpdateTime;
-            controllerItemFactory3D.OnVacuumBoosterUse += CheckTarget;
+            controllerItemFactory3D.OnRemainTargetChanged += UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
             controllerItemBooster.OnVacuumBoosterUse += OnVacuumBoosterUse;
@@ -55,9 +52,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void OnDisable()
         {
-            controllerItemFactory3D.OnPointerReleased -= CheckLevelTarget;
+            controllerItemFactory3D.OnPointerReleased -= HandleSpawnItem2D;
             controllerItemFactory3D.OnItemActionHourglassUse -= UpdateTime;
-            controllerItemFactory3D.OnVacuumBoosterUse -= CheckTarget;
+            controllerItemFactory3D.OnRemainTargetChanged -= UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
             controllerItemBooster.OnVacuumBoosterUse -= OnVacuumBoosterUse;
@@ -75,9 +72,6 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             InitializeState();
-            _targetDictionary = controllerItemFactory3D.GetTargetDictionary();
-            _dictItemFactory = controllerItemFactory3D.GetDictItemFactory();
-            _otherItemDictionary = controllerItemFactory3D.GetOtherItemDictionary();
         }
 
         private void Start()
@@ -114,43 +108,28 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Event Actions
 
-        private void CheckLevelTarget(int id)
+        private void HandleSpawnItem2D(int id)
         {
-            // Todo: chuyen ve func trong 3d
-            _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
-            if (itemFactory == null) return;
-
-            bool isTarget = _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
-            bool isOther = _otherItemDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainOther);
-            if (isTarget && remainTarget > 0)
+            controllerItemFactory3D.GetDictItemFactory().TryGetValue(id, out ItemFactory itemFactory);
+            IItemFactory2D item2D = itemFactory;
+            IItem3D item3D = itemFactory;
+            if (item2D != null)
             {
-                _targetDictionary[itemFactory.ItemFactoryType]--;
-                if (IsWin())
-                {
-                    _stateMachine.ChangeState(MatchFactoryState.Win);
-                }
-
-                OnLevelTargetChanged?.Invoke(_targetDictionary);
+                Vector3 targetPos = controllerCollectionBar.GetPositionTo3DJump(item2D.ItemFactoryType);
+                targetPos.y = 0;
+                controllerCollectionBar.SpawnItemFactory2D(item2D, id);
+                item3D.ActionBehaviour(targetPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
             }
-
-            if (isOther && remainOther > 0)
-            {
-                _otherItemDictionary[itemFactory.ItemFactoryType]--;
-                if (_otherItemDictionary[itemFactory.ItemFactoryType] <= 0)
-                {
-                    _otherItemDictionary.Remove(itemFactory.ItemFactoryType);
-                }
-            }
-
-            Vector3 targetJumpPos = controllerCollectionBar.GetPositionTo3DJump(itemFactory.ItemFactoryType);
-            targetJumpPos.y = 0;
-            controllerCollectionBar.SpawnItemFactory2D(GetItemFactory2DById(id), id);
-            itemFactory.ActionBehaviour(targetJumpPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
         }
 
-        // TODO: First
-        private void CheckTarget(ItemFactoryType countRemove)
+        private void UpdateLevelTarget(Dictionary<ItemFactoryType, int> targetDict)
         {
+            OnLevelTargetChanged?.Invoke(targetDict);
+            bool isWin = CheckWin(targetDict);
+            if (isWin)
+            {
+                _stateMachine.ChangeState(MatchFactoryState.Win);
+            }
         }
 
         private void OnVacuumBoosterUse(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
@@ -177,12 +156,12 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.RemoveItemFactory(idList);
         }
 
-        bool IsWin()
+        bool CheckWin(Dictionary<ItemFactoryType, int> targetDict)
         {
             bool isWin = true;
-            foreach (var item in _targetDictionary)
+            foreach (var itemTemp in targetDict)
             {
-                if (item.Value != 0)
+                if (itemTemp.Value != 0)
                 {
                     isWin = false;
                     break;
@@ -200,14 +179,14 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        #endregion
-
         public void UpdateTimeLevel()
         {
             TimeLevel -= Time.deltaTime;
             if (TimeLevel <= 0) TimeLevel = 0;
             OnTimeLevelChanged?.Invoke(TimeLevel);
         }
+
+        #endregion
 
         #region Gets Sets
 
@@ -229,13 +208,6 @@ namespace MatchFactoryCore.Scripts.Game
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             return controllerItemFactory3D.GetListItemRandomByBooster(count);
-        }
-
-        private IItemFactory2D GetItemFactory2DById(int id)
-        {
-            _dictItemFactory.TryGetValue(id, out var itemFactory);
-            if (itemFactory == null) return null;
-            return itemFactory;
         }
 
         public MatchFactoryState GetCurrentState()

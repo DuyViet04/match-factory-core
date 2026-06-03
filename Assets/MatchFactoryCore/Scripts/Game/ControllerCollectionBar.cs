@@ -228,7 +228,7 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 if (_itemFactory2DList.Contains(item2DTemp))
                 {
-                    item2DTemp.MoveToVacuum(position, 0.1f);
+                    item2DTemp.MoveToVacuum(position);
                     idList.Add(item2DTemp.Id);
                     _itemFactory2DList.Remove(item2DTemp);
                 }

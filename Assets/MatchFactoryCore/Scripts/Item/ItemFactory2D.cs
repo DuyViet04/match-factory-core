@@ -89,21 +89,21 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); });
         }
 
-        public void MoveToVacuum(Vector3 targetPos, float delay, Action onComplete = null)
+        public void MoveToVacuum(Vector3 targetPos, Action onComplete = null)
         {
             _moveToHutBuiSequence = DOTween.Sequence();
             Vector3 startPos = RectTransform.position;
-            Vector3 middlePos = (startPos + (targetPos - startPos)) * 0.5f;
-            middlePos.x -= 1f;
-            middlePos.y += 1f;
+            Vector3 middlePos = (startPos + targetPos) * 0.5f;
+            middlePos.x -= 100f;
+            middlePos.y += 100f;
             Vector3[] path = { middlePos, targetPos };
 
-            _moveToHutBuiSequence.Append(RectTransform.DOPath(path, 0.75f).SetDelay(delay))
-                .Insert(delay, RectTransform.DOScale(RectTransform.localScale * 0.5f, 0.75f - delay))
+            _moveToHutBuiSequence.Append(RectTransform.DOPath(path, 0.75f, PathType.CatmullRom))
+                .Join(RectTransform.DOScale(RectTransform.localScale * 0.5f, 0.75f))
                 .OnComplete(() =>
                 {
-                    Destroy(gameObject);
                     onComplete?.Invoke();
+                    Destroy(gameObject);
                 });
         }
     }

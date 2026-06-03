@@ -11,6 +11,7 @@ namespace MatchFactoryCore.Scripts.Game
 {
     public class ControllerItemFactory3D : MonoBehaviour
     {
+        [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
         [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
@@ -20,8 +21,8 @@ namespace MatchFactoryCore.Scripts.Game
         public float maxX, maxZ;
 
         public event Action<int> OnPointerReleased;
+        public event Action<Dictionary<ItemFactoryType, int>> OnRemainTargetChanged;
         public event Action<int> OnItemActionHourglassUse;
-        public event Action<ItemFactoryType> OnVacuumBoosterUse;
 
         private const string ItemFactory3DLayer = "ItemFactory";
         private const float DragThreshold = 15f;
@@ -218,6 +219,30 @@ namespace MatchFactoryCore.Scripts.Game
             if (actionType == ActionType.Normal)
             {
                 OnPointerReleased?.Invoke(id);
+                CheckItemChoose(id);
+            }
+        }
+
+        private void CheckItemChoose(int id)
+        {
+            _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
+            if (itemFactory == null) return;
+
+            bool isTarget = _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
+            bool isOther = _otherItemDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainOther);
+            if (isTarget && remainTarget > 0)
+            {
+                _targetDictionary[itemFactory.ItemFactoryType]--;
+                OnRemainTargetChanged?.Invoke(_targetDictionary);
+            }
+
+            if (isOther && remainOther > 0)
+            {
+                _otherItemDictionary[itemFactory.ItemFactoryType]--;
+                if (_otherItemDictionary[itemFactory.ItemFactoryType] <= 0)
+                {
+                    _otherItemDictionary.Remove(itemFactory.ItemFactoryType);
+                }
             }
         }
 
@@ -237,10 +262,13 @@ namespace MatchFactoryCore.Scripts.Game
                 foreach (var item3DTemp in list3D)
                 {
                     Vector3 targetPosition = mainCamera.ScreenToWorldPoint(position);
+                    targetPosition.y = 0;
                     item3DTemp.JumpToBooster(targetPosition);
+
                     int item3DId = ((ItemFactory)item3DTemp).Id;
                     _dictItemFactory.Remove(item3DId);
-                    OnVacuumBoosterUse?.Invoke(((ItemFactory)item3DTemp).ItemFactoryType);
+                    _targetDictionary[((ItemFactory)item3DTemp).ItemFactoryType]--;
+                    OnRemainTargetChanged?.Invoke(_targetDictionary);
                 }
             }
         }
