@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using UnityEngine;
@@ -322,6 +321,11 @@ namespace MatchFactoryCore.Scripts.Game
             item3D.Explode();
         }
 
+        private void HandleWhenItemActionHourglassUsed(float time)
+        {
+            OnItemActionHourglassUsed?.Invoke(time);
+        }
+
         #region Spawn Helper
 
         public void SpawnAllItem(int level, Action onReady)
@@ -380,7 +384,7 @@ namespace MatchFactoryCore.Scripts.Game
                     };
                     itemActionComp.InitializeItemAction(itemActionContext);
                     itemActionComp.OnFireworkUsed += HandleWhenItemActionFireworkUsed;
-                    itemActionComp.OnHourglassUsed += OnItemActionHourglassUsed;
+                    itemActionComp.OnHourglassUsed += HandleWhenItemActionHourglassUsed;
                     _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
                 }
             }
