@@ -33,6 +33,7 @@ namespace MatchFactoryCore.Scripts.Item
 
         #endregion
 
+        public event Action<List<IItem3D>> OnFireworkStarted;
         public event Action<IItem3D> OnFireworkUsed;
         public event Action<float> OnHourglassUsed;
 
@@ -147,6 +148,7 @@ namespace MatchFactoryCore.Scripts.Item
                     fireworkList.Add(cloneFirework);
                 }
 
+                OnFireworkStarted?.Invoke(randomItemList);
                 for (int i = 0; i < randomItemList.Count; i++)
                 {
                     int index = i;

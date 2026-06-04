@@ -43,20 +43,46 @@ namespace MatchFactoryCore.Scripts.Item
                 .OnKill(() => { RectTransform.position = position; });
         }
 
-        public void JumpMatch(Vector3 currentPos, Vector3 position, JumpTypeMatch jumpType, Action onComplete = null)
+        public void JumpMatch(Vector3 currentPos, Vector3 matchPos, JumpTypeMatch jumpType, Action onComplete = null)
         {
             _jumpOnMatchSequence?.Kill();
             _jumpOnMatchSequence = DOTween.Sequence();
 
-            _jumpOnMatchSequence
-                .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f))
-                .Append(RectTransform.DOMove(position + jumpHigh, 0.25f).SetEase(Ease.InBack))
-                .OnComplete(() => { onComplete?.Invoke(); })
-                .OnKill(() =>
-                {
-                    RectTransform.position = position;
-                    onComplete?.Invoke();
-                });
+            switch (jumpType)
+            {
+                case JumpTypeMatch.Left:
+                    _jumpOnMatchSequence
+                        .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
+                        .Append(RectTransform.DOMove(matchPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
+                        .OnComplete(() => { onComplete?.Invoke(); })
+                        .OnKill(() =>
+                        {
+                            RectTransform.position = matchPos;
+                            onComplete?.Invoke();
+                        });
+                    break;
+                case JumpTypeMatch.Center:
+                    _jumpOnMatchSequence
+                        .SetDelay(0.1f).Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
+                        .Append(RectTransform.DOMove(matchPos, 0.25f).SetEase(Ease.InBack))
+                        .OnComplete(() => { onComplete?.Invoke(); }).OnKill(() =>
+                        {
+                            RectTransform.position = matchPos;
+                            onComplete?.Invoke();
+                        });
+                    break;
+                case JumpTypeMatch.Right:
+                    _jumpOnMatchSequence
+                        .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
+                        .Append(RectTransform.DOMove(matchPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
+                        .OnComplete(() => { onComplete?.Invoke(); })
+                        .OnKill(() =>
+                        {
+                            RectTransform.position = matchPos;
+                            onComplete?.Invoke();
+                        });
+                    break;
+            }
         }
 
         public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,

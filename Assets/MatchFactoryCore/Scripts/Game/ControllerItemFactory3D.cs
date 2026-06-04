@@ -293,12 +293,21 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        private void HandleWhenItemActionFireworkStarted(List<IItem3D> listItem3D)
+        {
+            foreach (var itemTemp in listItem3D)
+            {
+                itemTemp.ObjectCollider.enabled = false;
+            }
+        }
+
         private void HandleWhenItemActionFireworkUsed(IItem3D item3D)
         {
             ItemAction itemAction = item3D as ItemAction;
             if (itemAction != null)
             {
                 itemAction.OnFireworkUsed -= HandleWhenItemActionFireworkUsed;
+                itemAction.OnFireworkStarted -= HandleWhenItemActionFireworkStarted;
                 _dictItemAction.Remove(itemAction.Id);
             }
 
@@ -369,6 +378,7 @@ namespace MatchFactoryCore.Scripts.Game
                     };
                     itemActionComp.InitializeItemAction(itemActionContext);
                     itemActionComp.OnFireworkUsed += HandleWhenItemActionFireworkUsed;
+                    itemActionComp.OnFireworkStarted += HandleWhenItemActionFireworkStarted;
                     itemActionComp.OnHourglassUsed += HandleWhenItemActionHourglassUsed;
                     _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
                 }

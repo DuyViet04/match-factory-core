@@ -201,6 +201,15 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        private void ForceJumpWhenInsert()
+        {
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                int targetIndex = _itemFactory2DList[i].IndexFromBar;
+                _itemFactory2DList[i].JumpOnBar(GetPositionJump2D(targetIndex), () => BounceBarSlot(targetIndex));
+            }
+        }
+
         public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position)
         {
             List<int> idList = new List<int>();
