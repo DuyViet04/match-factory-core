@@ -32,9 +32,8 @@ namespace MatchFactoryCore.Scripts.Game
 
         Vector2 _lastRaycastPointerPos;
         Vector2 _startMousePos;
+
         RaycastHit _hit;
-        ItemFactory _itemFactory;
-        ItemAction _itemAction;
         IItem3D _item3D;
         IItem3D _lastItem3D;
         bool _isPressing;
@@ -52,7 +51,7 @@ namespace MatchFactoryCore.Scripts.Game
             infoItemsMatch3Factory.SetCache();
         }
 
-        // TODO: Chỉ làm việc với IItem3D
+        // TODO: Chỉ làm việc với IItem3D (đã xong, cần review)
         public void UpdateRaycast()
         {
             if (Pointer.current == null) return;
@@ -103,27 +102,16 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (hitSomething)
                 {
-                    _itemFactory = hitItemFactory;
-                    _itemAction = hitItemAction;
                     _item3D = hitItem3D;
 
                     _item3D.ObjectOutline.enabled = true;
                     _item3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
 
                     _lastItem3D = _item3D;
-                    if (_itemFactory != null)
-                    {
-                        _lastId = _itemFactory.Id;
-                    }
-                    else if (_itemAction != null)
-                    {
-                        _lastId = _itemAction.Id;
-                    }
+                    _lastId = ((ItemEntity)_item3D).Id;
                 }
                 else
                 {
-                    _itemFactory = null;
-                    _itemAction = null;
                     _item3D = null;
                 }
             }
@@ -132,8 +120,6 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 if (hitSomething)
                 {
-                    _itemFactory = hitItemFactory;
-                    _itemAction = hitItemAction;
                     _item3D = hitItem3D;
                 }
 
@@ -142,24 +128,24 @@ namespace MatchFactoryCore.Scripts.Game
                     _lastItem3D.ObjectOutline.enabled = false;
                 }
 
-                if (!_hasMovedEnoughForDrag && _itemFactory != null && _item3D != null)
+                if (!_hasMovedEnoughForDrag && _item3D != null)
                 {
-                    HandleItemFactory3D(_item3D, _itemFactory.Id);
-                }
-
-                if (!_hasMovedEnoughForDrag && _itemAction != null && _item3D != null)
-                {
-                    // TODO
-                    _itemAction.HandleItemAction();
-                    // HandleItemAction(_item3D, _itemAction.Id);
+                    int id = ((ItemEntity)_item3D).Id;
+                    Debug.Log(id);
+                    if (_item3D.ActionType == ActionType.Normal)
+                    {
+                        HandleItemFactory3D(_item3D, id);
+                    }
+                    else
+                    {
+                        ((ItemAction)_item3D).HandleItemAction();
+                    }
                 }
 
                 _isPressing = false;
                 _hasMovedEnoughForDrag = false;
                 _lastItem3D = null;
                 _lastId = -1;
-                _itemFactory = null;
-                _itemAction = null;
                 _item3D = null;
             }
 
@@ -189,8 +175,6 @@ namespace MatchFactoryCore.Scripts.Game
                                 hitItem3D.ObjectOutline.enabled = true;
                             hitItem3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
 
-                            _itemFactory = hitItemFactory;
-                            _itemAction = hitItemAction;
                             _item3D = hitItem3D;
                             _lastItem3D = hitItem3D;
                             _lastId = hitId;
@@ -205,8 +189,6 @@ namespace MatchFactoryCore.Scripts.Game
                         }
 
                         _lastId = -1;
-                        _itemFactory = null;
-                        _itemAction = null;
                         _item3D = null;
                     }
                 }
