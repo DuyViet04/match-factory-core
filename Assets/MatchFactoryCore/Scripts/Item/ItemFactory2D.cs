@@ -14,6 +14,8 @@ namespace MatchFactoryCore.Scripts.Item
 
     public class ItemFactory2D : MonoBehaviour
     {
+        [SerializeField] private Vector3 jumpHigh = new Vector3(0f, 100f, 0f);
+        [SerializeField] private float sortTime = 0.1f;
         public int Id { get; private set; }
         public IItemFactory2D ItemFactory { get; private set; }
         public RectTransform RectTransform { get; private set; }
@@ -22,7 +24,8 @@ namespace MatchFactoryCore.Scripts.Item
 
         Sequence _jumpOnMatchSequence;
         Sequence _jumpAfterMatchSequence;
-        Sequence _moveToHutBuiSequence;
+        Sequence _moveToVacuumSequence;
+        Tween _jumpOnBarTween;
 
         public void Initialize(int id, IItemFactory2D itemFactory)
         {
@@ -35,19 +38,19 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void JumpOnBar(Vector3 position, Action onComplete = null)
         {
-            RectTransform.DOJump(position, 100, 1, 0.25f).OnComplete(() => { onComplete?.Invoke(); })
+            _jumpOnBarTween?.Kill();
+            _jumpOnBarTween = RectTransform.DOJump(position, 100, 1, 0.25f).OnComplete(() => { onComplete?.Invoke(); })
                 .OnKill(() => { RectTransform.position = position; });
         }
 
         public void JumpMatch(Vector3 currentPos, Vector3 position, JumpTypeMatch jumpType, Action onComplete = null)
         {
+            _jumpOnMatchSequence?.Kill();
             _jumpOnMatchSequence = DOTween.Sequence();
 
-            Vector3 high = new Vector3(0, 100, 0);
-
             _jumpOnMatchSequence
-                .Append(RectTransform.DOMove(currentPos + high, 0.25f))
-                .Append(RectTransform.DOMove(position + high, 0.5f).SetEase(Ease.InBack))
+                .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f))
+                .Append(RectTransform.DOMove(position + jumpHigh, 0.25f).SetEase(Ease.InBack))
                 .OnComplete(() => { onComplete?.Invoke(); })
                 .OnKill(() =>
                 {
@@ -56,7 +59,7 @@ namespace MatchFactoryCore.Scripts.Item
                 });
         }
 
-        public void JumpAfterMatch(int fromIndex, int targetIndex, Func<int, Vector3> getSlotPosition,
+        public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,
             Action onComplete = null, Action<int> onJumpStep = null)
         {
             if (fromIndex == targetIndex)
@@ -65,10 +68,10 @@ namespace MatchFactoryCore.Scripts.Item
                 return;
             }
 
+            _jumpAfterMatchSequence?.Kill();
             _jumpAfterMatchSequence = DOTween.Sequence();
 
-            int steps = Mathf.Abs(targetIndex - fromIndex);
-            float timePerStep = 0.5f / steps;
+            float timePerStep = sortTime;
             int direction = targetIndex < fromIndex ? -1 : 1;
 
             int current = fromIndex;
@@ -78,33 +81,37 @@ namespace MatchFactoryCore.Scripts.Item
                 int capturedIndex = current;
                 _jumpAfterMatchSequence.Append(
                     RectTransform.DOJump(getSlotPosition(capturedIndex), 100, 1, timePerStep)
+                        .SetDelay(delay)
                         .OnComplete(() => { onJumpStep?.Invoke(capturedIndex); })
-                        .OnKill(() =>
-                        {
-                            RectTransform.position = getSlotPosition(capturedIndex);
-                            onComplete?.Invoke();
-                        }));
+                );
             }
 
-            _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); });
+            _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); })
+                .OnKill(() =>
+                {
+                    RectTransform.position = getSlotPosition(targetIndex);
+                    IndexFromBar = targetIndex;
+                    onComplete?.Invoke();
+                });
         }
 
         public void MoveToVacuum(Vector3 targetPos, Action onComplete = null)
         {
-            _moveToHutBuiSequence = DOTween.Sequence();
+            _moveToVacuumSequence?.Kill();
+            _moveToVacuumSequence = DOTween.Sequence();
             Vector3 startPos = RectTransform.position;
             Vector3 middlePos = (startPos + targetPos) * 0.5f;
             middlePos.x -= 100f;
             middlePos.y += 100f;
             Vector3[] path = { middlePos, targetPos };
 
-            _moveToHutBuiSequence.Append(RectTransform.DOPath(path, 0.75f, PathType.CatmullRom))
+            _moveToVacuumSequence.Append(RectTransform.DOPath(path, 0.75f, PathType.CatmullRom))
                 .Join(RectTransform.DOScale(RectTransform.localScale * 0.5f, 0.75f))
                 .OnComplete(() =>
                 {
                     onComplete?.Invoke();
                     Destroy(gameObject);
-                });
+                }).OnKill(() => { RectTransform.position = targetPos; });
         }
     }
 }

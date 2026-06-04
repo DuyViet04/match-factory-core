@@ -27,7 +27,8 @@ namespace MatchFactoryCore.Scripts.Game.State
                 return;
             }
 
-            Controller.ControllerItemFactory3D.UpdateRaycast();
+            if (!Controller.IsFullBar)
+                Controller.ControllerItemFactory3D.UpdateRaycast();
         }
     }
 }

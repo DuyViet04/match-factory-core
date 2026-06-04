@@ -9,7 +9,5 @@ namespace MatchFactoryCore.Scripts.Item
 
         public ItemFactoryType ItemFactoryType { get; set; }
         public float SpriteScaleOnBar { get; set; }
-
-        public void ChangeTo3D();
     }
 }

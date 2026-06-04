@@ -37,6 +37,7 @@ namespace MatchFactoryCore.Scripts.Game
         public event Action<float> OnTimeLevelChanged;
         public event Action<float> OnFreezeTimeChanged;
         public float TimeLevel { get; private set; }
+        public bool IsFullBar {get; private set;}
 
         private StateMachine<MatchFactoryState> _stateMachine;
         private bool _isFreezeTime;
@@ -49,6 +50,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged += UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched += RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted += CheckLose;
+            controllerCollectionBar.OnMatchItemStarted += HandleRaycast;
             controllerItemBooster.OnVacuumBoosterUsed += HandleWhenBoosterVacuumUsed;
             controllerItemBooster.OnSpringBoosterUsed += HandleWhenBoosterSpringUsed;
             controllerItemBooster.OnFanBoosterUsed += HandleWhenBoosterFanUsed;
@@ -62,9 +64,10 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.OnRemainTargetChanged -= UpdateLevelTarget;
             controllerCollectionBar.OnItemMatched -= RemoveItemFactory;
             controllerCollectionBar.OnInsertItemCompleted -= CheckLose;
+            controllerCollectionBar.OnMatchItemStarted -= HandleRaycast;
             controllerItemBooster.OnVacuumBoosterUsed -= HandleWhenBoosterVacuumUsed;
             controllerItemBooster.OnSpringBoosterUsed -= HandleWhenBoosterSpringUsed;
-            controllerItemBooster.OnFanBoosterUsed += HandleWhenBoosterFanUsed;
+            controllerItemBooster.OnFanBoosterUsed -= HandleWhenBoosterFanUsed;
             controllerItemBooster.OnFreezeGunBoosterUsed -= HandleWhenBoosterFreezeGunUsed;
         }
 
@@ -85,6 +88,7 @@ namespace MatchFactoryCore.Scripts.Game
         private void Start()
         {
             OnLevelTargetChanged?.Invoke(controllerItemFactory3D.GetTargetDictionary());
+            IsFullBar = false;
         }
 
         private void Update()
@@ -129,6 +133,11 @@ namespace MatchFactoryCore.Scripts.Game
                 controllerCollectionBar.SpawnItemFactory2D(item2D, id);
                 item3D.ActionBehaviour(targetPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
             }
+        }
+
+        private void HandleRaycast(bool enable)
+        {
+            IsFullBar = enable;
         }
 
         private void UpdateLevelTarget(Dictionary<ItemFactoryType, int> targetDict)

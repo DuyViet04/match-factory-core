@@ -34,7 +34,7 @@ namespace MatchFactoryCore.Scripts.Item
         public float PrefabSize { get; set; }
         public ActionType ActionType { get; set; }
 
-        private float _explodeScale = 1.25f;
+        private readonly float _explodeScale = 1.25f;
 
         Vector3 _basePrefabScale;
         Vector3 _prefabBaseRotation;
@@ -98,8 +98,8 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
             _jumpSequence.OnComplete(() =>
             {
-                Prefab.SetActive(false);
                 onComplete?.Invoke();
+                Prefab.SetActive(false);
             });
         }
 
@@ -108,7 +108,7 @@ namespace MatchFactoryCore.Scripts.Item
             Vector3 startPos = Prefab.transform.position;
 
             Vector3 nextPos = startPos + Vector3.forward * Random.Range(0, maxLength) +
-                              Vector3.up * Random.Range(0, maxZ);
+                              Vector3.up * Random.Range(0, maxHeight);
             nextPos.x = Mathf.Clamp(nextPos.x, -maxX, maxX);
             nextPos.z = Mathf.Clamp(nextPos.z, -maxZ, maxZ);
 
@@ -139,10 +139,7 @@ namespace MatchFactoryCore.Scripts.Item
             Debug.Log("JumpFromBooster");
             _jumpFromBoosterSequence = DOTween.Sequence();
             _jumpFromBoosterSequence.Append(Prefab.transform.DOJump(targetPos, 2f, 1, 0.5f))
-                .OnComplete(() =>
-                {
-                    onComplete?.Invoke();
-                });
+                .OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void Explode(Action onComplete = null)
@@ -157,14 +154,6 @@ namespace MatchFactoryCore.Scripts.Item
                     Destroy(gameObject);
                     onComplete?.Invoke();
                 });
-        }
-
-        #endregion
-
-        #region Behaviour 2D Object
-
-        public void ChangeTo3D()
-        {
         }
 
         #endregion

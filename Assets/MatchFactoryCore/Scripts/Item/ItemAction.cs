@@ -81,7 +81,7 @@ namespace MatchFactoryCore.Scripts.Item
             Vector3 startPos = Prefab.transform.position;
 
             Vector3 nextPos = startPos + Vector3.forward * Random.Range(0, maxLength) +
-                              Vector3.up * Random.Range(0, maxZ);
+                              Vector3.up * Random.Range(0, maxHeight);
             nextPos.x = Mathf.Clamp(nextPos.x, -maxX, maxX);
             nextPos.z = Mathf.Clamp(nextPos.z, -maxZ, maxZ);
 
