@@ -17,13 +17,13 @@ MonoBehaviour:
     m_values:
     - boosterSprite: {fileID: -9095717837082945937, guid: 1c8e5ad8e876c10498f7d418a3359e95, type: 3}
       boosterType: 0
-      boosterCount: 3
+      boosterCount: 7
     - boosterSprite: {fileID: -2413806693520163455, guid: 9a16fdbacc5cab1439d5e89d5aacf69d, type: 3}
       boosterType: 1
-      boosterCount: 3
+      boosterCount: 7
     - boosterSprite: {fileID: 7482667652216324306, guid: 78f116189c00be04685c8b619c018f5a, type: 3}
       boosterType: 2
-      boosterCount: 3
+      boosterCount: 7
     - boosterSprite: {fileID: 7482667652216324306, guid: 68732b7946540954cbdc597138f9bebf, type: 3}
       boosterType: 3
-      boosterCount: 3
+      boosterCount: 7

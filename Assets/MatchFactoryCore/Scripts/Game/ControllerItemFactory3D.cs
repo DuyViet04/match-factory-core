@@ -493,6 +493,9 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        // Cần review
+        readonly List<int> _isHasRandomByBooster = new List<int>();
+
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             List<IItem3D> result = new List<IItem3D>();
@@ -506,20 +509,37 @@ namespace MatchFactoryCore.Scripts.Game
             int randomIndex = Random.Range(0, allTargetItem.Count);
             ItemFactoryType type = allTargetItem[randomIndex].ItemFactoryType;
 
-            List<ItemFactory> typeList = GetListItemByType(type);
-            List<ItemFactory> copy = new List<ItemFactory>(typeList);
-            for (int i = 0; i < count; i++)
+            List<ItemFactory> sameTypeList = GetListItemByType(type);
+            if (sameTypeList.Count <= 0)
             {
-                int randIndex = Random.Range(0, copy.Count);
-                result.Add(copy[randIndex]);
-                copy.RemoveAt(randIndex);
+                return result;
+            }
+
+            int numberOfItemRandom = 0;
+            for (int i = 0; i < sameTypeList.Count; i++)
+            {
+                int randIndex = Random.Range(0, sameTypeList.Count);
+                ItemFactory randomItem = sameTypeList[randIndex];
+                if (_isHasRandomByBooster.Contains(randomItem.Id) ||
+                    randomItem.gameObject.activeSelf == false) continue;
+
+                result.Add(randomItem);
+                _isHasRandomByBooster.Add(randomItem.Id);
+                numberOfItemRandom++;
+
+                if (numberOfItemRandom >= count) break;
+            }
+
+            if (result.Count < count)
+            {
+                return new List<IItem3D>();
             }
 
             return result;
         }
 
         // Cần review
-        readonly List<int> _idHasRandom = new List<int>();
+        readonly List<int> _idHasRandomByItemAction = new List<int>();
 
         public List<IItem3D> GetListItemRandomByItemAction(int count)
         {
@@ -544,10 +564,11 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 int randIndex = Random.Range(0, sameTypeList.Count);
                 ItemFactory randomItem = sameTypeList[randIndex];
-                if (_idHasRandom.Contains(randomItem.Id) || randomItem.gameObject.activeSelf == false) continue;
+                if (_idHasRandomByItemAction.Contains(randomItem.Id) ||
+                    randomItem.gameObject.activeSelf == false) continue;
 
                 result.Add(randomItem);
-                _idHasRandom.Add(randomItem.Id);
+                _idHasRandomByItemAction.Add(randomItem.Id);
                 numberOfItemRandom++;
 
                 if (numberOfItemRandom == count) break;
