@@ -218,8 +218,9 @@ namespace MatchFactoryCore.Scripts.Game
             ActionType actionType = item3D.ActionType;
             if (actionType == ActionType.Normal)
             {
-                OnPointerReleased?.Invoke(id);
                 CheckItemChoose(id);
+                item3D.ObjectCollider.enabled = false;
+                OnPointerReleased?.Invoke(id);
             }
         }
 
@@ -230,6 +231,7 @@ namespace MatchFactoryCore.Scripts.Game
 
             bool isTarget = _targetDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainTarget);
             bool isOther = _otherItemDictionary.TryGetValue(itemFactory.ItemFactoryType, out int remainOther);
+
             if (isTarget && remainTarget > 0)
             {
                 _targetDictionary[itemFactory.ItemFactoryType]--;
@@ -278,6 +280,7 @@ namespace MatchFactoryCore.Scripts.Game
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory != null)
             {
+                itemFactory.ObjectCollider.enabled = true;
                 bool isTarget = CheckIsTargetItemById(id);
                 if (isTarget)
                 {
@@ -480,8 +483,14 @@ namespace MatchFactoryCore.Scripts.Game
         private List<ItemFactory> GetListItemByType(ItemFactoryType type)
         {
             var allItem = GetDictAllItem();
-            allItem.TryGetValue(type, out List<ItemFactory> list);
-            return list;
+            if (allItem.TryGetValue(type, out List<ItemFactory> result))
+            {
+                return result;
+            }
+            else
+            {
+                return new List<ItemFactory>();
+            }
         }
 
         public List<IItem3D> GetListItemRandomByBooster(int count)
@@ -509,6 +518,9 @@ namespace MatchFactoryCore.Scripts.Game
             return result;
         }
 
+        // Cần review
+        readonly List<int> _idHasRandom = new List<int>();
+
         public List<IItem3D> GetListItemRandomByItemAction(int count)
         {
             List<IItem3D> result = new List<IItem3D>();
@@ -522,18 +534,28 @@ namespace MatchFactoryCore.Scripts.Game
             ItemFactoryType type = allOtherItem[randomIndex].ItemFactoryType;
 
             List<ItemFactory> sameTypeList = GetListItemByType(type);
-            if (sameTypeList == null || sameTypeList.Count == 0)
+            if (sameTypeList.Count <= 0)
             {
                 return result;
             }
 
-            List<ItemFactory> copy = new List<ItemFactory>(sameTypeList);
-
-            for (int i = 0; i < count; i++)
+            int numberOfItemRandom = 0;
+            for (int i = 0; i < sameTypeList.Count; i++)
             {
-                int randIndex = Random.Range(0, copy.Count);
-                result.Add(copy[randIndex]);
-                copy.RemoveAt(randIndex);
+                int randIndex = Random.Range(0, sameTypeList.Count);
+                ItemFactory randomItem = sameTypeList[randIndex];
+                if (_idHasRandom.Contains(randomItem.Id) || randomItem.gameObject.activeSelf == false) continue;
+
+                result.Add(randomItem);
+                _idHasRandom.Add(randomItem.Id);
+                numberOfItemRandom++;
+
+                if (numberOfItemRandom == count) break;
+            }
+
+            if (result.Count < count)
+            {
+                return new List<IItem3D>();
             }
 
             return result;

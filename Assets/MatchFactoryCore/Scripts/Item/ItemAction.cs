@@ -126,7 +126,6 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        // TODO: Fix click nhanh
         private void HandleItemActionFirework()
         {
             List<IItem3D> randomItemList = ControllerMatchFactory.Ins.GetListItemRandomByItemAction(maxItemCount);
@@ -161,7 +160,6 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        // TODO: khong cong tgian
         private void HandleItemActionHourglass()
         {
             OnHourglassUsed?.Invoke(timeBonus);

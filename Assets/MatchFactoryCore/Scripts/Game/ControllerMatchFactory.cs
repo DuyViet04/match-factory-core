@@ -121,6 +121,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.GetDictItemFactory().TryGetValue(id, out ItemFactory itemFactory);
             IItemFactory2D item2D = itemFactory;
             IItem3D item3D = itemFactory;
+            
             if (item2D != null)
             {
                 Vector3 targetPos = controllerCollectionBar.GetPositionTo3DJump(item2D.ItemFactoryType);
