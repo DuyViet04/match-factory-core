@@ -36,7 +36,6 @@ namespace MatchFactoryCore.Scripts.Game
         public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id)
         {
             int indexToInsert = GetIndexToInsert(itemFactory2D.ItemFactoryType);
-            // int visualIndexToInsert = GetSlotIndexToInsert(itemFactory2D.ItemFactoryType);
             Vector2 spawnPos = GetPositionJump2D(indexToInsert);
             ItemFactory2D newItemFactory2D = Instantiate(itemFactoryUI, holder.transform);
 
@@ -57,7 +56,6 @@ namespace MatchFactoryCore.Scripts.Game
         {
             itemMoves = new List<ItemFactory2D>();
             int insertIndex = GetIndexToInsert(itemChoose.ItemFactory.ItemFactoryType);
-            // int visualInsertIndex = GetSlotIndexToInsert(itemChoose.ItemFactory.ItemFactoryType);
             _itemFactory2DList.Insert(insertIndex, itemChoose);
             itemChoose.IndexFromBar = insertIndex;
             for (int i = insertIndex + 1; i < _itemFactory2DList.Count; i++)
@@ -240,13 +238,15 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SetActiveItemChoose(int id, Action onComplete = null)
         {
-            foreach (var item2DTemp in _itemFactory2DList)
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
+                var item2DTemp = _itemFactory2DList[i];
                 if (item2DTemp.Id == id)
                 {
                     item2DTemp.gameObject.SetActive(true);
                     onComplete?.Invoke();
 
+                    BounceBarSlot(i);
                     CheckMatch(GetItemFactory2DById(id), out bool isMatch, out List<ItemFactory2D> matches);
                     bool isFull = _itemFactory2DList.Count == MaxCollectionBarSlots;
                     if (isMatch)
