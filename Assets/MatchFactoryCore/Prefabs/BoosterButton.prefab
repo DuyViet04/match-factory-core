@@ -213,6 +213,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9722e5915421478493e8ba4e7faad1a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Item.ItemBooster
+  vacuumVFX: {fileID: 5284806699283012715, guid: 57d4b71b42df7ec4b936664e95cc4623, type: 3}
+  numberItemGet: 3
+  freezeTime: 10
   button: {fileID: 3686770891675090327}
   image: {fileID: 5356178626563539789}
   textCount: {fileID: 1203341055280602347}

@@ -173,7 +173,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void PlaySequenceAfterUseVacuum(Action onComplete = null)
+        public void PlaySequenceAfterUseVacuum(Action onComplete = null)
         {
             if (_itemFactory2DList.Count == 0)
             {
@@ -210,21 +210,33 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position)
+        public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position, float delay, Action onComplete = null)
         {
+            if (list2D.Count == 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            int counting = 0;
             List<int> idList = new List<int>();
             foreach (var item2DTemp in list2D)
             {
                 if (_itemFactory2DList.Contains(item2DTemp))
                 {
-                    item2DTemp.MoveToVacuum(position);
+                    delay += 0.25f;
+                    item2DTemp.MoveToVacuum(position, delay, () =>
+                    {
+                        counting++;
+                        if (counting == list2D.Count)
+                            onComplete?.Invoke();
+                    });
                     idList.Add(item2DTemp.Id);
                     _itemFactory2DList.Remove(item2DTemp);
                 }
             }
 
             OnItemMatched?.Invoke(idList);
-            PlaySequenceAfterUseVacuum();
         }
 
         private void BounceBarSlot(int index)
@@ -321,11 +333,26 @@ namespace MatchFactoryCore.Scripts.Game
 
         public List<ItemFactory2D> GetLastTargetItem2DOnBar()
         {
+            ItemFactoryType firstTypeFind = ItemFactoryType.None;
             List<ItemFactory2D> result = new List<ItemFactory2D>();
             for (int i = _itemFactory2DList.Count - 1; i >= 0; i--)
             {
                 bool isTarget = ControllerMatchFactory.Ins.CheckTargetItemById(_itemFactory2DList[i].Id);
-                if (isTarget) result.Add(_itemFactory2DList[i]);
+
+                if (isTarget)
+                {
+                    firstTypeFind = _itemFactory2DList[i].ItemFactory.ItemFactoryType;
+
+                    for (int j = i; j >= 0; j--)
+                    {
+                        if (_itemFactory2DList[j].ItemFactory.ItemFactoryType == firstTypeFind)
+                        {
+                            result.Add(_itemFactory2DList[j]);
+                        }
+                    }
+
+                    break;
+                }
             }
 
             return result;

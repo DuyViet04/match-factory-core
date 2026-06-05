@@ -99,7 +99,7 @@ namespace MatchFactoryCore.Scripts.Item
             Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom).OnComplete(() => { onComplete?.Invoke(); });
         }
 
-        public void JumpToBooster(Vector3 targetPos, Action onComplete = null)
+        public void JumpToBooster(Vector3 targetPos, float delay, Action onComplete = null)
         {
         }
 

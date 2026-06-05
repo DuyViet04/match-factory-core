@@ -23,6 +23,8 @@ namespace MatchFactoryCore.Scripts.Item
         public int BoosterCount { get; private set; }
         public RectTransform RectTransform { get; set; }
 
+        [SerializeField] private ParticleSystem vacuumVFX;
+
         [SerializeField] private int numberItemGet = 3;
         [SerializeField] private int freezeTime = 10;
 
@@ -80,6 +82,7 @@ namespace MatchFactoryCore.Scripts.Item
             // TODO: Có thể chuyển về IItemFactory2D
             if (target2DItems.Count > 0)
             {
+                SpawnVacuumVfx(transform.position);
                 int remainCount = numberItemGet - target2DItems.Count;
                 List<IItem3D> randomTargetItems = ControllerMatchFactory.Ins.GetRandomItemByType(
                     target2DItems.FirstOrDefault()!.ItemFactory.ItemFactoryType, remainCount);
@@ -91,6 +94,7 @@ namespace MatchFactoryCore.Scripts.Item
             }
             else
             {
+                SpawnVacuumVfx(transform.position);
                 List<IItem3D> randomItems = ControllerMatchFactory.Ins.GetListItemRandomByBooster(numberItemGet);
                 OnVacuumBoosterUsed?.Invoke(randomItems, null, transform.position);
                 BoosterCount--;
@@ -125,6 +129,16 @@ namespace MatchFactoryCore.Scripts.Item
             OnFreezeGunBoosterUsed?.Invoke(freezeTime);
             BoosterCount--;
             textCount.text = BoosterCount.ToString();
+        }
+
+        private void SpawnVacuumVfx(Vector2 uiPosition)
+        {
+            Camera mainCam = Camera.main;
+            Vector3 spawnPos = mainCam.ScreenToWorldPoint(uiPosition);
+            spawnPos.y = mainCam.transform.position.y - 1;
+
+            ParticleSystem vacuumVfx = Instantiate(vacuumVFX, spawnPos, vacuumVFX.transform.rotation);
+            vacuumVfx.Play();
         }
 
         private void OnDestroy()

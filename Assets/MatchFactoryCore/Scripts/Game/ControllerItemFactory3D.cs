@@ -244,15 +244,16 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void MoveToVacuum(List<IItem3D> list3D, Vector3 position)
+        public void MoveToVacuum(List<IItem3D> list3D, Vector3 position, float delay)
         {
             if (list3D != null && list3D.Count > 0)
             {
                 foreach (var item3DTemp in list3D)
                 {
+                    delay += 0.25f;
                     Vector3 targetPosition = mainCamera.ScreenToWorldPoint(position);
                     targetPosition.y = 0;
-                    item3DTemp.JumpToBooster(targetPosition);
+                    item3DTemp.JumpToBooster(targetPosition, delay);
 
                     int item3DId = ((ItemFactory)item3DTemp).Id;
                     _dictItemFactory.Remove(item3DId);

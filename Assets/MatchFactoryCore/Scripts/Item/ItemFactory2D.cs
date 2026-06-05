@@ -121,7 +121,7 @@ namespace MatchFactoryCore.Scripts.Item
                 });
         }
 
-        public void MoveToVacuum(Vector3 targetPos, Action onComplete = null)
+        public void MoveToVacuum(Vector3 targetPos, float delay, Action onComplete = null)
         {
             _moveToVacuumSequence?.Kill();
             _moveToVacuumSequence = DOTween.Sequence();
@@ -133,6 +133,7 @@ namespace MatchFactoryCore.Scripts.Item
 
             _moveToVacuumSequence.Append(RectTransform.DOPath(path, 0.75f, PathType.CatmullRom))
                 .Join(RectTransform.DOScale(RectTransform.localScale * 0.5f, 0.75f))
+                .SetDelay(delay)
                 .OnComplete(() =>
                 {
                     onComplete?.Invoke();

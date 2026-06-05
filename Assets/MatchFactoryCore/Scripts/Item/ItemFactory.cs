@@ -121,12 +121,13 @@ namespace MatchFactoryCore.Scripts.Item
             Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom).OnComplete(() => { onComplete?.Invoke(); });
         }
 
-        public void JumpToBooster(Vector3 targetPos, Action onComplete = null)
+        public void JumpToBooster(Vector3 targetPos, float delay, Action onComplete = null)
         {
             Debug.Log("JumpToBooster");
             _jumpToBoosterSequence = DOTween.Sequence();
             _jumpToBoosterSequence.Append(Prefab.transform.DOJump(targetPos, 5f, 1, 0.75f))
                 .Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.75f))
+                .SetDelay(delay)
                 .OnComplete(() =>
                 {
                     onComplete?.Invoke();

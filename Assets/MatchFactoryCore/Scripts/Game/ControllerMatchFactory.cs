@@ -156,14 +156,19 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void HandleWhenBoosterVacuumUsed(List<IItem3D> list3D, List<ItemFactory2D> list2D, Vector3 position)
         {
+            float delay = 0.25f;
             if (list2D != null && list2D.Count > 0)
             {
-                controllerCollectionBar.MoveToVacuum(list2D, position);
+                controllerCollectionBar.MoveToVacuum(list2D, position, delay, () =>
+                {
+                    controllerCollectionBar.PlaySequenceAfterUseVacuum();
+                });
+                delay += 0.25f * list2D.Count;
             }
 
             if (list3D != null && list3D.Count > 0)
             {
-                controllerItemFactory3D.MoveToVacuum(list3D, position);
+                controllerItemFactory3D.MoveToVacuum(list3D, position, delay);
             }
         }
 
