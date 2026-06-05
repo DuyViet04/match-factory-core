@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MatchFactoryCore.UI
+namespace MatchFactoryCore.Scripts.UI
 {
     public class LevelTargetUI : MonoBehaviour
     {

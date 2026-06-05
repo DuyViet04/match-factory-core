@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game;
+using MatchFactoryCore.Scripts.VFX;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -20,16 +22,22 @@ namespace MatchFactoryCore.Scripts.Item
     {
         #region Data
 
+        [SerializeField] private FireworkBullet fireworkBullet;
+        [SerializeField] private ParticleSystem blinkEffect;
+        [SerializeField] private ParticleSystem explodeEffect;
+        [SerializeField] private ParticleSystem hourglassTrailVFX;
         [SerializeField] private float maxLength = 2;
         [SerializeField] private float maxHeight = 2;
         [SerializeField] private int maxItemCount = 3;
         [SerializeField] private int timeBonus = 10;
+        [SerializeField] private int maxHourglassTrail = 3;
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
         public GameObject Prefab { get; set; }
         public float PrefabSize { get; set; }
         public ActionType ActionType { get; set; }
+        private Vector3 _baseRotation;
 
         #endregion
 
@@ -48,12 +56,8 @@ namespace MatchFactoryCore.Scripts.Item
 
             ObjectRigidbody = Prefab.GetComponent<Rigidbody>();
             ObjectCollider = Prefab.GetComponent<Collider>();
-            ObjectOutline = Prefab.GetComponent<ItemOutline>();
 
-            if (ObjectOutline != null)
-            {
-                ObjectOutline.enabled = false;
-            }
+            _baseRotation = Prefab.transform.rotation.eulerAngles;
 
             if (ObjectRigidbody != null && ObjectCollider != null)
             {
@@ -68,13 +72,13 @@ namespace MatchFactoryCore.Scripts.Item
             ObjectRigidbody.isKinematic = true;
             ObjectRigidbody.useGravity = false;
 
-            Vector3 middle = new Vector3(0f, 7f, 3.5f);
-            Vector3[] path = new[] { middle, targetPos };
-            ObjectRigidbody.DOPath(path, 2f, PathType.CatmullRom).OnComplete(() =>
-            {
-                Destroy(gameObject);
-                onComplete?.Invoke();
-            });
+            //Vector3 middle = new Vector3(0f, 7f, 3.5f);
+            //Vector3[] path = new[] { middle, targetPos };
+            //ObjectRigidbody.DOPath(path, 2f, PathType.CatmullRom).OnComplete(() =>
+            //{
+            //    Destroy(gameObject);
+            //    onComplete?.Invoke();
+            //});
         }
 
         public void BlowByFanBooster(float maxX, float maxZ, Action onComplete = null)
@@ -106,10 +110,33 @@ namespace MatchFactoryCore.Scripts.Item
         public void Explode(Action onComplete = null)
         {
             _explodeSequence = DOTween.Sequence();
-            _explodeSequence.Append(Prefab.transform.DOMove(Prefab.transform.position + Vector3.up * 2, 0.25f))
-                .Append(Prefab.transform.DOShakePosition(0.25f))
-                .Join(Prefab.transform.DOScale(Vector3.zero, 0.25f))
-                .OnComplete(() => { Destroy(Prefab.gameObject); });
+            _explodeSequence.Append(Prefab.transform.DOMove(Prefab.transform.position + Vector3.up * 3, 0.25f))
+                .Join(Prefab.transform.DORotate(_baseRotation, 0.25f))
+                .Join(Prefab.transform.DOShakePosition(0.25f))
+                .Append(Prefab.transform.DOScale(Vector3.zero, 0.1f)
+                .OnComplete(() =>
+                {
+                    SpawnExploreVFX();
+                    blinkEffect.Stop();
+                    onComplete?.Invoke();
+                    Destroy(gameObject);
+                }));
+        }
+
+        private void SpawnExploreVFX()
+        {
+            Vector3 spawnPos = Prefab.transform.position;
+            spawnPos.y = Camera.main.transform.position.y - 1;
+            Quaternion rotation = explodeEffect.transform.rotation;
+            var explodeVFX = Instantiate(explodeEffect, spawnPos, rotation);
+            explodeVFX.Play();
+            StartCoroutine(DestroyVFX(explodeVFX, explodeVFX.main.duration));
+        }
+
+        private IEnumerator DestroyVFX(ParticleSystem vfx, float lifetime)
+        {
+            yield return new WaitForSeconds(lifetime);
+            Destroy(vfx.gameObject);
         }
 
         #region Item Action Rule
@@ -127,34 +154,40 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
+        // TODO: Fix behaviour
         private void HandleItemActionFirework()
         {
             List<IItem3D> randomItemList = ControllerMatchFactory.Ins.GetListItemRandomByItemAction(maxItemCount);
 
             if (randomItemList.Count > 0)
             {
-                List<ItemAction> fireworkList = new List<ItemAction> { this };
-                for (int i = 0; i < randomItemList.Count - 1; i++)
+                Explode(() =>
                 {
-                    ItemAction cloneFirework = Instantiate(this, this.transform.position,
-                        this.transform.rotation);
-                    InitItemActionContext cloneContext = new InitItemActionContext()
-                    {
-                        ActionType = this.ActionType,
-                        Prefab = cloneFirework.gameObject,
-                        PrefabSize = this.PrefabSize,
-                    };
-                    cloneFirework.InitializeItemAction(cloneContext);
-                    fireworkList.Add(cloneFirework);
-                }
+                    ActiveFireworkSkill(randomItemList);
+                });
 
-                OnFireworkStarted?.Invoke(randomItemList);
-                for (int i = 0; i < randomItemList.Count; i++)
-                {
-                    int index = i;
-                    fireworkList[i].ActionBehaviour(randomItemList[i].Prefab.transform.position,
-                        () => { OnFireworkUsed?.Invoke(randomItemList[index]); });
-                }
+                //List<ItemAction> fireworkList = new List<ItemAction> { this };
+                //for (int i = 0; i < randomItemList.Count - 1; i++)
+                //{
+                //    ItemAction cloneFirework = Instantiate(this, this.transform.position,
+                //        this.transform.rotation);
+                //    InitItemActionContext cloneContext = new InitItemActionContext()
+                //    {
+                //        ActionType = this.ActionType,
+                //        Prefab = cloneFirework.gameObject,
+                //        PrefabSize = this.PrefabSize,
+                //    };
+                //    cloneFirework.InitializeItemAction(cloneContext);
+                //    fireworkList.Add(cloneFirework);
+                //}
+
+                //OnFireworkStarted?.Invoke(randomItemList);
+                //for (int i = 0; i < randomItemList.Count; i++)
+                //{
+                //    int index = i;
+                //    fireworkList[i].ActionBehaviour(randomItemList[i].Prefab.transform.position,
+                //        () => { OnFireworkUsed?.Invoke(randomItemList[index]); });
+                //}
             }
             else
             {
@@ -165,9 +198,33 @@ namespace MatchFactoryCore.Scripts.Item
         private void HandleItemActionHourglass()
         {
             OnHourglassUsed?.Invoke(timeBonus);
-            Explode();
+
+            Explode(() =>
+            {
+                Vector3 timeUIPos = ControllerMatchFactory.Ins.GetTimeUIPosition();
+                for (int i = 0; i < maxHourglassTrail; i++)
+                {
+                    Vector3 spawnPos = transform.position;
+                    spawnPos.y = timeUIPos.y;
+                    var trail = Instantiate(hourglassTrailVFX, spawnPos, Quaternion.identity);
+                    HourglassTrailVFX hourglassTrail = trail.GetComponent<HourglassTrailVFX>();
+                    hourglassTrail.TargetPos = timeUIPos;
+                    hourglassTrail.MoveToTarget(i);
+                }
+            });
+        }
+
+        #endregion
+
+        private void ActiveFireworkSkill(List<IItem3D> targets)
+        {
+            for (int i = 0; i < maxItemCount; i++)
+            {
+                float delay = i * 0.15f;
+                FireworkBullet bullet = Instantiate(fireworkBullet, this.transform.position, this.transform.rotation);
+                bullet.Target = targets[i];
+                bullet.MoveToTarget(delay);
+            }
         }
     }
-
-    #endregion
 }

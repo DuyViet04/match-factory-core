@@ -8,6 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Game
 {
+    // TODO: Fix bar visual
     public class ControllerItemFactory3D : MonoBehaviour
     {
         [SerializeField] private Camera mainCamera;
@@ -104,7 +105,8 @@ namespace MatchFactoryCore.Scripts.Game
                 {
                     _item3D = hitItem3D;
 
-                    _item3D.ObjectOutline.enabled = true;
+                    if (_item3D.ObjectOutline != null)
+                        _item3D.ObjectOutline.enabled = true;
                     _item3D.ObjectRigidbody.AddForce(Vector3.up, ForceMode.Impulse);
 
                     _lastItem3D = _item3D;
@@ -125,13 +127,14 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (_lastItem3D != null)
                 {
-                    _lastItem3D.ObjectOutline.enabled = false;
+                    if (_lastItem3D.ObjectOutline != null)
+                        _lastItem3D.ObjectOutline.enabled = false;
                 }
 
                 if (!_hasMovedEnoughForDrag && _item3D != null)
                 {
                     int id = ((ItemEntity)_item3D).Id;
-                    Debug.Log(id);
+                    //Debug.Log(id);
                     if (_item3D.ActionType == ActionType.Normal)
                     {
                         HandleItemFactory3D(_item3D, id);
@@ -168,7 +171,8 @@ namespace MatchFactoryCore.Scripts.Game
                         {
                             if (_lastItem3D != null && _lastItem3D != hitItem3D)
                             {
-                                _lastItem3D.ObjectOutline.enabled = false;
+                                if (_lastItem3D.ObjectOutline != null)
+                                    _lastItem3D.ObjectOutline.enabled = false;
                             }
 
                             if (hitItem3D.ObjectOutline != null)
@@ -184,7 +188,8 @@ namespace MatchFactoryCore.Scripts.Game
                     {
                         if (_lastItem3D != null)
                         {
-                            _lastItem3D.ObjectOutline.enabled = false;
+                            if (_lastItem3D.ObjectOutline != null)
+                                _lastItem3D.ObjectOutline.enabled = false;
                             _lastItem3D = null;
                         }
 

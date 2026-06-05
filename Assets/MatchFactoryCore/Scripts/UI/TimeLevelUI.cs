@@ -2,7 +2,7 @@ using MatchFactoryCore.Scripts.Game;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MatchFactoryCore.UI
+namespace MatchFactoryCore.Scripts.UI
 {
     public class TimeLevelUI : MonoBehaviour
     {
@@ -48,6 +48,11 @@ namespace MatchFactoryCore.UI
             {
                 freezeTimeText.gameObject.SetActive(false);
             }
+        }
+
+        public Vector2 GetTimeUIPosition()
+        {
+            return timeLevelText.rectTransform.position;
         }
     }
 }

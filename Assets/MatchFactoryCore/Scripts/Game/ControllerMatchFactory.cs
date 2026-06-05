@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using MatchFactoryCore.Scripts.UI;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game.State;
 using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
 
+// TODO: Fix lose condition
 namespace MatchFactoryCore.Scripts.Game
 {
     [DefaultExecutionOrder(-100)]
@@ -22,13 +24,14 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        [Header("References")] [SerializeField]
-        private ControllerItemFactory3D controllerItemFactory3D;
+        [Header("References")]
+        [SerializeField] private ControllerItemFactory3D controllerItemFactory3D;
 
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private ControllerItemBooster controllerItemBooster;
+        [SerializeField] private TimeLevelUI timeLevelUI;
 
         //Test
         public string stateName;
@@ -36,8 +39,9 @@ namespace MatchFactoryCore.Scripts.Game
         public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
         public event Action<float> OnFreezeTimeChanged;
+        public Vector3 FireworkAnchorPos = new Vector3(0, 7, 3.5f);
         public float TimeLevel { get; private set; }
-        public bool IsFullBar {get; private set;}
+        public bool IsFullBar { get; private set; }
 
         private StateMachine<MatchFactoryState> _stateMachine;
         private bool _isFreezeTime;
@@ -125,7 +129,7 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.GetDictItemFactory().TryGetValue(id, out ItemFactory itemFactory);
             IItemFactory2D item2D = itemFactory;
             IItem3D item3D = itemFactory;
-            
+
             if (item2D != null)
             {
                 Vector3 targetPos = controllerCollectionBar.GetPositionTo3DJump(item2D.ItemFactoryType);
@@ -277,6 +281,14 @@ namespace MatchFactoryCore.Scripts.Game
         public MatchFactoryState GetCurrentState()
         {
             return _stateMachine.CurrentStateKey;
+        }
+
+        public Vector3 GetTimeUIPosition()
+        {
+            Vector3 timeUIPos = timeLevelUI.GetTimeUIPosition();
+            Vector3 timeUIWorldPos = mainCamera.ScreenToWorldPoint(timeUIPos);
+            timeUIWorldPos.y -= 1;
+            return timeUIWorldPos;
         }
 
         #endregion
