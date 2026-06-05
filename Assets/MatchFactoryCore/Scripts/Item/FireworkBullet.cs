@@ -1,15 +1,17 @@
 ﻿using DG.Tweening;
 using MatchFactoryCore.Scripts.Game;
+using System;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
     public class FireworkBullet : MonoBehaviour
     {
         public IItem3D Target { get; set; }
+        public event Action<IItem3D> OnFireworkBulletMoveToTarget;
 
-        public void MoveToTarget(float delay)
+        public void MoveToTarget(float delay, Action onComplete)
         {
             if (Target != null)
             {
@@ -21,12 +23,14 @@ namespace MatchFactoryCore.Scripts.Item
                 Vector3 endPos = Target.Prefab.transform.position;
                 Vector3[] path = { anchorPos, endPos };
 
-                transform.DOPath(path, 1f, PathType.CatmullRom).SetLookAt(0.1f)
+                transform.DOPath(path, 1f, PathType.CatmullRom)
+                    .SetLookAt(0.1f, Vector3.up)
                     .SetDelay(delay)
                     .OnComplete(() =>
                 {
-                    Target.Explode();
+                    OnFireworkBulletMoveToTarget?.Invoke(Target);
                     Destroy(gameObject);
+                    onComplete?.Invoke();
                 });
             }
         }

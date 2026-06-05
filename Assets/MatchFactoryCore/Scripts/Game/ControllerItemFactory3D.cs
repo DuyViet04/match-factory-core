@@ -311,7 +311,7 @@ namespace MatchFactoryCore.Scripts.Game
             ItemAction itemAction = item3D as ItemAction;
             if (itemAction != null)
             {
-                itemAction.OnFireworkUsed -= HandleWhenItemActionFireworkUsed;
+                itemAction.OnFireworkBulletMoveCompleted -= HandleWhenItemActionFireworkUsed;
                 itemAction.OnFireworkStarted -= HandleWhenItemActionFireworkStarted;
                 _dictItemAction.Remove(itemAction.Id);
             }
@@ -382,7 +382,7 @@ namespace MatchFactoryCore.Scripts.Game
                         PrefabSize = dataItemAction.prefabSize,
                     };
                     itemActionComp.InitializeItemAction(itemActionContext);
-                    itemActionComp.OnFireworkUsed += HandleWhenItemActionFireworkUsed;
+                    itemActionComp.OnFireworkBulletMoveCompleted += HandleWhenItemActionFireworkUsed;
                     itemActionComp.OnFireworkStarted += HandleWhenItemActionFireworkStarted;
                     itemActionComp.OnHourglassUsed += HandleWhenItemActionHourglassUsed;
                     _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);

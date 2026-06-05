@@ -42,7 +42,7 @@ namespace MatchFactoryCore.Scripts.Item
         #endregion
 
         public event Action<List<IItem3D>> OnFireworkStarted;
-        public event Action<IItem3D> OnFireworkUsed;
+        public event Action<IItem3D> OnFireworkBulletMoveCompleted;
         public event Action<float> OnHourglassUsed;
 
         Sequence _explodeSequence;
@@ -154,40 +154,17 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        // TODO: Fix behaviour
         private void HandleItemActionFirework()
         {
             List<IItem3D> randomItemList = ControllerMatchFactory.Ins.GetListItemRandomByItemAction(maxItemCount);
 
             if (randomItemList.Count > 0)
             {
+                OnFireworkStarted?.Invoke(randomItemList);
                 Explode(() =>
                 {
                     ActiveFireworkSkill(randomItemList);
                 });
-
-                //List<ItemAction> fireworkList = new List<ItemAction> { this };
-                //for (int i = 0; i < randomItemList.Count - 1; i++)
-                //{
-                //    ItemAction cloneFirework = Instantiate(this, this.transform.position,
-                //        this.transform.rotation);
-                //    InitItemActionContext cloneContext = new InitItemActionContext()
-                //    {
-                //        ActionType = this.ActionType,
-                //        Prefab = cloneFirework.gameObject,
-                //        PrefabSize = this.PrefabSize,
-                //    };
-                //    cloneFirework.InitializeItemAction(cloneContext);
-                //    fireworkList.Add(cloneFirework);
-                //}
-
-                //OnFireworkStarted?.Invoke(randomItemList);
-                //for (int i = 0; i < randomItemList.Count; i++)
-                //{
-                //    int index = i;
-                //    fireworkList[i].ActionBehaviour(randomItemList[i].Prefab.transform.position,
-                //        () => { OnFireworkUsed?.Invoke(randomItemList[index]); });
-                //}
             }
             else
             {
@@ -222,8 +199,12 @@ namespace MatchFactoryCore.Scripts.Item
             {
                 float delay = i * 0.15f;
                 FireworkBullet bullet = Instantiate(fireworkBullet, this.transform.position, this.transform.rotation);
+                bullet.OnFireworkBulletMoveToTarget += OnFireworkBulletMoveCompleted;
                 bullet.Target = targets[i];
-                bullet.MoveToTarget(delay);
+                bullet.MoveToTarget(delay, () =>
+                {
+                    OnFireworkBulletMoveCompleted?.Invoke(targets[i]);
+                });
             }
         }
     }
