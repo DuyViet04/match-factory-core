@@ -193,6 +193,10 @@ PrefabInstance:
       propertyPath: ShapeModule.m_MeshRenderer
       value: 
       objectReference: {fileID: 1781768464423126760}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_UseMeshColors
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3291735627935231675, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

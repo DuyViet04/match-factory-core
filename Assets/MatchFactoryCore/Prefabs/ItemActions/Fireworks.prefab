@@ -190,9 +190,33 @@ PrefabInstance:
     m_TransformParent: {fileID: 3099691417235409786}
     m_Modifications:
     - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ColorModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_Texture
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
       propertyPath: ShapeModule.m_MeshRenderer
       value: 
       objectReference: {fileID: 3460764685273043779}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_UseMeshColors
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_MeshMaterialIndex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_TextureClipChannel
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1286572607816907824, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: ShapeModule.m_UseMeshMaterialIndex
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3291735627935231675, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -231,6 +255,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3291735627935231675, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4295209194381717951, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+    - target: {fileID: 4295209194381717951, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
+      propertyPath: m_RenderMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5716332602781710746, guid: 9a3d32f732ab5af429872483d323cbbc, type: 3}
