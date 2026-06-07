@@ -128,12 +128,7 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpAfterMatchTween?.Kill();
             _jumpAfterMatchTween = RectTransform.transform.DOJump(targetPos, 100, 1, 0.1f)
                 .SetDelay(delay)
-                .OnComplete(() => onComplete?.Invoke())
-                .OnKill(() =>
-                {
-                    RectTransform.position = targetPos;
-                    onComplete?.Invoke();
-                });
+                .OnComplete(() => onComplete?.Invoke());
         }
 
         //public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,

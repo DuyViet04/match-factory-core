@@ -7,7 +7,6 @@ using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
 
-// TODO: Fix lose condition
 namespace MatchFactoryCore.Scripts.Game
 {
     [DefaultExecutionOrder(-100)]
@@ -159,10 +158,8 @@ namespace MatchFactoryCore.Scripts.Game
             float delay = 0.25f;
             if (list2D != null && list2D.Count > 0)
             {
-                controllerCollectionBar.MoveToVacuum(list2D, position, delay, () =>
-                {
-                    controllerCollectionBar.PlaySequenceAfterUseVacuum();
-                });
+                controllerCollectionBar.MoveToVacuum(list2D, position, delay,
+                    () => { controllerCollectionBar.PlaySequenceAfterUseVacuum(); });
                 delay += 0.25f * list2D.Count;
             }
 

@@ -8,7 +8,6 @@ using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Game
 {
-    // TODO: Fix bar visual
     public class ControllerItemFactory3D : MonoBehaviour
     {
         [SerializeField] private Camera mainCamera;

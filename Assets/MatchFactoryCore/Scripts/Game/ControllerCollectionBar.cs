@@ -23,13 +23,17 @@ namespace MatchFactoryCore.Scripts.Game
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
 
         Vector2[] _cacheAnchorPosition;
+        Vector3[] _cachedPosition;
 
-        private void Awake()
+        private void Start()
         {
+            Canvas.ForceUpdateCanvases();
             _cacheAnchorPosition = new Vector2[collectionBarSlots.Count];
+            _cachedPosition = new Vector3[collectionBarSlots.Count];
             for (int i = 0; i < collectionBarSlots.Count; i++)
             {
                 _cacheAnchorPosition[i] = collectionBarSlots[i].anchoredPosition;
+                _cachedPosition[i] = collectionBarSlots[i].position;
             }
         }
 
@@ -149,12 +153,11 @@ namespace MatchFactoryCore.Scripts.Game
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                var item = _itemFactory2DList[i];
+                ItemFactory2D itemTemp = _itemFactory2DList[i];
                 int targetIndex = i;
+                if (itemTemp.IndexFromBar == targetIndex) continue;
 
-                if (item.IndexFromBar == targetIndex) continue;
-
-                int current = item.IndexFromBar;
+                int current = itemTemp.IndexFromBar;
 
                 void StepLeft()
                 {
@@ -163,9 +166,9 @@ namespace MatchFactoryCore.Scripts.Game
                     current--;
                     int capturedTo = current;
 
-                    item.JumpAfterMatch(GetPositionJump2D(capturedTo), 0, () =>
+                    itemTemp.JumpAfterMatch(GetPositionJump2D(capturedTo), 0, () =>
                     {
-                        item.IndexFromBar = capturedTo;
+                        itemTemp.IndexFromBar = capturedTo;
                         BounceBarSlot(capturedTo);
                         StepLeft();
                     });
@@ -290,12 +293,12 @@ namespace MatchFactoryCore.Scripts.Game
 
         private Vector2 GetPositionJump2D(ItemFactoryType type)
         {
-            return collectionBarSlots[GetIndexToInsert(type)].position;
+            return _cachedPosition[GetIndexToInsert(type)];
         }
 
         private Vector2 GetPositionJump2D(int index)
         {
-            return collectionBarSlots[index].position;
+            return _cachedPosition[index];
         }
 
         private int GetIndexToInsert(ItemFactoryType type)
