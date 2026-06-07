@@ -37,7 +37,6 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        // TODO: 3D jump rotation
         public void SpawnItemFactory2D(IItemFactory2D itemFactory2D, int id)
         {
             int indexToInsert = GetIndexToInsert(itemFactory2D.ItemFactoryType);

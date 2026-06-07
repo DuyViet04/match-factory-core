@@ -401,7 +401,7 @@ namespace MatchFactoryCore.Scripts.Game
                 return;
             }
 
-            GameObject newItemFactory3D = Instantiate(so.prefab, GetRandomSpawnPoint(), Quaternion.identity);
+            GameObject newItemFactory3D = Instantiate(so.prefab, GetRandomSpawnPoint(), so.prefab.transform.rotation);
             newItemFactory3D.transform.parent = holder.transform;
             ItemFactory itemFactoryComp = newItemFactory3D.GetComponent<ItemFactory>();
 
