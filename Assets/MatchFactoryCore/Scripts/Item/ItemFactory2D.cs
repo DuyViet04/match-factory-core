@@ -26,6 +26,7 @@ namespace MatchFactoryCore.Scripts.Item
         Sequence _jumpAfterMatchSequence;
         Sequence _moveToVacuumSequence;
         Tween _jumpOnBarTween;
+        Tween _jumpAfterMatchTween;
 
         public void Initialize(int id, IItemFactory2D itemFactory)
         {
@@ -39,7 +40,12 @@ namespace MatchFactoryCore.Scripts.Item
         public void JumpOnBar(Vector3 position, Action onComplete = null)
         {
             _jumpOnBarTween?.Kill();
-            _jumpOnBarTween = RectTransform.DOJump(position, 100, 1, 0.25f).OnComplete(() => { onComplete?.Invoke(); })
+            _jumpOnBarTween = RectTransform.DOJump(position, 100, 1, 0.25f)
+                .OnComplete(() =>
+                {
+                    _jumpOnBarTween = null; // clear trước để chained call không Kill nhầm
+                    onComplete?.Invoke();
+                })
                 .OnKill(() => { RectTransform.position = position; });
         }
 
@@ -54,7 +60,11 @@ namespace MatchFactoryCore.Scripts.Item
                     _jumpOnMatchSequence
                         .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
                         .Append(RectTransform.DOMove(matchPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
-                        .OnComplete(() => { onComplete?.Invoke(); })
+                        .OnComplete(() =>
+                        {
+                            onComplete?.Invoke();
+                            Destroy(gameObject);
+                        })
                         .OnKill(() =>
                         {
                             RectTransform.position = matchPos;
@@ -65,7 +75,12 @@ namespace MatchFactoryCore.Scripts.Item
                     _jumpOnMatchSequence
                         .SetDelay(0.1f).Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
                         .Append(RectTransform.DOMove(matchPos, 0.25f).SetEase(Ease.InBack))
-                        .OnComplete(() => { onComplete?.Invoke(); }).OnKill(() =>
+                        .OnComplete(() =>
+                        {
+                            onComplete?.Invoke();
+                            Destroy(gameObject);
+                        })
+                        .OnKill(() =>
                         {
                             RectTransform.position = matchPos;
                             onComplete?.Invoke();
@@ -75,7 +90,11 @@ namespace MatchFactoryCore.Scripts.Item
                     _jumpOnMatchSequence
                         .Append(RectTransform.DOMove(currentPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
                         .Append(RectTransform.DOMove(matchPos + jumpHigh, 0.25f).SetEase(Ease.InBack))
-                        .OnComplete(() => { onComplete?.Invoke(); })
+                        .OnComplete(() =>
+                        {
+                            onComplete?.Invoke();
+                            Destroy(gameObject);
+                        })
                         .OnKill(() =>
                         {
                             RectTransform.position = matchPos;
@@ -85,41 +104,54 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,
-            Action onComplete = null, Action<int> onJumpStep = null)
+        public void JumpAfterMatch(Vector3 targetPos, float delay, Action onComplete)
         {
-            if (fromIndex == targetIndex)
-            {
-                onComplete?.Invoke();
-                return;
-            }
-
-            _jumpAfterMatchSequence?.Kill();
-            _jumpAfterMatchSequence = DOTween.Sequence();
-
-            float timePerStep = sortTime;
-            int direction = targetIndex < fromIndex ? -1 : 1;
-
-            int current = fromIndex;
-            while (current != targetIndex)
-            {
-                current += direction;
-                int capturedIndex = current;
-                _jumpAfterMatchSequence.Append(
-                    RectTransform.DOJump(getSlotPosition(capturedIndex), 100, 1, timePerStep)
-                        .SetDelay(delay)
-                        .OnComplete(() => { onJumpStep?.Invoke(capturedIndex); })
-                );
-            }
-
-            _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); })
+            _jumpAfterMatchTween?.Kill();
+            _jumpAfterMatchTween = RectTransform.transform.DOJump(targetPos, 100, 1, 0.1f)
+                .SetDelay(delay)
+                .OnComplete(() => onComplete?.Invoke())
                 .OnKill(() =>
                 {
-                    RectTransform.position = getSlotPosition(targetIndex);
-                    IndexFromBar = targetIndex;
+                    RectTransform.position = targetPos;
                     onComplete?.Invoke();
                 });
         }
+
+        //public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,
+        //    Action onComplete = null, Action<int> onJumpStep = null)
+        //{
+        //    if (fromIndex == targetIndex)
+        //    {
+        //        onComplete?.Invoke();
+        //        return;
+        //    }
+
+        //    _jumpAfterMatchSequence?.Kill();
+        //    _jumpAfterMatchSequence = DOTween.Sequence();
+
+        //    float timePerStep = sortTime;
+        //    int direction = targetIndex < fromIndex ? -1 : 1;
+
+        //    int current = fromIndex;
+        //    while (current != targetIndex)
+        //    {
+        //        current += direction;
+        //        int capturedIndex = current;
+        //        _jumpAfterMatchSequence.Append(
+        //            RectTransform.DOJump(getSlotPosition(capturedIndex), 100, 1, timePerStep)
+        //                .SetDelay(delay)
+        //                .OnComplete(() => { onJumpStep?.Invoke(capturedIndex); })
+        //        );
+        //    }
+
+        //    _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); })
+        //        .OnKill(() =>
+        //        {
+        //            RectTransform.position = getSlotPosition(targetIndex);
+        //            IndexFromBar = targetIndex;
+        //            onComplete?.Invoke();
+        //        });
+        //}
 
         public void MoveToVacuum(Vector3 targetPos, float delay, Action onComplete = null)
         {
@@ -138,7 +170,8 @@ namespace MatchFactoryCore.Scripts.Item
                 {
                     onComplete?.Invoke();
                     Destroy(gameObject);
-                }).OnKill(() => { RectTransform.position = targetPos; });
+                })
+                .OnKill(() => { RectTransform.position = targetPos; });
         }
     }
 }

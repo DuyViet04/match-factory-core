@@ -18,6 +18,9 @@ namespace MatchFactoryCore.Scripts.Game.State
 
         public override void OnUpdate()
         {
+            if (!Controller.IsFullBar)
+                Controller.ControllerItemFactory3D.UpdateRaycast();
+
             Controller.UpdateTimeLevel();
             Controller.UpdateFreezeTime();
 
@@ -26,9 +29,6 @@ namespace MatchFactoryCore.Scripts.Game.State
                 StateMachine.ChangeState(MatchFactoryState.Lose);
                 return;
             }
-
-            if (!Controller.IsFullBar)
-                Controller.ControllerItemFactory3D.UpdateRaycast();
         }
     }
 }
