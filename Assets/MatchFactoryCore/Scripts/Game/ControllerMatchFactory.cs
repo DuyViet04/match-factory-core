@@ -7,6 +7,7 @@ using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
 
+// TODO: Lose Check
 namespace MatchFactoryCore.Scripts.Game
 {
     [DefaultExecutionOrder(-100)]
@@ -22,6 +23,8 @@ namespace MatchFactoryCore.Scripts.Game
                 return _instance;
             }
         }
+
+        public static bool HasInstance => _instance != null;
 
         [Header("References")]
         [SerializeField] private ControllerItemFactory3D controllerItemFactory3D;
@@ -72,6 +75,14 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemBooster.OnSpringBoosterUsed -= HandleWhenBoosterSpringUsed;
             controllerItemBooster.OnFanBoosterUsed -= HandleWhenBoosterFanUsed;
             controllerItemBooster.OnFreezeGunBoosterUsed -= HandleWhenBoosterFreezeGunUsed;
+        }
+
+        private void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
         }
 
         private void Awake()

@@ -20,8 +20,11 @@ namespace MatchFactoryCore.Scripts.UI
 
         private void OnDisable()
         {
-            ControllerMatchFactory.Ins.OnTimeLevelChanged -= UpdateTimeLevel;
-            ControllerMatchFactory.Ins.OnTimeLevelChanged -= UpdateFreezeTime;
+            if (ControllerMatchFactory.HasInstance)
+            {
+                ControllerMatchFactory.Ins.OnTimeLevelChanged -= UpdateTimeLevel;
+                ControllerMatchFactory.Ins.OnFreezeTimeChanged -= UpdateFreezeTime;
+            }
         }
 
         private void Start()

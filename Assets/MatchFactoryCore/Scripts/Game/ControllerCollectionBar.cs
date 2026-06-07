@@ -6,6 +6,7 @@ using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using UnityEngine;
 
+// TODO: Fix item active = false when click
 namespace MatchFactoryCore.Scripts.Game
 {
     public class ControllerCollectionBar : MonoBehaviour
@@ -242,7 +243,7 @@ namespace MatchFactoryCore.Scripts.Game
 
                     CheckMatch(itemTemp, out bool isMatch, out List<ItemFactory2D> matches);
 
-                    if (isMatch && itemTemp.gameObject.activeSelf)
+                    if (isMatch)
                     {
                         PlaySequenceMatchItem(matches, () =>
                         {

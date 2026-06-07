@@ -132,8 +132,9 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (!_hasMovedEnoughForDrag && _item3D != null)
                 {
+                    _item3D.ObjectCollider.enabled = false;
                     int id = ((ItemEntity)_item3D).Id;
-                    //Debug.Log(id);
+                    
                     if (_item3D.ActionType == ActionType.Normal)
                     {
                         HandleItemFactory3D(_item3D, id);
@@ -205,7 +206,6 @@ namespace MatchFactoryCore.Scripts.Game
             if (actionType == ActionType.Normal)
             {
                 CheckItemChoose(id);
-                item3D.ObjectCollider.enabled = false;
                 OnPointerReleased?.Invoke(id);
             }
         }
