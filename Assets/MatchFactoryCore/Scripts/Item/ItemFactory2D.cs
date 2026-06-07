@@ -37,6 +37,25 @@ namespace MatchFactoryCore.Scripts.Item
             RectTransform = GetComponent<RectTransform>();
         }
 
+        public bool IsAnimating =>
+            (_jumpOnBarTween != null && _jumpOnBarTween.IsActive() && _jumpOnBarTween.IsPlaying()) ||
+            (_jumpAfterMatchTween != null && _jumpAfterMatchTween.IsActive() && _jumpAfterMatchTween.IsPlaying()) ||
+            (_jumpOnMatchSequence != null && _jumpOnMatchSequence.IsActive() && _jumpOnMatchSequence.IsPlaying()) ||
+            (_jumpAfterMatchSequence != null && _jumpAfterMatchSequence.IsActive() && _jumpAfterMatchSequence.IsPlaying());
+ 
+        public void SnapToPosition(Vector3 worldPosition)
+        {
+            _jumpOnBarTween?.Kill(false);
+            _jumpOnBarTween = null;
+            _jumpAfterMatchTween?.Kill(false);
+            _jumpAfterMatchTween = null;
+            _jumpOnMatchSequence?.Kill(false);
+            _jumpOnMatchSequence = null;
+            _jumpAfterMatchSequence?.Kill(false);
+            _jumpAfterMatchSequence = null;
+            RectTransform.position = worldPosition;
+        }
+
         public void JumpOnBar(Vector3 position, Action onComplete = null)
         {
             _jumpOnBarTween?.Kill();

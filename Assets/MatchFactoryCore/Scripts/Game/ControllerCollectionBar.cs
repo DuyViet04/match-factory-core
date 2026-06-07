@@ -77,14 +77,24 @@ namespace MatchFactoryCore.Scripts.Game
             foreach (var item2DTemp in itemMoves)
             {
                 int targetIndex = item2DTemp.IndexFromBar;
-                item2DTemp.RectTransform.DOKill();
-                item2DTemp.JumpOnBar(GetPositionJump2D(targetIndex), () =>
+                if (item2DTemp.IsAnimating)
                 {
+                    item2DTemp.SnapToPosition(GetPositionJump2D(targetIndex));
                     BounceBarSlot(targetIndex);
                     completedCount++;
                     if (completedCount == itemMoves.Count)
                         onComplete?.Invoke();
-                });
+                }
+                else
+                {
+                    item2DTemp.JumpOnBar(GetPositionJump2D(targetIndex), () =>
+                    {
+                        BounceBarSlot(targetIndex);
+                        completedCount++;
+                        if (completedCount == itemMoves.Count)
+                            onComplete?.Invoke();
+                    });
+                }
             }
         }
 
@@ -135,7 +145,6 @@ namespace MatchFactoryCore.Scripts.Game
                 matchsList[1].RectTransform.position, JumpTypeMatch.Right, OnOneComplete);
         }
 
-        // TODO: fix lech vi tri khi jump + fix jump delay
         private void SortAfterMatch()
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
@@ -145,7 +154,6 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (item.IndexFromBar == targetIndex) continue;
 
-                float capturedDelay = i * 0.05f;
                 int current = item.IndexFromBar;
 
                 void StepLeft()
@@ -155,7 +163,7 @@ namespace MatchFactoryCore.Scripts.Game
                     current--;
                     int capturedTo = current;
 
-                    item.JumpAfterMatch(GetPositionJump2D(capturedTo), capturedDelay, () =>
+                    item.JumpAfterMatch(GetPositionJump2D(capturedTo), 0, () =>
                     {
                         item.IndexFromBar = capturedTo;
                         BounceBarSlot(capturedTo);
@@ -311,7 +319,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         public List<ItemFactory2D> GetLastTargetItem2DOnBar()
         {
-            ItemFactoryType firstTypeFind = ItemFactoryType.None;
             List<ItemFactory2D> result = new List<ItemFactory2D>();
             for (int i = _itemFactory2DList.Count - 1; i >= 0; i--)
             {
@@ -319,7 +326,7 @@ namespace MatchFactoryCore.Scripts.Game
 
                 if (isTarget)
                 {
-                    firstTypeFind = _itemFactory2DList[i].ItemFactory.ItemFactoryType;
+                    ItemFactoryType firstTypeFind = _itemFactory2DList[i].ItemFactory.ItemFactoryType;
 
                     for (int j = i; j >= 0; j--)
                     {
