@@ -109,7 +109,8 @@ namespace MatchFactoryCore.Scripts.Game
 
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType)
+                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType
+                    && _itemFactory2DList[i].gameObject.activeSelf)
                 {
                     matchesList.Add(_itemFactory2DList[i]);
                 }
@@ -180,30 +181,7 @@ namespace MatchFactoryCore.Scripts.Game
         // TODO
         public void PlaySequenceAfterUseVacuum(Action onComplete = null)
         {
-            if (_itemFactory2DList.Count == 0)
-            {
-                onComplete?.Invoke();
-                return;
-            }
-
-            int completedCount = 0;
-            int total = _itemFactory2DList.Count;
-
-            for (int i = 0; i < _itemFactory2DList.Count; i++)
-            {
-                int capturedOldIndex = _itemFactory2DList[i].IndexFromBar;
-                _itemFactory2DList[i].IndexFromBar = i;
-                int capturedNewIndex = i;
-                float delay = 0.01f * i;
-                //_itemFactory2DList[i].JumpAfterMatch(capturedOldIndex, capturedNewIndex, delay,
-                //    idx => GetPositionJump2D(idx),
-                //    () =>
-                //    {
-                //        completedCount++;
-                //        if (completedCount == total) onComplete?.Invoke();
-                //    },
-                //    BounceBarSlot);
-            }
+            SortAfterMatch();
         }
 
         public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position, float delay, Action onComplete = null)
@@ -255,33 +233,38 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SetActiveItemChoose(int id, Action onComplete = null)
         {
-            ItemFactory2D itemChoose = GetItemFactory2DById(id);
-            if (itemChoose == null) return;
-
-            itemChoose.gameObject.SetActive(true);
-            onComplete?.Invoke();
-            BounceBarSlot(itemChoose.IndexFromBar);
-
-            CheckMatch(itemChoose, out bool isMatch, out List<ItemFactory2D> matches);
-            if (isMatch)
+            foreach (var itemTemp in _itemFactory2DList)
             {
-                PlaySequenceMatchItem(matches, () =>
+                if (itemTemp.Id == id)
                 {
-                    OnMatchItemStarted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
-                    foreach (var matchItemTemp in matches)
+                    itemTemp.gameObject.SetActive(true);
+                    BounceBarSlot(itemTemp.IndexFromBar);
+
+                    CheckMatch(itemTemp, out bool isMatch, out List<ItemFactory2D> matches);
+
+                    if (isMatch && itemTemp.gameObject.activeSelf)
                     {
-                        if (matchItemTemp != null)
+                        PlaySequenceMatchItem(matches, () =>
                         {
-                            Destroy(matchItemTemp.gameObject);
-                        }
+                            OnMatchItemStarted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
+                            foreach (var matchItemTemp in matches)
+                            {
+                                if (matchItemTemp != null)
+                                {
+                                    Destroy(matchItemTemp.gameObject);
+                                }
+                            }
+
+                            SortAfterMatch();
+                        });
+                    }
+                    else
+                    {
+                        OnInsertItemCompleted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
                     }
 
-                    SortAfterMatch();
-                });
-            }
-            else
-            {
-                OnInsertItemCompleted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
+                    onComplete?.Invoke();
+                }
             }
         }
 

@@ -62,7 +62,6 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpOnBarTween = RectTransform.DOJump(position, 100, 1, 0.25f)
                 .OnComplete(() =>
                 {
-                    _jumpOnBarTween = null; // clear trước để chained call không Kill nhầm
                     onComplete?.Invoke();
                 })
                 .OnKill(() => { RectTransform.position = position; });
@@ -130,42 +129,6 @@ namespace MatchFactoryCore.Scripts.Item
                 .SetDelay(delay)
                 .OnComplete(() => onComplete?.Invoke());
         }
-
-        //public void JumpAfterMatch(int fromIndex, int targetIndex, float delay, Func<int, Vector3> getSlotPosition,
-        //    Action onComplete = null, Action<int> onJumpStep = null)
-        //{
-        //    if (fromIndex == targetIndex)
-        //    {
-        //        onComplete?.Invoke();
-        //        return;
-        //    }
-
-        //    _jumpAfterMatchSequence?.Kill();
-        //    _jumpAfterMatchSequence = DOTween.Sequence();
-
-        //    float timePerStep = sortTime;
-        //    int direction = targetIndex < fromIndex ? -1 : 1;
-
-        //    int current = fromIndex;
-        //    while (current != targetIndex)
-        //    {
-        //        current += direction;
-        //        int capturedIndex = current;
-        //        _jumpAfterMatchSequence.Append(
-        //            RectTransform.DOJump(getSlotPosition(capturedIndex), 100, 1, timePerStep)
-        //                .SetDelay(delay)
-        //                .OnComplete(() => { onJumpStep?.Invoke(capturedIndex); })
-        //        );
-        //    }
-
-        //    _jumpAfterMatchSequence.OnComplete(() => { onComplete?.Invoke(); })
-        //        .OnKill(() =>
-        //        {
-        //            RectTransform.position = getSlotPosition(targetIndex);
-        //            IndexFromBar = targetIndex;
-        //            onComplete?.Invoke();
-        //        });
-        //}
 
         public void MoveToVacuum(Vector3 targetPos, float delay, Action onComplete = null)
         {
