@@ -5,6 +5,7 @@ using MatchFactoryCore.Scripts.Game;
 using MatchFactoryCore.Scripts.Game.State;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VFX;
 
 namespace MatchFactoryCore.Scripts.Item
 {
@@ -26,6 +27,7 @@ namespace MatchFactoryCore.Scripts.Item
         [SerializeField] private ParticleSystem vacuumVFX;
         [SerializeField] private ParticleSystem springBoosterVfx;
         [SerializeField] private ParticleSystem item2DSpringBoosterVfx;
+        [SerializeField] private VisualEffect freezeGunBoosterVfx;
 
         [SerializeField] private int numberItemGet = 3;
         [SerializeField] private int freezeTime = 10;
@@ -129,7 +131,7 @@ namespace MatchFactoryCore.Scripts.Item
         {
             if (BoosterCount == 0) return;
 
-            OnFreezeGunBoosterUsed?.Invoke(freezeTime);
+            SpawnFreezeGunBoosterVfx();
             BoosterCount--;
             textCount.text = BoosterCount.ToString();
         }
@@ -156,6 +158,23 @@ namespace MatchFactoryCore.Scripts.Item
 
             ParticleSystem newVfx = Instantiate(item2DSpringBoosterVfx, spawnPos, item2DSpringBoosterVfx.transform.rotation);
             newVfx.Play();
+        }
+
+        public void SpawnFreezeGunBoosterVfx()
+        {
+            Vector3 timeUiWorldPos = ControllerMatchFactory.Ins.GetTimeUIPosition();
+            Vector3 spawnPos = GetSpawnPosition(RectTransform.position);
+            Vector3 lookDir = (timeUiWorldPos - spawnPos).normalized;
+            Quaternion spawnRot = Quaternion.LookRotation(lookDir);
+            float maxVfxLength = (timeUiWorldPos - spawnPos).magnitude;
+
+            VisualEffect newFreezeGunBoosterVfx = Instantiate(freezeGunBoosterVfx, spawnPos, Quaternion.identity);
+            newFreezeGunBoosterVfx.SetFloat("MaxLength", maxVfxLength);
+            newFreezeGunBoosterVfx.SetVector3("Rotation", spawnRot.eulerAngles);
+            newFreezeGunBoosterVfx.Play();
+
+            if (newFreezeGunBoosterVfx.aliveParticleCount <= 0)
+                OnFreezeGunBoosterUsed?.Invoke(freezeTime);
         }
 
         private Vector3 GetSpawnPosition(Vector2 uiPosition)
