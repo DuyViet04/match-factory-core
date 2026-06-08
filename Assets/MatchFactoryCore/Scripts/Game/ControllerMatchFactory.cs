@@ -28,17 +28,17 @@ namespace MatchFactoryCore.Scripts.Game
 
         [Header("References")]
         [SerializeField] private ControllerItemFactory3D controllerItemFactory3D;
-
         public ControllerItemFactory3D ControllerItemFactory3D => controllerItemFactory3D;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private ControllerCollectionBar controllerCollectionBar;
         [SerializeField] private ControllerItemBooster controllerItemBooster;
+        [SerializeField] private ControllerTargetCard controllerTargetCard;
         [SerializeField] private TimeLevelUI timeLevelUI;
 
         //Test
         public string stateName;
 
-        public event Action<Dictionary<ItemFactoryType, int>> OnLevelTargetChanged;
+        public event Action<ItemFactoryType, int> OnLevelTargetChanged;
         public event Action<float> OnTimeLevelChanged;
         public event Action<float> OnFreezeTimeChanged;
         public Vector3 FireworkAnchorPos = new Vector3(0, 7, 3.5f);
@@ -101,7 +101,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void Start()
         {
-            OnLevelTargetChanged?.Invoke(controllerItemFactory3D.GetTargetDictionary());
             IsFullBar = false;
         }
 
@@ -128,6 +127,7 @@ namespace MatchFactoryCore.Scripts.Game
             DataLevelMatchFactory dataLevel = controllerItemFactory3D.GetDataLevel(level);
             TimeLevel = dataLevel.TimeLevel;
             controllerItemFactory3D.SpawnAllItem(level, onReady);
+            controllerTargetCard.SpawnCardUi(level);
         }
 
         #endregion
@@ -154,10 +154,10 @@ namespace MatchFactoryCore.Scripts.Game
             IsFullBar = enable;
         }
 
-        private void UpdateLevelTarget(Dictionary<ItemFactoryType, int> targetDict)
+        private void UpdateLevelTarget(ItemFactoryType type, int targetDict)
         {
-            OnLevelTargetChanged?.Invoke(targetDict);
-            bool isWin = CheckWin(targetDict);
+            OnLevelTargetChanged?.Invoke(type, targetDict);
+            bool isWin = CheckWin();
             if (isWin)
             {
                 _stateMachine.ChangeState(MatchFactoryState.Win);
@@ -191,19 +191,14 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 controllerItemBooster.SpawnItem2DSpringBoosterVfx(itemFactory2D.RectTransform.position);
 
-                controllerItemFactory3D.JumpToBoard(id, startPos, () =>
-                {
-                    controllerItemBooster.SpawnSpringBoosterVfx();
-                });
+                controllerItemFactory3D.JumpToBoard(id, startPos,
+                    () => { controllerItemBooster.SpawnSpringBoosterVfx(); });
             });
         }
 
         private void HandleWhenBoosterFanUsed()
         {
-            controllerItemFactory3D.BlowByFanBooster(() =>
-            {
-                controllerItemBooster.StopFanBoosterVfx();
-            });
+            controllerItemFactory3D.BlowByFanBooster(() => { controllerItemBooster.StopFanBoosterVfx(); });
         }
 
         private void HandleWhenBoosterFreezeGunUsed(int timeFreeze)
@@ -218,10 +213,10 @@ namespace MatchFactoryCore.Scripts.Game
             controllerItemFactory3D.RemoveItemFactory(idList);
         }
 
-        bool CheckWin(Dictionary<ItemFactoryType, int> targetDict)
+        bool CheckWin()
         {
             bool isWin = true;
-            foreach (var itemTemp in targetDict)
+            foreach (var itemTemp in controllerItemFactory3D.GetTargetDictionary())
             {
                 if (itemTemp.Value != 0)
                 {

@@ -19,7 +19,7 @@ namespace MatchFactoryCore.Scripts.Game
         public float maxX, maxZ;
 
         public event Action<int> OnPointerReleased;
-        public event Action<Dictionary<ItemFactoryType, int>> OnRemainTargetChanged;
+        public event Action<ItemFactoryType, int> OnRemainTargetChanged;
         public event Action<float> OnItemActionHourglassUsed;
 
         private const string ItemFactory3DLayer = "ItemFactory";
@@ -221,7 +221,8 @@ namespace MatchFactoryCore.Scripts.Game
             if (isTarget && remainTarget > 0)
             {
                 _targetDictionary[itemFactory.ItemFactoryType]--;
-                OnRemainTargetChanged?.Invoke(_targetDictionary);
+                OnRemainTargetChanged?.Invoke(itemFactory.ItemFactoryType,
+                    _targetDictionary[itemFactory.ItemFactoryType]);
             }
 
             if (isOther && remainOther > 0)
@@ -257,7 +258,8 @@ namespace MatchFactoryCore.Scripts.Game
                     int item3DId = ((ItemFactory)item3DTemp).Id;
                     _dictItemFactory.Remove(item3DId);
                     _targetDictionary[((ItemFactory)item3DTemp).ItemFactoryType]--;
-                    OnRemainTargetChanged?.Invoke(_targetDictionary);
+                    OnRemainTargetChanged?.Invoke(((ItemFactory)item3DTemp).ItemFactoryType,
+                        _targetDictionary[((ItemFactory)item3DTemp).ItemFactoryType]);
                 }
             }
         }
@@ -272,7 +274,8 @@ namespace MatchFactoryCore.Scripts.Game
                 if (isTarget)
                 {
                     _targetDictionary[itemFactory.ItemFactoryType]++;
-                    OnRemainTargetChanged?.Invoke(_targetDictionary);
+                    OnRemainTargetChanged?.Invoke(itemFactory.ItemFactoryType,
+                        _targetDictionary[itemFactory.ItemFactoryType]);
                 }
 
                 IItem3D item3D = itemFactory;

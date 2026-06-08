@@ -88,7 +88,7 @@ namespace MatchFactoryCore.Scripts.Item
             // TODO: Có thể chuyển về IItemFactory2D
             if (target2DItems.Count > 0)
             {
-                SpawnVacuumVfx(transform.position);
+                SpawnVacuumVfx(RectTransform.position);
                 int remainCount = numberItemGet - target2DItems.Count;
                 List<IItem3D> randomTargetItems = ControllerMatchFactory.Ins.GetRandomItemByType(
                     target2DItems.FirstOrDefault()!.ItemFactory.ItemFactoryType, remainCount);
@@ -100,7 +100,7 @@ namespace MatchFactoryCore.Scripts.Item
             }
             else
             {
-                SpawnVacuumVfx(transform.position);
+                SpawnVacuumVfx(RectTransform.position);
                 List<IItem3D> randomItems = ControllerMatchFactory.Ins.GetListItemRandomByBooster(numberItemGet);
                 OnVacuumBoosterUsed?.Invoke(randomItems, null, transform.position);
                 BoosterCount--;
