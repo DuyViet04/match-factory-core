@@ -83,6 +83,12 @@ namespace MatchFactoryCore.Scripts.Item
 
         public void BlowByFanBooster(float maxX, float maxZ, Action onComplete = null)
         {
+            if (Prefab == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
             Vector3 startPos = Prefab.transform.position;
 
             Vector3 nextPos = startPos + Vector3.forward * Random.Range(0, maxLength) +
