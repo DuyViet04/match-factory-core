@@ -115,7 +115,7 @@ namespace MatchFactoryCore.Scripts.Item
         public void JumpAfterMatch(Vector3 targetPos, float delay, Action onComplete)
         {
             _jumpAfterMatchTween?.Kill();
-            _jumpAfterMatchTween = RectTransform.transform.DOJump(targetPos, 100, 1, 0.1f)
+            _jumpAfterMatchTween = RectTransform.transform.DOJump(targetPos, 100, 1, sortTime)
                 .SetDelay(delay)
                 .OnComplete(() =>
                 {

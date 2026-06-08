@@ -74,5 +74,20 @@ namespace MatchFactoryCore.Scripts.Game
                 }
             }
         }
+
+        public void SpawnSpringBoosterVfx()
+        {
+            _itemBoosterDictionary[BoosterType.Spring].SpawnSpringBoosterVfx();
+        }
+
+        public void SpawnItem2DSpringBoosterVfx(Vector2 uiPosition)
+        {
+            _itemBoosterDictionary[BoosterType.Spring].SpawnItem2DSpringBoosterVfx(uiPosition);
+        }
+
+        public Vector2 GetSpringBoosterButtonPosition()
+        {
+            return _itemBoosterDictionary[BoosterType.Spring].RectTransform.position;
+        }
     }
 }

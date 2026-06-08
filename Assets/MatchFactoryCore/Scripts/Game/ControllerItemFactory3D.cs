@@ -262,7 +262,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void JumpToBoard(int id, Vector3 startPos)
+        public void JumpToBoard(int id, Vector3 startPos, Action onActiveItem3D = null)
         {
             _dictItemFactory.TryGetValue(id, out ItemFactory itemFactory);
             if (itemFactory != null)
@@ -282,6 +282,7 @@ namespace MatchFactoryCore.Scripts.Game
                 item3D.Prefab.SetActive(true);
                 item3D.Prefab.transform.position = startPos;
                 item3D.JumpFromBooster(endPos);
+                onActiveItem3D?.Invoke();
             }
         }
 

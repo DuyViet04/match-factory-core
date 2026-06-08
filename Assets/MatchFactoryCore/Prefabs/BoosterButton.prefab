@@ -1,5 +1,40 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &119246795802611614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3843472439254229138}
+  m_Layer: 0
+  m_Name: SpringVfxSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &3843472439254229138
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 119246795802611614}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4233860198405588685}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 51}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2090074002746954173
 GameObject:
   m_ObjectHideFlags: 0
@@ -112,6 +147,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 35941835559489083}
+  - {fileID: 3843472439254229138}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -214,8 +250,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchFactoryCore.Scripts.Item.ItemBooster
   vacuumVFX: {fileID: 5284806699283012715, guid: 57d4b71b42df7ec4b936664e95cc4623, type: 3}
+  springBoosterVfx: {fileID: 4063546247372000752, guid: a26f1cfb2ec87004da683f05213af37a, type: 3}
+  item2DSpringBoosterVfx: {fileID: 5418009731990675902, guid: 9724183a8885fad438168ef428ffa8fa, type: 3}
   numberItemGet: 3
   freezeTime: 10
+  springBoosterVfxSpawnPosition: {fileID: 3843472439254229138}
   button: {fileID: 3686770891675090327}
   image: {fileID: 5356178626563539789}
   textCount: {fileID: 1203341055280602347}

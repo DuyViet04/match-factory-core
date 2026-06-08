@@ -179,7 +179,6 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        // TODO
         public void PlaySequenceAfterUseVacuum(Action onComplete = null)
         {
             SortAfterMatch();
@@ -223,11 +222,12 @@ namespace MatchFactoryCore.Scripts.Game
             });
         }
 
-        public void DisableItem2D(int id)
+        public void DisableItem2D(int id, Action onComplete = null)
         {
             ItemFactory2D itemFactory2D = GetItemFactory2DById(id);
             _itemFactory2DList.Remove(itemFactory2D);
             itemFactory2D.gameObject.SetActive(false);
+            onComplete?.Invoke();
         }
 
         #region Gets Sets

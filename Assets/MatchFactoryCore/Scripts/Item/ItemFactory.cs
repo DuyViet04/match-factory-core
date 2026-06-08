@@ -140,6 +140,7 @@ namespace MatchFactoryCore.Scripts.Item
             Debug.Log("JumpFromBooster");
             _jumpFromBoosterSequence = DOTween.Sequence();
             _jumpFromBoosterSequence.Append(Prefab.transform.DOJump(targetPos, 2f, 1, 0.5f))
+                .SetDelay(0.15f)
                 .OnComplete(() => { onComplete?.Invoke(); });
         }
 

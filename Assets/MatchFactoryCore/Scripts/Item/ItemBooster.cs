@@ -24,9 +24,12 @@ namespace MatchFactoryCore.Scripts.Item
         public RectTransform RectTransform { get; set; }
 
         [SerializeField] private ParticleSystem vacuumVFX;
+        [SerializeField] private ParticleSystem springBoosterVfx;
+        [SerializeField] private ParticleSystem item2DSpringBoosterVfx;
 
         [SerializeField] private int numberItemGet = 3;
         [SerializeField] private int freezeTime = 10;
+        [SerializeField] private RectTransform springBoosterVfxSpawnPosition;
 
         [SerializeField] private Button button;
         [SerializeField] private Image image;
@@ -133,12 +136,34 @@ namespace MatchFactoryCore.Scripts.Item
 
         private void SpawnVacuumVfx(Vector2 uiPosition)
         {
-            Camera mainCam = Camera.main;
-            Vector3 spawnPos = mainCam.ScreenToWorldPoint(uiPosition);
-            spawnPos.y = mainCam.transform.position.y - 1;
+            Vector3 spawnPos = GetSpawnPosition(uiPosition);
 
             ParticleSystem vacuumVfx = Instantiate(vacuumVFX, spawnPos, vacuumVFX.transform.rotation);
             vacuumVfx.Play();
+        }
+
+        public void SpawnSpringBoosterVfx()
+        {
+            Vector3 spawnPos = GetSpawnPosition(springBoosterVfxSpawnPosition.position);
+
+            ParticleSystem newSpringBoosterVfx = Instantiate(springBoosterVfx, spawnPos, springBoosterVfx.transform.rotation);
+            vacuumVFX.Play();
+        }
+
+        public void SpawnItem2DSpringBoosterVfx(Vector2 uiPosition)
+        {
+            Vector3 spawnPos = GetSpawnPosition(uiPosition);
+
+            ParticleSystem newVfx = Instantiate(item2DSpringBoosterVfx, spawnPos, item2DSpringBoosterVfx.transform.rotation);
+            newVfx.Play();
+        }
+
+        private Vector3 GetSpawnPosition(Vector2 uiPosition)
+        {
+            Camera mainCam = Camera.main;
+            Vector3 spawnPos = mainCam.ScreenToWorldPoint(uiPosition);
+            spawnPos.y = mainCam.transform.position.y - 1;
+            return spawnPos;
         }
 
         private void OnDestroy()

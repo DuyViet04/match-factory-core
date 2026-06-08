@@ -183,11 +183,19 @@ namespace MatchFactoryCore.Scripts.Game
         private void HandleWhenBoosterSpringUsed(int id)
         {
             ItemFactory2D itemFactory2D = controllerCollectionBar.GetItemFactory2DById(id);
-            Vector3 startPos = mainCamera.ScreenToWorldPoint(itemFactory2D.RectTransform.position);
+            Vector2 springBoosterButtonPos = controllerItemBooster.GetSpringBoosterButtonPosition();
+            Vector3 startPos = mainCamera.ScreenToWorldPoint(springBoosterButtonPos);
             startPos.y = mainCamera.transform.position.y / 2f;
 
-            controllerItemFactory3D.JumpToBoard(id, startPos);
-            controllerCollectionBar.DisableItem2D(id);
+            controllerCollectionBar.DisableItem2D(id, () =>
+            {
+                controllerItemBooster.SpawnItem2DSpringBoosterVfx(itemFactory2D.RectTransform.position);
+
+                controllerItemFactory3D.JumpToBoard(id, startPos, () =>
+                {
+                    controllerItemBooster.SpawnSpringBoosterVfx();
+                });
+            });
         }
 
         private void HandleWhenBoosterFanUsed()
