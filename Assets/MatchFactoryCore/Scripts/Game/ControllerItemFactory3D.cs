@@ -134,7 +134,7 @@ namespace MatchFactoryCore.Scripts.Game
                 {
                     _item3D.ObjectCollider.enabled = false;
                     int id = ((ItemEntity)_item3D).Id;
-                    
+
                     if (_item3D.ActionType == ActionType.Normal)
                     {
                         HandleItemFactory3D(_item3D, id);
@@ -286,16 +286,16 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        public void BlowByFanBooster()
+        public void BlowByFanBooster(Action onComplete = null)
         {
             foreach (var itemFactoryTemp in _dictItemFactory.Values)
             {
-                itemFactoryTemp.BlowByFanBooster(maxX, maxZ);
+                itemFactoryTemp.BlowByFanBooster(maxX, maxZ, () => onComplete?.Invoke());
             }
 
             foreach (var itemActionTemp in _dictItemAction.Values)
             {
-                itemActionTemp.BlowByFanBooster(maxX, maxZ);
+                itemActionTemp.BlowByFanBooster(maxX, maxZ, () => onComplete?.Invoke());
             }
         }
 

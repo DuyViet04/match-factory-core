@@ -1,8 +1,8 @@
+using MatchFactoryCore.Scripts.Game;
+using MatchFactoryCore.Scripts.Game.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MatchFactoryCore.Scripts.Game;
-using MatchFactoryCore.Scripts.Game.State;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VFX;
@@ -28,6 +28,7 @@ namespace MatchFactoryCore.Scripts.Item
         [SerializeField] private ParticleSystem springBoosterVfx;
         [SerializeField] private ParticleSystem item2DSpringBoosterVfx;
         [SerializeField] private VisualEffect freezeGunBoosterVfx;
+        [SerializeField] private VisualEffect fanBoosterVfx;
 
         [SerializeField] private int numberItemGet = 3;
         [SerializeField] private int freezeTime = 10;
@@ -122,6 +123,7 @@ namespace MatchFactoryCore.Scripts.Item
         private void HandleBoosterFan()
         {
             if (BoosterCount == 0) return;
+            SpawnFanBoosterVfx();
             OnFanBoosterUsed?.Invoke();
             BoosterCount--;
             textCount.text = BoosterCount.ToString();
@@ -160,7 +162,7 @@ namespace MatchFactoryCore.Scripts.Item
             newVfx.Play();
         }
 
-        public void SpawnFreezeGunBoosterVfx()
+        private void SpawnFreezeGunBoosterVfx()
         {
             Vector3 timeUiWorldPos = ControllerMatchFactory.Ins.GetTimeUIPosition();
             Vector3 spawnPos = GetSpawnPosition(RectTransform.position);
@@ -175,6 +177,24 @@ namespace MatchFactoryCore.Scripts.Item
 
             if (newFreezeGunBoosterVfx.aliveParticleCount <= 0)
                 OnFreezeGunBoosterUsed?.Invoke(freezeTime);
+        }
+
+        VisualEffect _currentFanBoosterVfx;
+        private void SpawnFanBoosterVfx()
+        {
+            Camera mainCam = Camera.main;
+            Vector3 spawnPos = mainCam.ScreenToWorldPoint(RectTransform.position);
+            spawnPos.z += 2;
+            spawnPos.y = 0;
+
+            _currentFanBoosterVfx?.Stop();
+            _currentFanBoosterVfx = Instantiate(fanBoosterVfx, spawnPos, Quaternion.identity);
+            _currentFanBoosterVfx.Play();
+        }
+
+        public void StopFanBoosterVfx()
+        {
+            _currentFanBoosterVfx?.Stop();
         }
 
         private Vector3 GetSpawnPosition(Vector2 uiPosition)

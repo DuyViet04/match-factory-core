@@ -253,6 +253,7 @@ MonoBehaviour:
   springBoosterVfx: {fileID: 4063546247372000752, guid: a26f1cfb2ec87004da683f05213af37a, type: 3}
   item2DSpringBoosterVfx: {fileID: 5418009731990675902, guid: 9724183a8885fad438168ef428ffa8fa, type: 3}
   freezeGunBoosterVfx: {fileID: 5430169052587635075, guid: 500e7f1244b895940a3f25c1bfca5709, type: 3}
+  fanBoosterVfx: {fileID: 7507781253328977977, guid: 00b3dc61a5dbb37408df4d326b4d0a24, type: 3}
   numberItemGet: 3
   freezeTime: 10
   springBoosterVfxSpawnPosition: {fileID: 3843472439254229138}

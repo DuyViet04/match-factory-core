@@ -85,6 +85,11 @@ namespace MatchFactoryCore.Scripts.Game
             _itemBoosterDictionary[BoosterType.Spring].SpawnItem2DSpringBoosterVfx(uiPosition);
         }
 
+        public void StopFanBoosterVfx()
+        {
+            _itemBoosterDictionary[BoosterType.Fan].StopFanBoosterVfx();    
+        }
+
         public Vector2 GetSpringBoosterButtonPosition()
         {
             return _itemBoosterDictionary[BoosterType.Spring].RectTransform.position;

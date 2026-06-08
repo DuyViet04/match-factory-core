@@ -200,7 +200,10 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void HandleWhenBoosterFanUsed()
         {
-            controllerItemFactory3D.BlowByFanBooster();
+            controllerItemFactory3D.BlowByFanBooster(() =>
+            {
+                controllerItemBooster.StopFanBoosterVfx();
+            });
         }
 
         private void HandleWhenBoosterFreezeGunUsed(int timeFreeze)

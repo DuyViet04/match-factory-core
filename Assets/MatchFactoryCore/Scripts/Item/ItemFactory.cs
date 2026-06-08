@@ -118,7 +118,8 @@ namespace MatchFactoryCore.Scripts.Item
 
             Vector3[] path = { endPos, nextPos };
 
-            Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom).OnComplete(() => { onComplete?.Invoke(); });
+            Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom)
+                .OnComplete(() => { onComplete?.Invoke(); });
         }
 
         public void JumpToBooster(Vector3 targetPos, float delay, Action onComplete = null)
