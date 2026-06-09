@@ -201,13 +201,13 @@ namespace MatchFactoryCore.Scripts.Item
 
         private void ActiveFireworkSkill(List<IItem3D> targets)
         {
-            for (int i = 0; i < maxItemCount; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
                 float delay = i * 0.15f;
                 FireworkBullet bullet = Instantiate(fireworkBullet, this.transform.position, this.transform.rotation);
-                bullet.OnFireworkBulletMoveToTarget += OnFireworkBulletMoveCompleted;
                 bullet.Target = targets[i];
-                bullet.MoveToTarget(delay, () =>
+                bullet.OnFireworkBulletMoveToTarget += OnFireworkBulletMoveCompleted;
+                bullet.MoveToTarget(delay, null, () =>
                 {
                     bullet.OnFireworkBulletMoveToTarget -= OnFireworkBulletMoveCompleted;
                 });

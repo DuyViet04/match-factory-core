@@ -34,12 +34,14 @@ namespace MatchFactoryCore.Scripts.UI
 
         private void OnEnable()
         {
-            ControllerMatchFactory.Ins.OnLevelTargetChanged += UpdateTargetCount;
+            if (ControllerMatchFactory.HasInstance)
+                ControllerMatchFactory.Ins.OnLevelTargetChanged += UpdateTargetCount;
         }
 
         private void OnDisable()
         {
-            ControllerMatchFactory.Ins.OnLevelTargetChanged -= UpdateTargetCount;
+            if (ControllerMatchFactory.HasInstance)
+                ControllerMatchFactory.Ins.OnLevelTargetChanged -= UpdateTargetCount;
         }
 
         public void Initialize(Sprite targetSprite, int count, ItemFactoryType itemFactoryType)

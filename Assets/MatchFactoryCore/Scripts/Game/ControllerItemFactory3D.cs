@@ -306,22 +306,18 @@ namespace MatchFactoryCore.Scripts.Game
         {
             foreach (var itemTemp in listItem3D)
             {
-                itemTemp.ObjectCollider.enabled = false;
+                ItemFactory itemFactory = itemTemp as ItemFactory;
+                itemFactory.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
             }
         }
 
         private void HandleWhenItemActionFireworkUsed(IItem3D item3D)
         {
-            ItemAction itemAction = item3D as ItemAction;
-            if (itemAction != null)
+            if (item3D as ItemFactory)
             {
-                itemAction.OnFireworkBulletMoveCompleted -= HandleWhenItemActionFireworkUsed;
-                itemAction.OnFireworkStarted -= HandleWhenItemActionFireworkStarted;
-                _dictItemAction.Remove(itemAction.Id);
+                _dictItemFactory.Remove(((ItemFactory)item3D).Id);
+                item3D.Explode();
             }
-
-            _dictItemFactory.Remove(((ItemFactory)item3D).Id);
-            item3D.Explode();
         }
 
         private void HandleWhenItemActionHourglassUsed(float time)

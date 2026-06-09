@@ -165,8 +165,8 @@ namespace MatchFactoryCore.Scripts.Item
                 .Append(Prefab.transform.DOScale(Vector3.zero, 0.25f))
                 .OnComplete(() =>
                 {
-                    Destroy(gameObject);
                     onComplete?.Invoke();
+                    Destroy(Prefab.gameObject);
                 });
         }
 

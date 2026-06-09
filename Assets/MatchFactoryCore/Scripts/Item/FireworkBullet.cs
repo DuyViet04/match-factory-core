@@ -6,13 +6,12 @@ using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
-    // TODO: Fix callback item3d explode
     public class FireworkBullet : MonoBehaviour
     {
         public IItem3D Target { get; set; }
         public event Action<IItem3D> OnFireworkBulletMoveToTarget;
 
-        public void MoveToTarget(float delay, Action onComplete = null)
+        public void MoveToTarget(float delay, Action onComplete = null, Action onKill = null)
         {
             if (Target != null)
             {
@@ -28,11 +27,15 @@ namespace MatchFactoryCore.Scripts.Item
                     .SetLookAt(0.1f, Vector3.up)
                     .SetDelay(delay)
                     .OnComplete(() =>
-                {
-                    OnFireworkBulletMoveToTarget?.Invoke(Target);
-                    Destroy(gameObject);
-                    onComplete?.Invoke();
-                });
+                    {
+                        OnFireworkBulletMoveToTarget?.Invoke(Target);
+                        onComplete?.Invoke();
+                    })
+                    .OnKill(() =>
+                    {
+                        onKill?.Invoke();
+                        Destroy(gameObject);
+                    });
             }
         }
     }
