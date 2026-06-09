@@ -45,9 +45,9 @@ namespace MatchFactoryCore.Scripts.Game
                 }
             }
 
-            _cardUiDict[type].OnTargetFinished -= MoveTargetCard;
             _cardUiDict.Remove(type);
             Destroy(_cardUiDict[type].gameObject);
+            _cardUiDict[type].OnTargetFinished -= MoveTargetCard;
         }
     }
 }

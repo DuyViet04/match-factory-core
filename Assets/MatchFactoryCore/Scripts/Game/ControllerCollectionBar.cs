@@ -139,6 +139,7 @@ namespace MatchFactoryCore.Scripts.Game
                 matchsList[1].RectTransform.position, JumpTypeMatch.Right, OnOneComplete);
         }
 
+        // TODO
         private void SortAfterMatch()
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)

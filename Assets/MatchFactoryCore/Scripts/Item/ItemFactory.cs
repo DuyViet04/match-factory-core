@@ -25,8 +25,8 @@ namespace MatchFactoryCore.Scripts.Item
 
         #region Data 3D Object
 
-        [SerializeField] private float maxLength = 2;
-        [SerializeField] private float maxHeight = 2;
+        [SerializeField] private float maxLength = 1.5f;
+        [SerializeField] private float maxHeight = 1;
         public Rigidbody ObjectRigidbody { get; set; }
         public Collider ObjectCollider { get; set; }
         public ItemOutline ObjectOutline { get; set; }
@@ -92,15 +92,23 @@ namespace MatchFactoryCore.Scripts.Item
         public void ActionBehaviour(Vector3 targetPos, Action onComplete = null)
         {
             Debug.Log("JumpFromBoard");
+            bool isComplete = false;
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Append(Prefab.transform.DOJump(targetPos, 5f, 1, 0.5f));
             // _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
             _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
+            _jumpSequence.OnComplete(() =>
+            {
+                isComplete = true;
+                onComplete?.Invoke();
+                Prefab.SetActive(false);
+            });
             _jumpSequence.OnKill(() =>
             {
+                if (isComplete) return;
                 Prefab.transform.position = targetPos;
-                Prefab.SetActive(false);
                 onComplete?.Invoke();
+                Prefab.SetActive(false);
             });
         }
 
@@ -114,16 +122,24 @@ namespace MatchFactoryCore.Scripts.Item
 
             Vector3 startPos = Prefab.transform.position;
 
-            Vector3 nextPos = startPos + Vector3.forward * Random.Range(0, maxLength) +
-                              Vector3.up * Random.Range(0, maxHeight);
-            nextPos.x = Mathf.Clamp(nextPos.x, -maxX, maxX);
-            nextPos.z = Mathf.Clamp(nextPos.z, -maxZ, maxZ);
+            Vector3 forwardPos = startPos + Vector3.forward * Random.Range(0, maxLength)
+                + Vector3.up * Random.Range(0, maxHeight);
+            forwardPos.x = Mathf.Clamp(forwardPos.x, -maxX, maxX);
+            forwardPos.z = Mathf.Clamp(forwardPos.z, -maxZ, maxZ);
+            Vector3 leftPos = startPos + Vector3.left * Random.Range(0, maxLength)
+                + Vector3.up * Random.Range(0, maxHeight);
+            leftPos.x = Mathf.Clamp(leftPos.x, -maxX, maxX);
+            leftPos.z = Mathf.Clamp(leftPos.z, -maxZ, maxZ);
+            Vector3 backPos = startPos + Vector3.back * Random.Range(0, maxLength)
+                + Vector3.up * Random.Range(0, maxHeight);
+            backPos.x = Mathf.Clamp(backPos.x, -maxX, maxX);
+            backPos.z = Mathf.Clamp(backPos.z, -maxZ, maxZ);
+            Vector3 rightPos = startPos + Vector3.right * Random.Range(0, maxLength)
+                + Vector3.up * Random.Range(0, maxHeight);
+            rightPos.x = Mathf.Clamp(rightPos.x, -maxX, maxX);
+            rightPos.z = Mathf.Clamp(rightPos.z, -maxZ, maxZ);
 
-            Vector3 endPos = nextPos + Vector3.back * Random.Range(0, maxLength);
-            endPos.x = Mathf.Clamp(endPos.x, -maxX, maxX);
-            endPos.z = Mathf.Clamp(endPos.z, -maxZ, maxZ);
-
-            Vector3[] path = { endPos, nextPos };
+            Vector3[] path = { forwardPos, leftPos, backPos, rightPos};
 
             Prefab.transform.DOPath(path, 0.75f, PathType.CatmullRom)
                 .OnComplete(() => { onComplete?.Invoke(); });
@@ -151,8 +167,8 @@ namespace MatchFactoryCore.Scripts.Item
                 .SetDelay(0.15f)
                 .OnComplete(() =>
                 {
-                    Prefab.gameObject.SetActive(true);
                     onComplete?.Invoke();
+                    Prefab.gameObject.SetActive(true);
                 });
         }
 
