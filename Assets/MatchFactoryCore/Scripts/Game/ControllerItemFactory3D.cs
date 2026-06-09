@@ -495,8 +495,6 @@ namespace MatchFactoryCore.Scripts.Game
         }
 
         // Cần review
-        readonly List<int> _isHasRandomByBooster = new List<int>();
-
         public List<IItem3D> GetListItemRandomByBooster(int count)
         {
             List<IItem3D> result = new List<IItem3D>();
@@ -511,6 +509,7 @@ namespace MatchFactoryCore.Scripts.Game
             ItemFactoryType type = allTargetItem[randomIndex].ItemFactoryType;
 
             List<ItemFactory> sameTypeList = GetListItemByType(type);
+            List<ItemFactory> copyList = new List<ItemFactory>(sameTypeList);
             if (sameTypeList.Count <= 0)
             {
                 return result;
@@ -519,13 +518,12 @@ namespace MatchFactoryCore.Scripts.Game
             int numberOfItemRandom = 0;
             for (int i = 0; i < sameTypeList.Count; i++)
             {
-                int randIndex = Random.Range(0, sameTypeList.Count);
-                ItemFactory randomItem = sameTypeList[randIndex];
-                if (_isHasRandomByBooster.Contains(randomItem.Id) ||
-                    randomItem.gameObject.activeSelf == false) continue;
+                int randIndex = Random.Range(0, copyList.Count);
+                ItemFactory randomItem = copyList[randIndex];
+                if (randomItem == null && !randomItem.gameObject.activeSelf) continue;
 
                 result.Add(randomItem);
-                _isHasRandomByBooster.Add(randomItem.Id);
+                copyList.Remove(randomItem);
                 numberOfItemRandom++;
 
                 if (numberOfItemRandom >= count) break;
@@ -540,8 +538,6 @@ namespace MatchFactoryCore.Scripts.Game
         }
 
         // Cần review
-        readonly List<int> _idHasRandomByItemAction = new List<int>();
-
         public List<IItem3D> GetListItemRandomByItemAction(int count)
         {
             List<IItem3D> result = new List<IItem3D>();
@@ -561,15 +557,15 @@ namespace MatchFactoryCore.Scripts.Game
             }
 
             int numberOfItemRandom = 0;
+            List<ItemFactory> copyList = new List<ItemFactory>(sameTypeList);
             for (int i = 0; i < sameTypeList.Count; i++)
             {
-                int randIndex = Random.Range(0, sameTypeList.Count);
-                ItemFactory randomItem = sameTypeList[randIndex];
-                if (_idHasRandomByItemAction.Contains(randomItem.Id) ||
-                    randomItem.gameObject.activeSelf == false) continue;
+                int randIndex = Random.Range(0, copyList.Count);
+                ItemFactory randomItem = copyList[randIndex];
+                if (randomItem == null || !randomItem.gameObject.activeSelf) continue;
 
                 result.Add(randomItem);
-                _idHasRandomByItemAction.Add(randomItem.Id);
+                copyList.Remove(randomItem);
                 numberOfItemRandom++;
 
                 if (numberOfItemRandom == count) break;
@@ -610,9 +606,13 @@ namespace MatchFactoryCore.Scripts.Game
         private List<ItemFactory> GetAllTargetItem()
         {
             List<ItemFactory> result = new List<ItemFactory>();
-            foreach (var item in _targetDictionary)
+            foreach (var itemTemp in _targetDictionary)
             {
-                result.AddRange(GetListItemByType(item.Key));
+                List<ItemFactory> list = GetListItemByType(itemTemp.Key);
+                if (list.Count > 0)
+                {
+                    result.AddRange(list);
+                }
             }
 
             return result;
@@ -624,7 +624,7 @@ namespace MatchFactoryCore.Scripts.Game
             foreach (var itemTemp in _otherItemDictionary)
             {
                 List<ItemFactory> list = GetListItemByType(itemTemp.Key);
-                if (list != null)
+                if (list.Count > 0)
                 {
                     result.AddRange(list);
                 }

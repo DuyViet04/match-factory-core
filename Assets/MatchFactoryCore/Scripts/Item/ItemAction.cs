@@ -209,7 +209,7 @@ namespace MatchFactoryCore.Scripts.Item
                 bullet.Target = targets[i];
                 bullet.MoveToTarget(delay, () =>
                 {
-                    OnFireworkBulletMoveCompleted?.Invoke(targets[i]);
+                    bullet.OnFireworkBulletMoveToTarget -= OnFireworkBulletMoveCompleted;
                 });
             }
         }

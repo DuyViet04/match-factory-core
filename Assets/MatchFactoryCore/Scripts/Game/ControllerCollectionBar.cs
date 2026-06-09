@@ -224,7 +224,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             ItemFactory2D itemFactory2D = GetItemFactory2DById(id);
             _itemFactory2DList.Remove(itemFactory2D);
-            itemFactory2D.gameObject.SetActive(false);
+            Destroy(itemFactory2D.gameObject);
             onComplete?.Invoke();
         }
 

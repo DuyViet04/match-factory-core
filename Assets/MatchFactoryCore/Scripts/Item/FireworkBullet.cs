@@ -6,12 +6,13 @@ using Random = UnityEngine.Random;
 
 namespace MatchFactoryCore.Scripts.Item
 {
+    // TODO: Fix callback item3d explode
     public class FireworkBullet : MonoBehaviour
     {
         public IItem3D Target { get; set; }
         public event Action<IItem3D> OnFireworkBulletMoveToTarget;
 
-        public void MoveToTarget(float delay, Action onComplete)
+        public void MoveToTarget(float delay, Action onComplete = null)
         {
             if (Target != null)
             {
