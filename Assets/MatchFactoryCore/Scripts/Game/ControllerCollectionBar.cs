@@ -6,7 +6,6 @@ using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
 using UnityEngine;
 
-// TODO: Fix item active = false when click
 namespace MatchFactoryCore.Scripts.Game
 {
     public class ControllerCollectionBar : MonoBehaviour
@@ -50,15 +49,15 @@ namespace MatchFactoryCore.Scripts.Game
             newItemFactory2D.RectTransform.localScale = Vector3.one * newItemFactory2D.ItemFactory.SpriteScaleOnBar;
             newItemFactory2D.gameObject.SetActive(false);
 
-            InsertItem(newItemFactory2D, out List<ItemFactory2D> itemMoves);
+            InsertItem(newItemFactory2D, indexToInsert, out List<ItemFactory2D> itemMoves);
             PlaySequenceInsertItem(itemMoves);
-            OnMatchItemStarted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
+
+            OnMatchItemStarted?.Invoke(_itemFactory2DList.Count >= MaxCollectionBarSlots);
         }
 
-        private void InsertItem(ItemFactory2D itemChoose, out List<ItemFactory2D> itemMoves)
+        private void InsertItem(ItemFactory2D itemChoose, int insertIndex, out List<ItemFactory2D> itemMoves)
         {
             itemMoves = new List<ItemFactory2D>();
-            int insertIndex = GetIndexToInsert(itemChoose.ItemFactory.ItemFactoryType);
             _itemFactory2DList.Insert(insertIndex, itemChoose);
             itemChoose.IndexFromBar = insertIndex;
 
@@ -81,24 +80,13 @@ namespace MatchFactoryCore.Scripts.Game
             foreach (var item2DTemp in itemMoves)
             {
                 int targetIndex = item2DTemp.IndexFromBar;
-                if (item2DTemp.IsAnimating)
+                item2DTemp.JumpOnBar(GetPositionJump2D(targetIndex), () =>
                 {
-                    item2DTemp.SnapToPosition(GetPositionJump2D(targetIndex));
                     BounceBarSlot(targetIndex);
                     completedCount++;
                     if (completedCount == itemMoves.Count)
                         onComplete?.Invoke();
-                }
-                else
-                {
-                    item2DTemp.JumpOnBar(GetPositionJump2D(targetIndex), () =>
-                    {
-                        BounceBarSlot(targetIndex);
-                        completedCount++;
-                        if (completedCount == itemMoves.Count)
-                            onComplete?.Invoke();
-                    });
-                }
+                });
             }
         }
 
@@ -110,8 +98,9 @@ namespace MatchFactoryCore.Scripts.Game
 
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType
-                    && _itemFactory2DList[i].gameObject.activeSelf)
+                if (!_itemFactory2DList[i].gameObject.activeSelf) continue;
+
+                if (_itemFactory2DList[i].ItemFactory.ItemFactoryType == itemChoose.ItemFactory.ItemFactoryType)
                 {
                     matchesList.Add(_itemFactory2DList[i]);
                 }
@@ -154,28 +143,37 @@ namespace MatchFactoryCore.Scripts.Game
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                ItemFactory2D itemTemp = _itemFactory2DList[i];
+                ItemFactory2D itemSortTemp = _itemFactory2DList[i];
                 int targetIndex = i;
-                if (itemTemp.IndexFromBar == targetIndex) continue;
+                if (itemSortTemp.IndexFromBar == targetIndex) continue;
 
-                int current = itemTemp.IndexFromBar;
+                int currentIndex = itemSortTemp.IndexFromBar;
 
-                void StepLeft()
+                void JumpLeft()
                 {
-                    if (current <= targetIndex) return;
+                    if (currentIndex <= targetIndex) return;
 
-                    current--;
-                    int capturedTo = current;
-
-                    itemTemp.JumpAfterMatch(GetPositionJump2D(capturedTo), 0, () =>
+                    bool isCompleted = false;
+                    currentIndex--;
+                    int captureIndex = currentIndex;
+                    itemSortTemp.JumpAfterMatch(GetPositionJump2D(captureIndex), 0, () =>
                     {
-                        itemTemp.IndexFromBar = capturedTo;
-                        BounceBarSlot(capturedTo);
-                        StepLeft();
+                        isCompleted = true;
+                        itemSortTemp.IndexFromBar = captureIndex;
+                        BounceBarSlot(captureIndex);
+                        JumpLeft();
+                    }, () =>
+                    {
+                        if (isCompleted) return;
+                        for (int i = 0; i < _itemFactory2DList.Count; i++)
+                        {
+                            _itemFactory2DList[i].IndexFromBar = i;
+                            _itemFactory2DList[i].RectTransform.position = GetPositionJump2D(i);
+                        }
                     });
                 }
 
-                StepLeft();
+                JumpLeft();
             }
         }
 
@@ -241,30 +239,35 @@ namespace MatchFactoryCore.Scripts.Game
                     itemTemp.gameObject.SetActive(true);
                     BounceBarSlot(itemTemp.IndexFromBar);
 
-                    CheckMatch(itemTemp, out bool isMatch, out List<ItemFactory2D> matches);
-
-                    if (isMatch)
+                    if (itemTemp.gameObject.activeSelf)
                     {
-                        PlaySequenceMatchItem(matches, () =>
+                        CheckMatch(itemTemp, out bool isMatch, out List<ItemFactory2D> matches);
+
+                        if (isMatch)
                         {
-                            OnMatchItemStarted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
-                            foreach (var matchItemTemp in matches)
+                            PlaySequenceMatchItem(matches, () =>
                             {
-                                if (matchItemTemp != null)
+                                OnMatchItemStarted?.Invoke(GetActiveItemCount() >= MaxCollectionBarSlots);
+                                foreach (var matchItemTemp in matches)
                                 {
-                                    Destroy(matchItemTemp.gameObject);
+                                    if (matchItemTemp != null)
+                                    {
+                                        Destroy(matchItemTemp.gameObject);
+                                    }
                                 }
-                            }
 
-                            SortAfterMatch();
-                        });
-                    }
-                    else
-                    {
-                        OnInsertItemCompleted?.Invoke(_itemFactory2DList.Count == MaxCollectionBarSlots);
+                                SortAfterMatch();
+                            });
+                        }
+                        else
+                        {
+                            OnInsertItemCompleted?.Invoke(GetActiveItemCount() >= MaxCollectionBarSlots);
+                        }
+
+                        onComplete?.Invoke();
                     }
 
-                    onComplete?.Invoke();
+                    break;
                 }
             }
         }
@@ -282,6 +285,16 @@ namespace MatchFactoryCore.Scripts.Game
         private Vector2 GetPositionJump2D(int index)
         {
             return _cachedPosition[index];
+        }
+
+        public int GetActiveItemCount()
+        {
+            int count = 0;
+            foreach (var item in _itemFactory2DList)
+            {
+                if (item.gameObject.activeSelf) count++;
+            }
+            return count;
         }
 
         private int GetIndexToInsert(ItemFactoryType type)

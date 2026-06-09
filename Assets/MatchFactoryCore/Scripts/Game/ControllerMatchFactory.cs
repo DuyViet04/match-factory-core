@@ -7,7 +7,6 @@ using MatchFactoryCore.Scripts.Item;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
 
-// TODO: Lose Check
 namespace MatchFactoryCore.Scripts.Game
 {
     [DefaultExecutionOrder(-100)]
@@ -140,12 +139,15 @@ namespace MatchFactoryCore.Scripts.Game
             IItemFactory2D item2D = itemFactory;
             IItem3D item3D = itemFactory;
 
-            if (item2D != null)
+            if (item2D != null && item3D != null)
             {
                 Vector3 targetPos = controllerCollectionBar.GetPositionTo3DJump(item2D.ItemFactoryType);
                 targetPos.y = 0;
                 controllerCollectionBar.SpawnItemFactory2D(item2D, id);
-                item3D.ActionBehaviour(targetPos, () => { controllerCollectionBar.SetActiveItemChoose(id); });
+                item3D.ActionBehaviour(targetPos, () =>
+                {
+                    controllerCollectionBar.SetActiveItemChoose(id);
+                });
             }
         }
 
@@ -158,6 +160,7 @@ namespace MatchFactoryCore.Scripts.Game
         {
             OnLevelTargetChanged?.Invoke(type, targetDict);
             bool isWin = CheckWin();
+
             if (isWin)
             {
                 _stateMachine.ChangeState(MatchFactoryState.Win);

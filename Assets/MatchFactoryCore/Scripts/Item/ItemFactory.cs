@@ -96,10 +96,11 @@ namespace MatchFactoryCore.Scripts.Item
             _jumpSequence.Append(Prefab.transform.DOJump(targetPos, 5f, 1, 0.5f));
             // _jumpSequence.Join(Prefab.transform.DOScale(_basePrefabScale * _scaleWhenJump, 0.1f));
             _jumpSequence.Join(Prefab.transform.DORotate(_prefabBaseRotation, 0.5f));
-            _jumpSequence.OnComplete(() =>
+            _jumpSequence.OnKill(() =>
             {
-                onComplete?.Invoke();
+                Prefab.transform.position = targetPos;
                 Prefab.SetActive(false);
+                onComplete?.Invoke();
             });
         }
 

@@ -23,7 +23,6 @@ namespace MatchFactoryCore.Scripts.Item
         [SerializeField] private Image image;
 
         Sequence _jumpOnMatchSequence;
-        Sequence _jumpAfterMatchSequence;
         Sequence _moveToVacuumSequence;
         Tween _jumpOnBarTween;
         Tween _jumpAfterMatchTween;
@@ -37,26 +36,6 @@ namespace MatchFactoryCore.Scripts.Item
             RectTransform = GetComponent<RectTransform>();
         }
 
-        public bool IsAnimating =>
-            (_jumpOnBarTween != null && _jumpOnBarTween.IsActive() && _jumpOnBarTween.IsPlaying()) ||
-            (_jumpAfterMatchTween != null && _jumpAfterMatchTween.IsActive() && _jumpAfterMatchTween.IsPlaying()) ||
-            (_jumpOnMatchSequence != null && _jumpOnMatchSequence.IsActive() && _jumpOnMatchSequence.IsPlaying()) ||
-            (_jumpAfterMatchSequence != null && _jumpAfterMatchSequence.IsActive() &&
-             _jumpAfterMatchSequence.IsPlaying());
-
-        public void SnapToPosition(Vector3 worldPosition)
-        {
-            _jumpOnBarTween?.Kill(false);
-            _jumpOnBarTween = null;
-            _jumpAfterMatchTween?.Kill(false);
-            _jumpAfterMatchTween = null;
-            _jumpOnMatchSequence?.Kill(false);
-            _jumpOnMatchSequence = null;
-            _jumpAfterMatchSequence?.Kill(false);
-            _jumpAfterMatchSequence = null;
-            RectTransform.position = worldPosition;
-        }
-
         public void JumpOnBar(Vector3 position, Action onComplete = null)
         {
             _jumpOnBarTween?.Kill();
@@ -64,6 +43,7 @@ namespace MatchFactoryCore.Scripts.Item
                 .OnComplete(() => { onComplete?.Invoke(); })
                 .OnKill(() =>
                 {
+                    if (this == null) return;
                     gameObject.SetActive(true);
                     RectTransform.position = position;
                 });
@@ -112,16 +92,18 @@ namespace MatchFactoryCore.Scripts.Item
             }
         }
 
-        public void JumpAfterMatch(Vector3 targetPos, float delay, Action onComplete)
+        public void JumpAfterMatch(Vector3 targetPos, float delay, Action onComplete, Action onKill = null)
         {
-            _jumpAfterMatchTween?.Kill();
+            _jumpAfterMatchTween?.Kill(false);
             _jumpAfterMatchTween = RectTransform.transform.DOJump(targetPos, 100, 1, sortTime)
                 .SetDelay(delay)
                 .OnComplete(() =>
                 {
+                    if (this == null) return;
                     gameObject.SetActive(true);
                     onComplete?.Invoke();
-                });
+                })
+                .OnKill(() => onKill?.Invoke());
         }
 
         public void MoveToVacuum(Vector3 targetPos, float delay, Action onComplete = null)
