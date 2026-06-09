@@ -139,7 +139,6 @@ namespace MatchFactoryCore.Scripts.Game
                 matchsList[1].RectTransform.position, JumpTypeMatch.Right, OnOneComplete);
         }
 
-        // TODO
         private void SortAfterMatch()
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
@@ -166,10 +165,10 @@ namespace MatchFactoryCore.Scripts.Game
                     }, () =>
                     {
                         if (isCompleted) return;
-                        for (int i = 0; i < _itemFactory2DList.Count; i++)
+                        for (int index = 0; index < _itemFactory2DList.Count; index++)
                         {
-                            _itemFactory2DList[i].IndexFromBar = i;
-                            _itemFactory2DList[i].RectTransform.position = GetPositionJump2D(i);
+                            _itemFactory2DList[index].IndexFromBar = index;
+                            _itemFactory2DList[index].RectTransform.position = GetPositionJump2D(index);
                         }
                     });
                 }
@@ -295,6 +294,7 @@ namespace MatchFactoryCore.Scripts.Game
             {
                 if (item.gameObject.activeSelf) count++;
             }
+
             return count;
         }
 

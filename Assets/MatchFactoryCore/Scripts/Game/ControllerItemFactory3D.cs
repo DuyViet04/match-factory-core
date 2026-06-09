@@ -200,6 +200,7 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
+        // TODO: Fix rapid click 1 target
         private void HandleItemFactory3D(IItem3D item3D, int id)
         {
             ActionType actionType = item3D.ActionType;
