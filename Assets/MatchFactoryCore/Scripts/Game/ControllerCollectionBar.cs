@@ -22,6 +22,9 @@ namespace MatchFactoryCore.Scripts.Game
         private const int MaxCollectionBarSlots = 7;
         private readonly List<ItemFactory2D> _itemFactory2DList = new List<ItemFactory2D>();
 
+        private bool _isSortingAfterMatch = false;
+        private int _sortToken = 0;
+
         Vector2[] _cacheAnchorPosition;
         Vector3[] _cachedPosition;
 
@@ -50,7 +53,17 @@ namespace MatchFactoryCore.Scripts.Game
             newItemFactory2D.gameObject.SetActive(false);
 
             InsertItem(newItemFactory2D, indexToInsert, out List<ItemFactory2D> itemMoves);
-            PlaySequenceInsertItem(itemMoves);
+            if (_isSortingAfterMatch)
+            {
+                _sortToken++;
+                _isSortingAfterMatch = false;
+                ReconcilePositions();
+            }
+            else
+            {
+                PlaySequenceInsertItem(itemMoves);
+            }
+
 
             OnMatchItemStarted?.Invoke(_itemFactory2DList.Count >= MaxCollectionBarSlots);
         }
@@ -120,10 +133,10 @@ namespace MatchFactoryCore.Scripts.Game
             }
         }
 
-        private void PlaySequenceMatchItem(List<ItemFactory2D> matchsList, Action onComplete = null)
+        private void PlaySequenceMatchItem(List<ItemFactory2D> matchesList, Action onComplete = null)
         {
             int completedCount = 0;
-            int total = matchsList.Count;
+            int total = matchesList.Count;
 
             void OnOneComplete()
             {
@@ -131,55 +144,94 @@ namespace MatchFactoryCore.Scripts.Game
                 if (completedCount == total) onComplete?.Invoke();
             }
 
-            matchsList[0].JumpMatch(matchsList[0].RectTransform.position,
-                matchsList[1].RectTransform.position, JumpTypeMatch.Left, OnOneComplete);
-            matchsList[1].JumpMatch(matchsList[1].RectTransform.position,
-                matchsList[1].RectTransform.position, JumpTypeMatch.Center, OnOneComplete);
-            matchsList[2].JumpMatch(matchsList[2].RectTransform.position,
-                matchsList[1].RectTransform.position, JumpTypeMatch.Right, OnOneComplete);
+            matchesList[0].JumpMatch(matchesList[0].RectTransform.position,
+                matchesList[1].RectTransform.position, JumpTypeMatch.Left, OnOneComplete);
+            matchesList[1].JumpMatch(matchesList[1].RectTransform.position,
+                matchesList[1].RectTransform.position, JumpTypeMatch.Center, OnOneComplete);
+            matchesList[2].JumpMatch(matchesList[2].RectTransform.position,
+                matchesList[1].RectTransform.position, JumpTypeMatch.Right, OnOneComplete);
         }
 
-        private void SortAfterMatch()
+        private void SortAfterMatch(out int[] oldIndices)
+        {
+            oldIndices = new int[_itemFactory2DList.Count];
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                oldIndices[i] = _itemFactory2DList[i].IndexFromBar;
+                _itemFactory2DList[i].IndexFromBar = i;
+            }
+        }
+
+        private void PlaySequenceSortAfterMatch(int[] oldIndices, Action onComplete = null)
+        {
+            if (_itemFactory2DList.Count == 0)
+            {
+                _isSortingAfterMatch = false;
+                onComplete?.Invoke();
+                return;
+            }
+
+            int capturedToken = _sortToken;
+
+            int completedCount = 0;
+            int total = _itemFactory2DList.Count;
+
+            for (int i = 0; i < _itemFactory2DList.Count; i++)
+            {
+                int capturedOldIndex = oldIndices[i];
+                int capturedNewIndex = i;
+                float delay = 0.01f * i;
+                _itemFactory2DList[i].JumpAfterMatch(capturedOldIndex, capturedNewIndex, delay,
+                    idx => GetPositionJump2D(idx),
+                    () =>
+                    {
+                        if (capturedToken != _sortToken) return;
+                        completedCount++;
+                        if (completedCount == total)
+                        {
+                            _isSortingAfterMatch = false;
+                            onComplete?.Invoke();
+                        }
+                    },
+                    BounceBarSlot);
+            }
+        }
+
+        private void ReconcilePositions()
         {
             for (int i = 0; i < _itemFactory2DList.Count; i++)
             {
-                ItemFactory2D itemSortTemp = _itemFactory2DList[i];
-                int targetIndex = i;
-                if (itemSortTemp.IndexFromBar == targetIndex) continue;
-
-                int currentIndex = itemSortTemp.IndexFromBar;
-
-                void JumpLeft()
+                Vector3 currentVisualPos = _itemFactory2DList[i].RectTransform.position;
+                int closestSlot = i;
+                float minDist = float.MaxValue;
+                for (int s = 0; s < _cachedPosition.Length; s++)
                 {
-                    if (currentIndex <= targetIndex) return;
-
-                    bool isCompleted = false;
-                    currentIndex--;
-                    int captureIndex = currentIndex;
-                    itemSortTemp.JumpAfterMatch(GetPositionJump2D(captureIndex), 0, () =>
+                    float dist = Vector3.Distance(currentVisualPos, _cachedPosition[s]);
+                    if (dist < minDist)
                     {
-                        isCompleted = true;
-                        itemSortTemp.IndexFromBar = captureIndex;
-                        BounceBarSlot(captureIndex);
-                        JumpLeft();
-                    }, () =>
-                    {
-                        if (isCompleted) return;
-                        for (int index = 0; index < _itemFactory2DList.Count; index++)
-                        {
-                            _itemFactory2DList[index].IndexFromBar = index;
-                            _itemFactory2DList[index].RectTransform.position = GetPositionJump2D(index);
-                        }
-                    });
+                        minDist = dist;
+                        closestSlot = s;
+                    }
                 }
 
-                JumpLeft();
+                int capturedNewIndex = i;
+                _itemFactory2DList[i].IndexFromBar = capturedNewIndex;
+
+                float delay = 0.01f * i;
+                _itemFactory2DList[i].JumpAfterMatch(
+                    closestSlot,
+                    capturedNewIndex,
+                    delay,
+                    idx => GetPositionJump2D(idx),
+                    null,
+                    BounceBarSlot);
             }
         }
 
         public void PlaySequenceAfterUseVacuum(Action onComplete = null)
         {
-            SortAfterMatch();
+            SortAfterMatch(out int[] oldIndices);
+            PlaySequenceSortAfterMatch(oldIndices);
         }
 
         public void MoveToVacuum(List<ItemFactory2D> list2D, Vector3 position, float delay, Action onComplete = null)
@@ -245,6 +297,11 @@ namespace MatchFactoryCore.Scripts.Game
 
                         if (isMatch)
                         {
+                            SortAfterMatch(out int[] oldIndices);
+                            _isSortingAfterMatch = true;
+                            _sortToken++;
+                            int capturedToken = _sortToken;
+
                             PlaySequenceMatchItem(matches, () =>
                             {
                                 OnMatchItemStarted?.Invoke(GetActiveItemCount() >= MaxCollectionBarSlots);
@@ -256,7 +313,14 @@ namespace MatchFactoryCore.Scripts.Game
                                     }
                                 }
 
-                                SortAfterMatch();
+                                if (capturedToken == _sortToken)
+                                {
+                                    PlaySequenceSortAfterMatch(oldIndices);
+                                }
+                                else
+                                {
+                                    _isSortingAfterMatch = false;
+                                }
                             });
                         }
                         else
