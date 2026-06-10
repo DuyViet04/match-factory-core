@@ -1,16 +1,23 @@
-﻿using MatchFactoryCore.Scripts.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using UnityEngine;
 
-namespace Assets.MatchFactoryCore.Scripts.Data
+namespace MatchFactoryCore.Scripts.Data
 {
     [Serializable]
     public class DataLevelMatchFactoryNew
     {
         public int Level;
         public float TimeOnLevel;
-        public Dictionary<ItemFactoryType, int> TargetItemDictionary;
-        public Dictionary<ItemFactoryType, int> OtherItemDictionary;
+        public List<DataItemLevel> TargetItems;
+        public List<DataItemLevel> OtherItems;
+    }
+
+    [Serializable]
+    public class DataItemLevel
+    {
+        public ItemFactoryType ItemType;
+        public int Count;
+        public Sprite ItemSprite;
     }
 }

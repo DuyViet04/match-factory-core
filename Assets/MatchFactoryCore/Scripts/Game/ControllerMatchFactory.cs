@@ -123,8 +123,8 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void InitializeLevel(int level, Action onReady)
         {
-            DataLevelMatchFactory dataLevel = controllerItemFactory3D.GetDataLevel(level);
-            TimeLevel = dataLevel.TimeLevel;
+            DataLevelMatchFactoryNew dataLevel = controllerItemFactory3D.GetDataLevel(level);
+            TimeLevel = dataLevel.TimeOnLevel;
             controllerItemFactory3D.SpawnAllItem(level, onReady);
             controllerTargetCard.SpawnCardUi(level);
         }

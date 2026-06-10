@@ -12,7 +12,6 @@ namespace MatchFactoryCore.Scripts.Game
     {
         [SerializeField] private Camera mainCamera;
         [SerializeField] private InfoItemsMatch3Factory infoItemsMatch3Factory;
-        [SerializeField] private InfoLevelsMatch3Factory infoLevelsMatch3Factory;
         [SerializeField] private GameObject holder;
 
         public float spawnInHighValue;
@@ -330,63 +329,29 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnAllItem(int level, Action onReady)
         {
-            DataLevelMatchFactory dataLevel = infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
-            Dictionary<ItemFactoryType, int> levelTarget = dataLevel.CacheDictLevelTarget;
-            Dictionary<ItemFactoryType, int> otherObjInLevel = dataLevel.CacheDictOtherObjectInLevel;
-            Dictionary<ActionType, int> dictItemAction = dataLevel.CacheDictItemAction;
+            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.Ins.LevelCache[level];
 
-            // Spawn item cần thu thập
-            foreach (var item in levelTarget)
+            // Spawn target items
+            if (dataLevel.TargetItems != null)
             {
-                for (int i = 0; i < item.Value; i++)
+                foreach (DataItemLevel item in dataLevel.TargetItems)
                 {
-                    Spawn(item.Key, i);
+                    if (item.Count <= 0) continue;
+                    for (int i = 0; i < item.Count; i++)
+                        Spawn(item.ItemType, i);
+                    _targetDictionary.TryAdd(item.ItemType, item.Count);
                 }
-
-                _targetDictionary.TryAdd(item.Key, item.Value);
             }
 
-            // Spawn item khác
-            foreach (var item in otherObjInLevel)
+            // Spawn other items
+            if (dataLevel.OtherItems != null)
             {
-                for (int i = 0; i < item.Value; i++)
+                foreach (DataItemLevel item in dataLevel.OtherItems)
                 {
-                    Spawn(item.Key, i);
-                }
-
-                _otherItemDictionary.TryAdd(item.Key, item.Value);
-            }
-
-            // Spawn Item Action
-            foreach (var itemAction in dictItemAction)
-            {
-                for (int i = 0; i < itemAction.Value; i++)
-                {
-                    infoItemsMatch3Factory.CacheDictInfoItemActionsMatch3Factory.TryGetValue(itemAction.Key,
-                        out DataItemFactory dataItemAction);
-                    if (dataItemAction == null)
-                    {
-                        Debug.LogError($"{itemAction} not found");
-                        return;
-                    }
-
-                    GameObject newItemAction =
-                        Instantiate(dataItemAction.prefab, GetRandomSpawnPoint(), Quaternion.identity);
-                    newItemAction.transform.SetParent(holder.transform);
-                    ItemAction itemActionComp = newItemAction.GetComponent<ItemAction>();
-
-                    InitItemActionContext itemActionContext = new InitItemActionContext()
-                    {
-                        Id = (int)itemAction.Key * 10 + i,
-                        ActionType = itemAction.Key,
-                        Prefab = newItemAction,
-                        PrefabSize = dataItemAction.prefabSize,
-                    };
-                    itemActionComp.InitializeItemAction(itemActionContext);
-                    itemActionComp.OnFireworkBulletMoveCompleted += HandleWhenItemActionFireworkUsed;
-                    itemActionComp.OnFireworkStarted += HandleWhenItemActionFireworkStarted;
-                    itemActionComp.OnHourglassUsed += HandleWhenItemActionHourglassUsed;
-                    _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
+                    if (item.Count <= 0) continue;
+                    for (int i = 0; i < item.Count; i++)
+                        Spawn(item.ItemType, i);
+                    _otherItemDictionary.TryAdd(item.ItemType, item.Count);
                 }
             }
 
@@ -432,9 +397,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Gets Sets
 
-        public DataLevelMatchFactory GetDataLevel(int level)
+        public DataLevelMatchFactoryNew GetDataLevel(int level)
         {
-            return infoLevelsMatch3Factory.CacheDictInfoLevelsMatch3Factory[level];
+            return LevelDataLoader.Ins.LevelCache[level];
         }
 
         public Dictionary<ItemFactoryType, int> GetTargetDictionary()

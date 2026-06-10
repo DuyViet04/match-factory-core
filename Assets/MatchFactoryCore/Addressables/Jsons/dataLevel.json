@@ -1,0 +1,30 @@
+[
+  {
+    "Level": 1,
+    "TimeOnLevel": 60.0,
+    "TargetItems": [
+      {
+        "ItemType": 1000,
+        "Count": 15,
+        "ItemSprite": "Assets/MatchFactoryCore/Sprites/ItemFactory/Square.png"
+      },
+      {
+        "ItemType": 2000,
+        "Count": 15,
+        "ItemSprite": "Assets/MatchFactoryCore/Sprites/ItemFactory/Circle.png"
+      }
+    ],
+    "OtherItems": [
+      {
+        "ItemType": 3000,
+        "Count": 15,
+        "ItemSprite": "Assets/MatchFactoryCore/Sprites/ItemFactory/Capsule.png"
+      },
+      {
+        "ItemType": 4000,
+        "Count": 15,
+        "ItemSprite": "Assets/MatchFactoryCore/Sprites/ItemFactory/Rectangle.png"
+      }
+    ]
+  }
+]
