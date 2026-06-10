@@ -9,5 +9,6 @@ EditorBuildSettings:
     path: Assets/MatchFactoryCore/Test.unity
     guid: c68f356b8bdb7ef48925d8b78f3fe267
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: b50c9818258a2f842ad7e516ee65780a, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
