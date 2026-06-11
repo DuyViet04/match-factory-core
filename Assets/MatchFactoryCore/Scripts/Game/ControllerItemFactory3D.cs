@@ -41,6 +41,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void Awake()
         {
+            LevelDataLoader.LoadFromJson();
             _layerMask = LayerMask.GetMask(ItemFactory3DLayer);
             InitializeDictionary();
         }
@@ -329,7 +330,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnAllItem(int level, Action onReady)
         {
-            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.Ins.LevelCache[level];
+            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
 
             // Spawn target items
             if (dataLevel.TargetItems != null)
@@ -399,7 +400,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public DataLevelMatchFactoryNew GetDataLevel(int level)
         {
-            return LevelDataLoader.Ins.LevelCache[level];
+            return LevelDataLoader.LevelCache[level];
         }
 
         public Dictionary<ItemFactoryType, int> GetTargetDictionary()

@@ -14,7 +14,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnCardUi(int level)
         {
-            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.Ins.LevelCache[level];
+            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
             var dataItem = infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory;
 
             if (dataLevel.TargetItems == null) return;

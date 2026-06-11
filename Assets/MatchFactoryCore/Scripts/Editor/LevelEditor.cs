@@ -39,10 +39,6 @@ namespace MatchFactoryCore.Scripts.Editor
         static readonly string JsonFile = "dataLevel.json";
         static string FullJsonPath => JsonDir + JsonFile;
 
-        // Runtime path (StreamingAssets) — LevelDataLoader đọc từ đây
-        static readonly string StreamingDir  = "Assets/StreamingAssets/MatchFactory/";
-        static string FullStreamingPath => StreamingDir + JsonFile;
-
         static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -83,12 +79,8 @@ namespace MatchFactoryCore.Scripts.Editor
             Directory.CreateDirectory(JsonDir);
             File.WriteAllText(FullJsonPath, json);
 
-            // 2. Lưu vào StreamingAssets (runtime load)
-            Directory.CreateDirectory(StreamingDir);
-            File.WriteAllText(FullStreamingPath, json);
-
             AssetDatabase.Refresh();
-            Debug.Log($"[LevelEditor] Saved → {FullJsonPath} & {FullStreamingPath}");
+            Debug.Log($"[LevelEditor] Saved → {FullJsonPath}");
         }
 
         private void OnLoadDataButtonClick()

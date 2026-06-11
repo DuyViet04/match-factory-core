@@ -8,14 +8,12 @@ using UnityEngine;
 namespace MatchFactoryCore.Scripts.Game
 {
     [DefaultExecutionOrder(-101)]
-    public class LevelDataLoader : MonoBehaviour
+    public static class LevelDataLoader
     {
-        public const string JsonRelativePath = "MatchFactory/dataLevel.json";
+        static readonly string JsonDir = "Assets/MatchFactoryCore/Addressables/Jsons/";
+        static readonly string JsonFile = "dataLevel.json";
 
-        private static LevelDataLoader _instance;
-        public static LevelDataLoader Ins => _instance;
-
-        public Dictionary<int, DataLevelMatchFactoryNew> LevelCache { get; private set; }
+        public static Dictionary<int, DataLevelMatchFactoryNew> LevelCache { get; private set; }
 
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
@@ -26,27 +24,9 @@ namespace MatchFactoryCore.Scripts.Game
             }
         };
 
-        private void Awake()
+        public static void LoadFromJson()
         {
-            if (_instance == null)
-                _instance = this;
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            LoadFromJson();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this) _instance = null;
-        }
-
-        private void LoadFromJson()
-        {
-            string fullPath = Path.Combine(Application.streamingAssetsPath, JsonRelativePath);
+            string fullPath = Path.Combine(JsonDir, JsonFile);
 
             if (!File.Exists(fullPath))
             {

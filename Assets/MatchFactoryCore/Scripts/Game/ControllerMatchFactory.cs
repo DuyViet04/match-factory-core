@@ -123,7 +123,8 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void InitializeLevel(int level, Action onReady)
         {
-            DataLevelMatchFactoryNew dataLevel = controllerItemFactory3D.GetDataLevel(level);
+            LevelDataLoader.LoadFromJson();
+            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
             TimeLevel = dataLevel.TimeOnLevel;
             controllerItemFactory3D.SpawnAllItem(level, onReady);
             controllerTargetCard.SpawnCardUi(level);
