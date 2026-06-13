@@ -46,7 +46,7 @@ namespace MatchFactoryCore.Scripts.Editor
         };
 
         private MultiColumnListView _dataTable;
-        private List<DataLevelMatchFactoryNew> _dataLevels;
+        private List<DataLevelMatchFactory> _dataLevels;
 
         [MenuItem("Tools/MatchFactory/LevelEditor")]
         public static void ShowLevelEditor() => GetWindow<LevelEditor>();
@@ -92,8 +92,8 @@ namespace MatchFactoryCore.Scripts.Editor
             }
 
             string json = File.ReadAllText(FullJsonPath);
-            _dataLevels = JsonConvert.DeserializeObject<List<DataLevelMatchFactoryNew>>(json, JsonSettings);
-            _dataLevels ??= new List<DataLevelMatchFactoryNew>();
+            _dataLevels = JsonConvert.DeserializeObject<List<DataLevelMatchFactory>>(json, JsonSettings);
+            _dataLevels ??= new List<DataLevelMatchFactory>();
 
             _dataTable.itemsSource = _dataLevels;
             _dataTable.Rebuild();
@@ -363,8 +363,8 @@ namespace MatchFactoryCore.Scripts.Editor
 
         private void AddLevel()
         {
-            _dataLevels ??= new List<DataLevelMatchFactoryNew>();
-            _dataLevels.Add(new DataLevelMatchFactoryNew
+            _dataLevels ??= new List<DataLevelMatchFactory>();
+            _dataLevels.Add(new DataLevelMatchFactory
             {
                 Level = _dataLevels.Count + 1,
                 TimeOnLevel = 60f,

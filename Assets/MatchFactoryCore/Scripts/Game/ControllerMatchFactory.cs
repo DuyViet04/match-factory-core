@@ -4,6 +4,7 @@ using MatchFactoryCore.Scripts.UI;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Game.State;
 using MatchFactoryCore.Scripts.Item;
+using MatchFactoryCore.Scripts.Json;
 using MatchFactoryCore.Scripts.State;
 using UnityEngine;
 
@@ -123,8 +124,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void InitializeLevel(int level, Action onReady)
         {
-            LevelDataLoader.LoadFromJson();
-            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
+            JsonLoader.LoadDataLevel();
+            JsonLoader.LoadUserData();
+            DataLevelMatchFactory dataLevel = JsonLoader.CacheLevel[level];
             TimeLevel = dataLevel.TimeOnLevel;
             controllerItemFactory3D.SpawnAllItem(level, onReady);
             controllerTargetCard.SpawnCardUi(level);

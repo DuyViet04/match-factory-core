@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
 using MatchFactoryCore.Scripts.Item;
+using MatchFactoryCore.Scripts.Json;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -41,7 +42,6 @@ namespace MatchFactoryCore.Scripts.Game
 
         private void Awake()
         {
-            LevelDataLoader.LoadFromJson();
             _layerMask = LayerMask.GetMask(ItemFactory3DLayer);
             InitializeDictionary();
         }
@@ -330,7 +330,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnAllItem(int level, Action onReady)
         {
-            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
+            DataLevelMatchFactory dataLevel = JsonLoader.CacheLevel[level];
 
             // Spawn target items
             if (dataLevel.TargetItems != null)
@@ -353,6 +353,39 @@ namespace MatchFactoryCore.Scripts.Game
                     for (int i = 0; i < item.Count; i++)
                         Spawn(item.ItemType, i);
                     _otherItemDictionary.TryAdd(item.ItemType, item.Count);
+                }
+            }
+
+            // Spawn item actions
+            int winStreak = JsonLoader.CacheWinStreak;
+            List<ActionType> actionTypes = JsonLoader.CacheActionTypes;
+
+            foreach (var actionTypeTemp in actionTypes)
+            {
+                infoItemsMatch3Factory.CacheDictInfoItemActionsMatch3Factory.TryGetValue(actionTypeTemp,
+                    out DataItemFactory so);
+                if (so != null)
+                {
+                    for (int i = 0; i < winStreak; i++)
+                    {
+                        GameObject newItemAction =
+                            Instantiate(so.prefab, GetRandomSpawnPoint(), Quaternion.identity);
+                        newItemAction.transform.SetParent(holder.transform);
+                        ItemAction itemActionComp = newItemAction.GetComponent<ItemAction>();
+
+                        InitItemActionContext itemActionContext = new InitItemActionContext()
+                        {
+                            Id = (int)actionTypeTemp * 10 + i,
+                            ActionType = actionTypeTemp,
+                            Prefab = newItemAction,
+                            PrefabSize = so.prefabSize,
+                        };
+                        itemActionComp.InitializeItemAction(itemActionContext);
+                        itemActionComp.OnFireworkBulletMoveCompleted += HandleWhenItemActionFireworkUsed;
+                        itemActionComp.OnFireworkStarted += HandleWhenItemActionFireworkStarted;
+                        itemActionComp.OnHourglassUsed += HandleWhenItemActionHourglassUsed;
+                        _dictItemAction.TryAdd(itemActionContext.Id, itemActionComp);
+                    }
                 }
             }
 
@@ -398,9 +431,9 @@ namespace MatchFactoryCore.Scripts.Game
 
         #region Gets Sets
 
-        public DataLevelMatchFactoryNew GetDataLevel(int level)
+        public DataLevelMatchFactory GetDataLevel(int level)
         {
-            return LevelDataLoader.LevelCache[level];
+            return JsonLoader.CacheLevel[level];
         }
 
         public Dictionary<ItemFactoryType, int> GetTargetDictionary()

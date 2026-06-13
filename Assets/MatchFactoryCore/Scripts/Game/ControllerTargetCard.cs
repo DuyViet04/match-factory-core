@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MatchFactoryCore.Scripts.Data;
+using MatchFactoryCore.Scripts.Json;
 using MatchFactoryCore.Scripts.UI;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace MatchFactoryCore.Scripts.Game
 
         public void SpawnCardUi(int level)
         {
-            DataLevelMatchFactoryNew dataLevel = LevelDataLoader.LevelCache[level];
+            DataLevelMatchFactory dataLevel = JsonLoader.CacheLevel[level];
             var dataItem = infoItemsMatch3Factory.CacheDictInfoItemsMatch3Factory;
 
             if (dataLevel.TargetItems == null) return;

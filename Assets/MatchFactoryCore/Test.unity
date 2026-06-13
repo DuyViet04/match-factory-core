@@ -199,9 +199,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 267803652389659464, guid: 500e7f1244b895940a3f25c1bfca5709, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2374597189233267337, guid: 500e7f1244b895940a3f25c1bfca5709, type: 3}
       propertyPath: m_Name
       value: FreezeGunVfx
+      objectReference: {fileID: 0}
+    - target: {fileID: 2374597189233267337, guid: 500e7f1244b895940a3f25c1bfca5709, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6511643914191052649, guid: 500e7f1244b895940a3f25c1bfca5709, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3238,7 +3246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_AnchorMin.x
@@ -3246,7 +3254,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_SizeDelta.x
@@ -3298,11 +3306,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -50
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3437402073952127152, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -3322,7 +3330,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7556476728686742748, guid: bc276cb61efc23c48a46d4cd4f35d281, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
