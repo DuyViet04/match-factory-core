@@ -364,7 +364,7 @@ MonoBehaviour:
   targetImage: {fileID: 8384464161815275048}
   targetCount: {fileID: 4238019607019490816}
   targetReduceVfx: {fileID: 8830038062463956364}
-  targetFinishVfx: {fileID: 0}
+  targetFinishVfx: {fileID: 3919007761507243797}
   endRotation: {x: 0, y: 540, z: 0}
   cardScale: 1.1
 --- !u!1001 &1170533457865781496
@@ -579,6 +579,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3c8be951edf52064b9f0a56bb52b92f1, type: 3}
+--- !u!198 &3919007761507243797 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7896753204493025899, guid: 3c8be951edf52064b9f0a56bb52b92f1, type: 3}
+  m_PrefabInstance: {fileID: 6626479473478817150}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &9109498112770158908 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2710757665526441026, guid: 3c8be951edf52064b9f0a56bb52b92f1, type: 3}
